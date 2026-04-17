@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fullName, initials } from '../data/athletes.js'
-import { loadAthleteSessions } from '../lib/supabase.js'
+import { loadAthleteSessions } from '../lib/db.js'
 
 export default function AthleteProfile({ athlete, onBack, onNewSession }) {
   const [sessions, setSessions] = useState([])
