@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { loadAthletes } from './lib/supabase.js'
+import { loadAthletes } from './lib/db.js'
 import Header from './components/Header.jsx'
 import AthleteGrid from './components/AthleteGrid.jsx'
 import AthleteProfile from './components/AthleteProfile.jsx'
