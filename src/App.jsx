@@ -1,4 +1,5 @@
 
+
 import { useEffect, useState } from 'react'
 import { loadAthletes } from './lib/db.js'
 import Header from './components/Header.jsx'
@@ -46,6 +47,10 @@ export default function App() {
     }
     if (type === 'meetprep' && athleteId) {
       window.location.href = `/meetprep.html?athleteId=${encodeURIComponent(athleteId)}`
+      return
+    }
+    if (type === 'technique' && athleteId) {
+      window.location.href = `/technique.html?athleteId=${encodeURIComponent(athleteId)}`
       return
     }
     alert(`${type} sessions coming soon.`)
