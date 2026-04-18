@@ -1,4 +1,5 @@
 
+
 // Vercel serverless function: save a training session to the database
 // POST /api/save-session
 //
@@ -33,6 +34,8 @@ export default async function handler(req, res) {
       correctedData,
       wasRegenerated,
       model,
+      noteType,
+      videoReferences,
     } = req.body;
 
     // Validation
@@ -51,7 +54,7 @@ export default async function handler(req, res) {
 
     const data = {
       poolType,
-      noteType: 'training',
+      noteType: noteType || 'training',
       stroke: stroke || null,
       sessionNumber: sessionNumber || null,
       durationMinutes: durationMinutes || null,
@@ -66,7 +69,7 @@ export default async function handler(req, res) {
       correctedData: correctedData || null,
       wasRegenerated: !!wasRegenerated,
       model: model || null,
-      // Build a short summary for quick display in history lists
+      videoReferences: videoReferences || [],
       summary: buildShortSummary(mainSet, category, stroke),
     };
 
