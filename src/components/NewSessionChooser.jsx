@@ -1,4 +1,5 @@
 
+
 import { fullName } from '../data/athletes.js'
 
 const OPTIONS = [
@@ -21,10 +22,10 @@ const OPTIONS = [
   {
     id: 'technique',
     title: 'Technique Session',
-    desc: 'Stroke correction work. Pick focus area, describe what improved and what still needs work.',
+    desc: 'Stroke correction work. Pick focus area, select observed faults, describe what improved and what still needs work.',
     color: '#2dd4bf',
-    ready: false,
-    soonLabel: 'Coming soon',
+    ready: true,
+    soonLabel: null,
   },
 ]
 
