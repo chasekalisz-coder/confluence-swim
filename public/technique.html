@@ -146,6 +146,11 @@
     <input type="file" accept="image/jpeg,image/png" onchange="handlePhoto(event)" />
     <img id="photoPreview" class="photo-preview" style="display:none" />
   </div>
+  <div class="card">
+    <label>Video References (optional — max 2)</label>
+    <div id="videoList"></div>
+    <button type="button" class="add-topic-btn" id="addVideoBtn" onclick="addVideoSlot()" style="margin-top:8px">+ Add Video</button>
+  </div>
   <div class="error" id="errorBox" style="display:none"></div>
   <button class="generate" id="generateBtn" onclick="generate()" disabled>Generate Technique Note</button>
 </div>
@@ -246,6 +251,8 @@ let photoBase64 = null;
 let photoMediaType = null;
 let currentNoteData = null;
 let topicBlockCount = 0;
+let videoSlotCount = 0;
+let videoRefs = []; // { label, url, file, status }
 
 function setPool(pool) {
   selectedPool = pool;
@@ -321,6 +328,76 @@ function onCategoryChange(num) {
 function toggleFault(el) { el.classList.toggle('selected'); updateGenerateButton(); }
 function updateGenerateButton() { document.getElementById('generateBtn').disabled = !(selectedPool && document.querySelectorAll('.fault-chip.selected').length > 0); }
 
+function addVideoSlot() {
+  if (videoSlotCount >= 2) return;
+  videoSlotCount++;
+  const num = videoSlotCount;
+  var html = '<div class="topic-block" id="videoSlot' + num + '" style="padding:16px">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+    '<label style="margin:0">Video ' + num + '</label>' +
+    '<button class="remove-topic" onclick="removeVideoSlot(' + num + ')">\u2715</button>' +
+    '</div>' +
+    '<input type="text" class="video-label" data-slot="' + num + '" placeholder="Label (e.g., Peaty kick snap)" style="margin-bottom:8px" />' +
+    '<input type="file" class="video-file" data-slot="' + num + '" accept="video/mp4,video/quicktime,video/webm" onchange="handleVideoFile(event,' + num + ')" />' +
+    '<div class="video-upload-status" id="videoStatus' + num + '" style="font-size:0.82rem;color:var(--muted);margin-top:4px"></div>' +
+    '</div>';
+  document.getElementById('videoList').insertAdjacentHTML('beforeend', html);
+  if (videoSlotCount >= 2) document.getElementById('addVideoBtn').style.display = 'none';
+}
+
+function removeVideoSlot(num) {
+  var el = document.getElementById('videoSlot' + num);
+  if (el) el.remove();
+  videoSlotCount--;
+  videoRefs = videoRefs.filter(function(v) { return v.slot !== num; });
+  document.getElementById('addVideoBtn').style.display = '';
+}
+
+function handleVideoFile(e, num) {
+  var file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 100 * 1024 * 1024) {
+    alert('Video must be under 100MB.');
+    e.target.value = '';
+    return;
+  }
+  var statusEl = document.getElementById('videoStatus' + num);
+  statusEl.textContent = 'Uploading...';
+  statusEl.style.color = 'var(--muted)';
+
+  // Upload directly to Vercel Blob via client upload
+  uploadVideoToBlob(file, num).then(function(url) {
+    var label = (document.querySelector('.video-label[data-slot="' + num + '"]') || {}).value || 'Clip ' + num;
+    // Remove any existing entry for this slot
+    videoRefs = videoRefs.filter(function(v) { return v.slot !== num; });
+    videoRefs.push({ slot: num, label: label, url: url });
+    statusEl.textContent = '\u2713 Uploaded';
+    statusEl.style.color = 'var(--success)';
+  }).catch(function(err) {
+    statusEl.textContent = 'Upload failed: ' + String(err);
+    statusEl.style.color = 'var(--danger)';
+  });
+}
+
+async function uploadVideoToBlob(file, slotNum) {
+  var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  var filename = Date.now() + '-' + safeName;
+  
+  var res = await fetch('/api/upload-video?filename=' + encodeURIComponent(filename), {
+    method: 'POST',
+    headers: { 'Content-Type': file.type },
+    body: file,
+  });
+
+  if (!res.ok) {
+    var errData = await res.json().catch(function() { return {}; });
+    throw new Error(errData.error || 'Upload failed');
+  }
+
+  var data = await res.json();
+  return data.url;
+}
+
 async function generate() {
   const topicBlocks = [];
   document.querySelectorAll('.topic-block').forEach(block => {
@@ -358,7 +435,7 @@ function backToForm() { document.getElementById('noteView').style.display = 'non
 async function saveSession() {
   if (!currentNoteData) return;
   const meta = currentNoteData._formMeta || {};
-  const payload = { athleteId: meta.athleteId, date: new Date().toISOString().split('T')[0], category: 'technique', poolType: meta.poolType, stroke: null, sessionNumber: meta.sessionNumber || null, durationMinutes: meta.durationMinutes || null, coachIntent: null, coachObservation: null, mainSet: null, hiLo: null, note: currentNoteData.note, charts: [], warnings: currentNoteData.warnings, rawModelOutput: currentNoteData.rawModelOutput, correctedData: null, wasRegenerated: false, model: currentNoteData.model, noteType: 'technique' };
+  const payload = { athleteId: meta.athleteId, date: new Date().toISOString().split('T')[0], category: 'technique', poolType: meta.poolType, stroke: null, sessionNumber: meta.sessionNumber || null, durationMinutes: meta.durationMinutes || null, coachIntent: null, coachObservation: null, mainSet: null, hiLo: null, note: currentNoteData.note, charts: [], warnings: currentNoteData.warnings, rawModelOutput: currentNoteData.rawModelOutput, correctedData: null, wasRegenerated: false, model: currentNoteData.model, noteType: 'technique', videoReferences: videoRefs.map(function(v) { return { label: v.label, url: v.url }; }) };
   try {
     const res = await fetch('/api/save-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await res.json();
