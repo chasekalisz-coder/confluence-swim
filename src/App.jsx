@@ -1,11 +1,10 @@
+
 import { useEffect, useState } from 'react'
 import { loadAthletes } from './lib/db.js'
 import Header from './components/Header.jsx'
 import AthleteGrid from './components/AthleteGrid.jsx'
 import AthleteProfile from './components/AthleteProfile.jsx'
 import NewSessionChooser from './components/NewSessionChooser.jsx'
-import TrainingFormPlaceholder from './components/TrainingFormPlaceholder.jsx'
-import TechniqueFormPlaceholder from './components/TechniqueFormPlaceholder.jsx'
 
 export default function App() {
   const [view, setView] = useState('home')
@@ -36,10 +35,18 @@ export default function App() {
     setView('new-session')
   }
 
+  // When a session type is picked from the chooser, navigate to the
+  // appropriate tool. Training goes to the standalone test-ai.html form
+  // with the athlete pre-selected via URL param.
   const pickSessionType = (type) => {
-    if (type === 'training') setView('training-form')
-    else if (type === 'technique') setView('technique-form')
-    else if (type === 'meetprep') setView('meetprep-form')
+    const athleteId = selectedAthlete?.id
+    if (type === 'training' && athleteId) {
+      // Redirect to the standalone training form (Chunk 1–5 output)
+      window.location.href = `/test-ai.html?athleteId=${encodeURIComponent(athleteId)}`
+      return
+    }
+    // Technique and meet prep still coming — for now just stay put
+    alert(`${type} sessions coming soon. For now, only Training is available.`)
   }
 
   return (
@@ -74,25 +81,11 @@ export default function App() {
             onBack={() => setView('athlete')}
           />
         )}
-
-        {view === 'training-form' && selectedAthlete && (
-          <TrainingFormPlaceholder
-            athlete={selectedAthlete}
-            onBack={() => setView('new-session')}
-          />
-        )}
-
-        {view === 'technique-form' && selectedAthlete && (
-          <TechniqueFormPlaceholder
-            athlete={selectedAthlete}
-            onBack={() => setView('new-session')}
-          />
-        )}
       </main>
 
       <footer className="app-footer">
         <div>confluencesport.com · Dallas, TX</div>
-        <div className="version">v0.2.0 · Phase 2</div>
+        <div className="version">v0.3.0 · Phase 3</div>
       </footer>
     </div>
   )
