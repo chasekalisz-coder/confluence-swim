@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -183,6 +184,160 @@
   .action-btn:hover { border-color: var(--gold); }
   .action-btn.primary { background: var(--ink); color: white; border-color: var(--ink); }
   .action-btn.primary:hover { background: var(--gold); border-color: var(--gold); }
+  .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ═══ CORRECTION MODAL ═══ */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 18, 18, 0.5);
+    z-index: 1000;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 4px;
+    max-width: 680px;
+    width: 100%;
+    max-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .modal-title {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .modal-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    margin-top: -4px;
+  }
+  .modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .modal-body label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+    margin-top: 16px;
+  }
+  .modal-body label:first-child { margin-top: 0; }
+  .modal-body input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: white;
+    margin-bottom: 0;
+  }
+  .modal-body input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    background: #FAF9F6;
+  }
+
+  /* Reps editor table */
+  .edit-reps-table {
+    display: grid;
+    grid-template-columns: 40px 80px 1fr 80px 1fr;
+    gap: 8px 12px;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+  .edit-reps-table .head {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .edit-reps-table input {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 0.85rem;
+    padding: 6px 8px;
+  }
+  .edit-reps-table .rep-num-cell {
+    font-family: "SF Mono", Menlo, monospace;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .hilo-edit-block { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--rule); }
+  .hilo-edit-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .hilo-edit-row .mini-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  /* Toast */
+  .save-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 2000;
+    transition: transform 0.25s ease;
+    pointer-events: none;
+  }
+  .save-toast.show { transform: translateX(-50%) translateY(0); }
+  .save-toast.error { background: var(--danger); }
 
   .note {
     background: white;
@@ -631,8 +786,56 @@
 
   <div class="action-bar">
     <button class="action-btn" onclick="backToForm()">← New Session</button>
-    <button class="action-btn primary" onclick="window.print()">Print / Save PDF</button>
+    <button class="action-btn" onclick="openCorrectionPanel()">Edit Data</button>
+    <button class="action-btn" onclick="window.print()">Print / Save PDF</button>
+    <button class="action-btn primary" onclick="saveSession()">Save to Athlete</button>
   </div>
+
+  <!-- Correction panel (modal) -->
+  <div id="correctionOverlay" class="modal-overlay" onclick="closeCorrectionPanelIfBackdrop(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Correct session data</div>
+          <div class="modal-sub">Edit any numbers the AI misread. Then regenerate or save as-is.</div>
+        </div>
+        <button class="modal-close" onclick="closeCorrectionPanel()">×</button>
+      </div>
+      <div class="modal-body">
+        <label>Main set name</label>
+        <input id="editMainSetName" type="text" />
+
+        <label>Reps</label>
+        <div id="editRepsTable" class="edit-reps-table"></div>
+
+        <div class="hilo-edit-block">
+          <label>Hi-Lo Pulse Test (leave blank if not measured)</label>
+          <div class="hilo-edit-row">
+            <div>
+              <div class="mini-label">Hi</div>
+              <input id="editHiLoHi" type="number" placeholder="—" />
+            </div>
+            <div>
+              <div class="mini-label">Lo</div>
+              <input id="editHiLoLo" type="number" placeholder="—" />
+            </div>
+            <div>
+              <div class="mini-label">Drop</div>
+              <input id="editHiLoDrop" type="number" placeholder="auto" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="action-btn" onclick="closeCorrectionPanel()">Cancel</button>
+        <button class="action-btn" onclick="saveCorrectionsOnly()">Save Corrections</button>
+        <button class="action-btn primary" onclick="regenerateWithCorrections()">Regenerate with Corrections</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save confirmation toast -->
+  <div id="saveToast" class="save-toast"></div>
 
   <div id="warningsContainer"></div>
 
@@ -750,6 +953,207 @@ function showError(data) {
   const box = document.getElementById('errorBox');
   box.style.display = 'block';
   box.textContent = (data.error || 'Error') + (data.detail ? '\n\n' + (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail, null, 2)) : '');
+}
+
+// ═══ CORRECTION PANEL ═══
+
+function openCorrectionPanel() {
+  if (!currentNoteData) return;
+
+  const mainSet = currentNoteData.mainSet || {};
+  const hiLo = currentNoteData.hiLo || null;
+
+  document.getElementById('editMainSetName').value = mainSet.name || '';
+
+  // Build rep rows
+  const reps = mainSet.reps || [];
+  const tableEl = document.getElementById('editRepsTable');
+  let html = `
+    <div class="head">#</div>
+    <div class="head">Dist</div>
+    <div class="head">Time</div>
+    <div class="head">HR</div>
+    <div class="head">Splits (slash-sep.)</div>
+  `;
+  reps.forEach((r, i) => {
+    const splits = Array.isArray(r.splits) ? r.splits.join(' / ') : '';
+    html += `
+      <div class="rep-num-cell">${r.rep}</div>
+      <input data-field="distance" data-idx="${i}" type="text" value="${escapeAttr(r.distance || '')}" />
+      <input data-field="time" data-idx="${i}" type="text" value="${escapeAttr(r.time || '')}" />
+      <input data-field="hr" data-idx="${i}" type="text" value="${escapeAttr(r.hr || '')}" />
+      <input data-field="splits" data-idx="${i}" type="text" value="${escapeAttr(splits)}" placeholder="e.g. 32.1 / 36.2" />
+    `;
+  });
+  tableEl.innerHTML = html;
+
+  // Hi-Lo
+  document.getElementById('editHiLoHi').value = hiLo?.hi ?? '';
+  document.getElementById('editHiLoLo').value = hiLo?.lo ?? '';
+  document.getElementById('editHiLoDrop').value = hiLo?.drop ?? '';
+
+  document.getElementById('correctionOverlay').classList.add('active');
+}
+
+function closeCorrectionPanel() {
+  document.getElementById('correctionOverlay').classList.remove('active');
+}
+function closeCorrectionPanelIfBackdrop(ev) {
+  if (ev.target.id === 'correctionOverlay') closeCorrectionPanel();
+}
+
+function escapeAttr(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Read current values from the correction form and return a new mainSet + hiLo.
+function collectCorrections() {
+  const mainSet = { ...(currentNoteData.mainSet || {}) };
+  mainSet.name = document.getElementById('editMainSetName').value;
+
+  const existingReps = mainSet.reps || [];
+  const newReps = existingReps.map((r, i) => ({ ...r }));
+
+  document.querySelectorAll('#editRepsTable input').forEach(input => {
+    const idx = parseInt(input.dataset.idx, 10);
+    const field = input.dataset.field;
+    const val = input.value.trim();
+    if (!newReps[idx]) return;
+    if (field === 'hr') {
+      newReps[idx].hr = val ? parseInt(val, 10) : null;
+    } else if (field === 'splits') {
+      newReps[idx].splits = val ? val.split(/\s*\/\s*/).filter(Boolean) : [];
+    } else {
+      newReps[idx][field] = val || null;
+    }
+  });
+  mainSet.reps = newReps;
+
+  const hi = document.getElementById('editHiLoHi').value.trim();
+  const lo = document.getElementById('editHiLoLo').value.trim();
+  const dropInput = document.getElementById('editHiLoDrop').value.trim();
+  let hiLo = null;
+  if (hi !== '' && lo !== '') {
+    const hiN = parseInt(hi, 10);
+    const loN = parseInt(lo, 10);
+    const drop = dropInput !== '' ? parseInt(dropInput, 10) : (hiN - loN);
+    hiLo = { hi: hiN, lo: loN, drop };
+  }
+
+  return { mainSet, hiLo };
+}
+
+// User clicked "Save Corrections" — apply changes to current note WITHOUT calling AI.
+// Updates the display and marks data as corrected.
+function saveCorrectionsOnly() {
+  const { mainSet, hiLo } = collectCorrections();
+  currentNoteData.mainSet = mainSet;
+  currentNoteData.hiLo = hiLo;
+  currentNoteData.correctedData = { mainSet, hiLo };
+  // Note prose stays the same since we didn't regenerate.
+  renderNote(currentNoteData);
+  closeCorrectionPanel();
+  showToast('Corrections saved. Note prose unchanged — click Regenerate to rewrite with new numbers.');
+}
+
+// User clicked "Regenerate with Corrections" — call AI with corrected data as authoritative.
+async function regenerateWithCorrections() {
+  const { mainSet, hiLo } = collectCorrections();
+  const meta = currentNoteData._formMeta;
+
+  const payload = {
+    ...meta,                          // athleteId, category, stroke, poolType, etc + photo
+    correctedData: { mainSet, hiLo }, // AI uses these as authoritative
+  };
+
+  closeCorrectionPanel();
+  document.getElementById('noteView').style.display = 'none';
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('loading').querySelector('div:last-child').textContent = 'Regenerating with your corrections…';
+
+  try {
+    const res = await fetch('/api/generate-training-note', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('loading').querySelector('div:last-child').textContent = 'Generating note… this takes 15–30 seconds';
+
+    if (!res.ok) {
+      showError(data);
+      document.getElementById('formView').style.display = 'block';
+      return;
+    }
+
+    currentNoteData = { ...data, _formMeta: meta };
+    currentNoteData.correctedData = { mainSet, hiLo };
+    renderNote(currentNoteData);
+    document.getElementById('noteView').style.display = 'block';
+    window.scrollTo(0, 0);
+    showToast('Note regenerated with your corrections.');
+  } catch (err) {
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('noteView').style.display = 'block';
+    showToast('Regeneration failed: ' + String(err), true);
+  }
+}
+
+// ═══ SAVE TO DATABASE ═══
+
+async function saveSession() {
+  if (!currentNoteData) return;
+  const meta = currentNoteData._formMeta || {};
+
+  const payload = {
+    athleteId: meta.athleteId,
+    date: new Date().toISOString().split('T')[0],   // YYYY-MM-DD, today
+    category: meta.category,
+    poolType: meta.poolType,
+    stroke: meta.stroke,
+    sessionNumber: meta.sessionNumber,
+    durationMinutes: meta.durationMinutes,
+    coachIntent: meta.coachIntent,
+    coachObservation: meta.coachObservation,
+    mainSet: currentNoteData.mainSet,
+    hiLo: currentNoteData.hiLo,
+    note: currentNoteData.note,
+    charts: currentNoteData.charts,
+    warnings: currentNoteData.warnings,
+    rawModelOutput: currentNoteData.rawModelOutput,
+    correctedData: currentNoteData.correctedData || null,
+    wasRegenerated: !!currentNoteData.wasRegenerated,
+    model: currentNoteData.model,
+  };
+
+  try {
+    const res = await fetch('/api/save-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showToast('Save failed: ' + (data.error || 'unknown'), true);
+      return;
+    }
+
+    showToast('Session saved to ' + (ATHLETE_DISPLAY[meta.athleteId] || meta.athleteId));
+  } catch (err) {
+    showToast('Save failed: ' + String(err), true);
+  }
+}
+
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('saveToast');
+  toast.textContent = msg;
+  toast.classList.toggle('error', isError);
+  toast.classList.add('show');
+  setTimeout(() => { toast.classList.remove('show'); }, 3800);
 }
 
 // ═══ NOTE RENDER ═══
@@ -1200,4 +1604,3 @@ function renderInternalSplits(rep) {
 </script>
 </body>
 </html>
-
