@@ -1,6 +1,33 @@
+
 import { useEffect, useState } from 'react'
 import { fullName, initials } from '../data/athletes.js'
 import { loadAthleteSessions } from '../lib/db.js'
+
+// Pretty labels for the category slug stored in the sessions table
+const CATEGORY_DISPLAY = {
+  aerobic: 'Aerobic',
+  threshold: 'Threshold',
+  active_rest: 'Active Rest',
+  recovery: 'Recovery',
+  quality: 'Quality',
+  power: 'Power',
+}
+
+const STROKE_DISPLAY = {
+  mixed: '',
+  free: 'Freestyle',
+  back: 'Backstroke',
+  breast: 'Breaststroke',
+  fly: 'Butterfly',
+  im: 'IM',
+}
+
+function labelCategory(cat) {
+  return CATEGORY_DISPLAY[cat] || cat
+}
+function labelStroke(stroke) {
+  return STROKE_DISPLAY[stroke] || ''
+}
 
 export default function AthleteProfile({ athlete, onBack, onNewSession }) {
   const [sessions, setSessions] = useState([])
@@ -20,6 +47,13 @@ export default function AthleteProfile({ athlete, onBack, onNewSession }) {
   }, [athlete.id])
 
   const filteredTimes = athlete.meetTimes.filter(t => t.event.endsWith(poolFilter))
+
+  // Filter sessions by pool type (respecting the SCY/LCM hard separation)
+  const filteredSessions = sessions.filter(s => {
+    const sessionPool = s.data?.poolType
+    if (!sessionPool) return true   // show pool-unknown sessions in both views as fallback
+    return sessionPool === poolFilter
+  })
 
   return (
     <div className="page">
@@ -76,26 +110,33 @@ export default function AthleteProfile({ athlete, onBack, onNewSession }) {
         <section className="profile-section">
           <div className="section-header">
             <h2>Session History</h2>
-            <span className="muted">{sessions.length} session{sessions.length === 1 ? '' : 's'}</span>
+            <span className="muted">
+              {filteredSessions.length} {poolFilter} session{filteredSessions.length === 1 ? '' : 's'}
+            </span>
           </div>
           {loadingSessions ? (
             <p className="muted">Loading...</p>
-          ) : sessions.length === 0 ? (
+          ) : filteredSessions.length === 0 ? (
             <div className="empty-history">
-              <p className="muted">No sessions recorded yet.</p>
+              <p className="muted">No {poolFilter} sessions recorded yet.</p>
               <p className="muted small">Click + New Session above to generate the first one.</p>
             </div>
           ) : (
             <div className="session-list">
-              {sessions.map(s => (
-                <div key={s.id} className="session-row">
-                  <div>
-                    <div className="session-date">{s.date}</div>
-                    <div className="session-cat">{s.category}</div>
+              {filteredSessions.map(s => {
+                const stroke = labelStroke(s.data?.stroke)
+                const category = labelCategory(s.category)
+                const subtitle = stroke ? `${category} · ${stroke}` : category
+                return (
+                  <div key={s.id} className="session-row">
+                    <div>
+                      <div className="session-date">{s.date}</div>
+                      <div className="session-cat">{subtitle}</div>
+                    </div>
+                    <div className="session-arrow">→</div>
                   </div>
-                  <div className="session-arrow">→</div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </section>
