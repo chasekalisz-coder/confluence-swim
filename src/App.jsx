@@ -6,11 +6,13 @@ import Header from './components/Header.jsx'
 import AthleteGrid from './components/AthleteGrid.jsx'
 import AthleteProfile from './components/AthleteProfile.jsx'
 import NewSessionChooser from './components/NewSessionChooser.jsx'
+import SessionViewer from './components/SessionViewer.jsx'
 
 export default function App() {
   const [view, setView] = useState('home')
   const [athletes, setAthletes] = useState([])
   const [selectedAthlete, setSelectedAthlete] = useState(null)
+  const [selectedSession, setSelectedSession] = useState(null)
   const [connectionStatus, setConnectionStatus] = useState('loading')
 
   useEffect(() => {
@@ -24,6 +26,7 @@ export default function App() {
   const goHome = () => {
     setView('home')
     setSelectedAthlete(null)
+    setSelectedSession(null)
   }
 
   const selectAthlete = (a) => {
@@ -36,9 +39,11 @@ export default function App() {
     setView('new-session')
   }
 
-  // When a session type is picked from the chooser, navigate to the
-  // appropriate tool. Training goes to the standalone test-ai.html form
-  // with the athlete pre-selected via URL param.
+  const viewSession = (session) => {
+    setSelectedSession(session)
+    setView('view-session')
+  }
+
   const pickSessionType = (type) => {
     const athleteId = selectedAthlete?.id
     if (type === 'training' && athleteId) {
@@ -78,6 +83,7 @@ export default function App() {
             athlete={selectedAthlete}
             onBack={goHome}
             onNewSession={startNewSession}
+            onViewSession={viewSession}
           />
         )}
 
@@ -88,11 +94,19 @@ export default function App() {
             onBack={() => setView('athlete')}
           />
         )}
+
+        {view === 'view-session' && selectedAthlete && selectedSession && (
+          <SessionViewer
+            session={selectedSession}
+            athlete={selectedAthlete}
+            onBack={() => setView('athlete')}
+          />
+        )}
       </main>
 
       <footer className="app-footer">
         <div>confluencesport.com · Dallas, TX</div>
-        <div className="version">v0.3.0 · Phase 3</div>
+        <div className="version">v0.4.0 · Phase 4</div>
       </footer>
     </div>
   )
