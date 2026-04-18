@@ -12,7 +12,12 @@
 //   photoBase64: "iVBORw0KG...",    // base64 encoded JPG/PNG
 //   photoMediaType: "image/jpeg",
 //   coachIntent: "optional — what I was going for",
-//   coachObservation: "optional — what I saw on deck"
+//   coachObservation: "optional — what I saw on deck",
+//
+//   correctedData: {                // OPTIONAL — when user has edited data & wants regenerate
+//     mainSet: { name, zone, interval, reps: [...] },
+//     hiLo: { hi, lo, drop } | null
+//   }
 // }
 //
 // Response:
@@ -47,26 +52,17 @@ export default async function handler(req, res) {
       photoMediaType,
       coachIntent,
       coachObservation,
+      correctedData,  // NEW — present on regeneration
     } = req.body;
 
-    // HARD GUARDRAILS — these exist because violating them produces
-    // wrong and potentially harmful coaching output.
-
-    if (!athleteId) {
-      return res.status(400).json({ error: 'athleteId is required' });
-    }
-
-    // SCY/LCM is the non-skip gate. If the UI didn't enforce it, we do.
+    // HARD GUARDRAILS
+    if (!athleteId) return res.status(400).json({ error: 'athleteId is required' });
     if (poolType !== 'SCY' && poolType !== 'LCM') {
       return res.status(400).json({
         error: 'poolType must be explicitly "SCY" or "LCM". No default is permitted. The coach must click.',
       });
     }
-
-    if (!category) {
-      return res.status(400).json({ error: 'category is required' });
-    }
-
+    if (!category) return res.status(400).json({ error: 'category is required' });
     if (!photoBase64 || !photoMediaType) {
       return res.status(400).json({ error: 'photoBase64 and photoMediaType are required' });
     }
@@ -74,10 +70,10 @@ export default async function handler(req, res) {
     // Build athlete context — filtered by poolType, no cross-pool data.
     const athleteContext = await buildAthleteContext({
       athleteId,
-      poolType,          // Filters history and best/goal times to matching pool only
+      poolType,
     });
 
-    // Build the system prompt with all framework + guardrails + context.
+    // Build the system prompt
     const systemPrompt = buildTrainingPrompt({
       athlete: athleteContext,
       category,
@@ -89,26 +85,42 @@ export default async function handler(req, res) {
       coachObservation,
     });
 
-    // The user message is the photo + a request to generate.
-    const userMessage = {
-      role: 'user',
-      content: [
-        {
-          type: 'image',
-          source: {
-            type: 'base64',
-            media_type: photoMediaType,
-            data: photoBase64,
-          },
+    // Build user message content array.
+    // Always include the photo. If correctedData is present, include it as
+    // AUTHORITATIVE and instruct the AI to use it instead of re-extracting.
+    const content = [
+      {
+        type: 'image',
+        source: {
+          type: 'base64',
+          media_type: photoMediaType,
+          data: photoBase64,
         },
-        {
-          type: 'text',
-          text: `Generate the training note for this session. Follow the output format exactly. Return valid JSON only, no preamble.`,
-        },
-      ],
-    };
+      },
+    ];
 
-    // Call Anthropic.
+    if (correctedData) {
+      content.push({
+        type: 'text',
+        text: `The coach has reviewed your previous extraction of this session's data and CORRECTED the numbers below. These corrected numbers are AUTHORITATIVE. Use them exactly as given. Do NOT re-extract from the photo. Do NOT change them.
+
+CORRECTED DATA:
+${JSON.stringify(correctedData, null, 2)}
+
+Generate the full training note using these corrected numbers. Include the same mainSet and hiLo exactly as given — do not alter any values. Your job is to update the prose analysis to reflect these corrected numbers.
+
+Return valid JSON only, no preamble, matching the schema from the system prompt.`,
+      });
+    } else {
+      content.push({
+        type: 'text',
+        text: `Generate the training note for this session. Follow the output format exactly. Return valid JSON only, no preamble.`,
+      });
+    }
+
+    const userMessage = { role: 'user', content };
+
+    // Call Anthropic
     const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -127,15 +139,11 @@ export default async function handler(req, res) {
     if (!apiResponse.ok) {
       const errText = await apiResponse.text();
       console.error('Anthropic API error:', apiResponse.status, errText);
-      return res.status(502).json({
-        error: 'AI model call failed',
-        detail: errText,
-      });
+      return res.status(502).json({ error: 'AI model call failed', detail: errText });
     }
 
     const apiData = await apiResponse.json();
 
-    // Extract the text output from the response.
     const rawText = apiData.content
       ?.filter((block) => block.type === 'text')
       ?.map((block) => block.text)
@@ -143,36 +151,26 @@ export default async function handler(req, res) {
       ?.trim();
 
     if (!rawText) {
-      return res.status(502).json({
-        error: 'AI returned empty response',
-        detail: apiData,
-      });
+      return res.status(502).json({ error: 'AI returned empty response', detail: apiData });
     }
 
-    // Parse JSON output. Strip markdown fences if the model added them.
     let parsed;
     try {
       const clean = rawText.replace(/^```json\s*/i, '').replace(/\s*```$/, '').trim();
       parsed = JSON.parse(clean);
     } catch (err) {
       console.error('Failed to parse model JSON:', rawText);
-      return res.status(502).json({
-        error: 'AI returned invalid JSON',
-        rawText,
-      });
+      return res.status(502).json({ error: 'AI returned invalid JSON', rawText });
     }
 
-    // Return the structured note + raw output for audit/correction panel.
     return res.status(200).json({
       ...parsed,
       rawModelOutput: rawText,
       model: MODEL,
+      wasRegenerated: !!correctedData,
     });
   } catch (err) {
     console.error('generate-training-note error:', err);
-    return res.status(500).json({
-      error: 'Internal error',
-      detail: String(err),
-    });
+    return res.status(500).json({ error: 'Internal error', detail: String(err) });
   }
 }
