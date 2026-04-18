@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -451,65 +450,82 @@
     .form-container, .action-bar, .warnings-box, .loading { display: none !important; }
     .note-page { padding: 0; max-width: none; margin: 0; }
     .note { border: none; padding: 0; box-shadow: none; }
-    .note-header { margin-bottom: 18px; }
-    .note-logo { width: 140px; }
-    .note-meta { font-size: 0.62rem; line-height: 1.5; }
-    .athlete-block { margin-bottom: 20px; }
-    .athlete-name { font-size: 2rem; margin-bottom: 8px; }
-    .athlete-rule { margin-bottom: 10px; }
-    .athlete-tags { font-size: 0.62rem; }
+
+    /* Header block */
+    .note-header { margin-bottom: 14px; }
+    .note-logo { width: 130px; }
+    .note-meta { font-size: 0.6rem; line-height: 1.5; }
+
+    /* Athlete block */
+    .athlete-block { margin-bottom: 16px; }
+    .athlete-name { font-size: 1.85rem; margin-bottom: 6px; }
+    .athlete-rule { margin-bottom: 8px; }
+    .athlete-tags { font-size: 0.6rem; }
+
+    /* Main set - keep together */
     .main-set-box {
-      margin-bottom: 22px;
-      padding: 16px 20px;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .main-set-name { font-size: 1.1rem; margin-bottom: 14px; }
-    .main-set-label { font-size: 0.6rem; margin-bottom: 8px; }
-    .main-set-table { font-size: 0.72rem; gap: 4px 16px; }
-    .hilo-row { margin-top: 12px; padding-top: 10px; font-size: 0.72rem; gap: 24px; }
-    .section {
       margin-bottom: 18px;
+      padding: 14px 18px;
       page-break-inside: avoid;
       break-inside: avoid;
-      grid-template-columns: 70px 1fr;
-      gap: 18px;
     }
-    .section-num { font-size: 2.4rem; }
-    .section-content .section-title { font-size: 0.62rem; margin-bottom: 8px; }
-    .section-content p { font-size: 0.82rem; line-height: 1.45; margin-bottom: 10px; }
-    /* Charts block flows naturally, individual charts stay together */
+    .main-set-name { font-size: 1rem; margin-bottom: 12px; }
+    .main-set-label { font-size: 0.58rem; margin-bottom: 6px; }
+    .main-set-table { font-size: 0.7rem; gap: 3px 14px; }
+    .hilo-row { margin-top: 10px; padding-top: 8px; font-size: 0.7rem; gap: 20px; }
+
+    /* Sections - allow breaking inside long sections */
+    .section {
+      margin-bottom: 14px;
+      grid-template-columns: 60px 1fr;
+      gap: 14px;
+      /* Let long sections split across pages naturally */
+    }
+    .section-num { font-size: 2.2rem; }
+    .section-content .section-title { font-size: 0.6rem; margin-bottom: 6px; }
+    .section-content p { font-size: 0.78rem; line-height: 1.4; margin-bottom: 8px; }
+
+    /* Charts - flow naturally, individual charts stay together */
     .charts-block {
       border-top: 1px solid var(--rule);
-      padding-top: 20px;
-      margin-top: 12px;
-      margin-bottom: 16px;
-      /* DO NOT set page-break-inside here - let the block flow */
+      padding-top: 14px;
+      margin-top: 10px;
+      margin-bottom: 12px;
     }
-    .charts-label { font-size: 0.6rem; margin-bottom: 14px; }
+    .charts-label { font-size: 0.58rem; margin-bottom: 10px; }
     .chart-container {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       page-break-inside: avoid;
       break-inside: avoid;
     }
-    .chart-title { font-size: 0.62rem; margin-bottom: 6px; }
-    /* Scale charts smaller for print */
-    .chart-svg { max-height: 170px; }
-    /* Rep cards: tighter grid, smaller cards */
+    .chart-title { font-size: 0.6rem; margin-bottom: 4px; }
+
+    /* Force SVGs to render with explicit dimensions — Chrome print engine needs this */
+    .chart-svg {
+      width: 100% !important;
+      height: auto !important;
+      max-width: 100%;
+      max-height: 180px;
+      display: block;
+    }
+
+    /* Rep cards: tight grid for print */
     .rep-cards {
       grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
+      gap: 5px;
       page-break-inside: avoid;
       break-inside: avoid;
+      margin-top: 6px;
     }
-    .rep-card { padding: 8px; }
-    .rep-card .rep-num { font-size: 0.58rem; }
-    .rep-card .rep-time { font-size: 1rem; }
-    .rep-card .rep-hr { font-size: 0.68rem; }
+    .rep-card { padding: 6px; }
+    .rep-card .rep-num { font-size: 0.55rem; }
+    .rep-card .rep-time { font-size: 0.9rem; margin-top: 2px; }
+    .rep-card .rep-hr { font-size: 0.6rem; }
+
     .note-footer {
-      margin-top: 20px;
-      padding-top: 12px;
-      font-size: 0.58rem;
+      margin-top: 14px;
+      padding-top: 8px;
+      font-size: 0.55rem;
     }
   }
 
@@ -1041,7 +1057,7 @@ function renderRepTimesBar(reps, fallbackZone) {
   const yAxis = ticks.map(v => {
     const y = padT + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
     return `<text x="${padL - 8}" y="${y + 3}" text-anchor="end" font-size="10" font-family="Inter, sans-serif" fill="#888">${formatSecondsAsTime(v)}</text>
-            <line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" stroke="#E8E4DD" stroke-width="0.5" />`;
+            <line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" stroke="#E8E4DD" stroke-width="1" />`;
   }).join('');
 
   return `
@@ -1088,7 +1104,7 @@ function renderHrLine(reps) {
   const yAxis = ticks.map(v => {
     const y = padT + chartH - ((v - minH) / (maxH - minH)) * chartH;
     return `<text x="${padL - 8}" y="${y + 3}" text-anchor="end" font-size="10" font-family="Inter, sans-serif" fill="#888">${v}</text>
-            <line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" stroke="#E8E4DD" stroke-width="0.5" />`;
+            <line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" stroke="#E8E4DD" stroke-width="1" />`;
   }).join('');
 
   return `
@@ -1184,3 +1200,4 @@ function renderInternalSplits(rep) {
 </script>
 </body>
 </html>
+
