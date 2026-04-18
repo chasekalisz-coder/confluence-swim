@@ -13,10 +13,10 @@ const OPTIONS = [
   {
     id: 'meetprep',
     title: 'Meet Prep',
-    desc: 'Pre-competition session. Warmup, race components, short efforts, strategy discussion, how they looked. Personalized per athlete by age, level, and events.',
+    desc: 'Pre-competition session. Event-by-event race strategy, execution cues, and warmup-to-race connections. Personalized per athlete.',
     color: '#B8921A',
-    ready: false,
-    soonLabel: 'Coming soon',
+    ready: true,
+    soonLabel: null,
   },
   {
     id: 'technique',
