@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Confluence Swim — AI Note Test</title>
+<style>
+  :root {
+    --ink: #121212;
+    --gold: #B8956A;
+    --paper: #FAF9F6;
+    --muted: #6B6B6B;
+    --rule: #E8E4DD;
+    --danger: #B84545;
+    --success: #2d7a2d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    margin: 0;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  .container { max-width: 820px; margin: 0 auto; }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: 2rem;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .card {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: white;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  textarea { min-height: 70px; resize: vertical; }
+  input[type="file"] { padding: 8px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .pool-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+  .pool-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--rule);
+    background: white;
+    color: var(--ink);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+  .pool-btn.active { border-color: var(--gold); background: var(--gold); color: white; }
+  button.generate {
+    width: 100%;
+    padding: 14px;
+    background: var(--ink);
+    color: white;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  button.generate:disabled { background: #bbb; cursor: not-allowed; }
+  .photo-preview {
+    margin-top: 8px;
+    max-width: 240px;
+    max-height: 240px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    display: block;
+  }
+  .photo-status { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; }
+  .photo-status.ready { color: var(--success); }
+  .output {
+    white-space: pre-wrap;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 0.8rem;
+    background: #f8f6f2;
+    padding: 20px;
+    border-radius: 3px;
+    overflow-x: auto;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  .note-rendered .section-num {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 2rem;
+    color: var(--gold);
+    font-weight: 500;
+    margin-top: 24px;
+  }
+  .note-rendered .section-title {
+    font-family: -apple-system, sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .note-rendered p { font-size: 1rem; line-height: 1.6; margin-bottom: 16px; }
+  .loading { display: none; text-align: center; padding: 40px; color: var(--muted); }
+  .loading.active { display: block; }
+  .error {
+    background: #fce8e8;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 16px;
+    border-radius: 3px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+  }
+  .warnings {
+    background: #fff7e0;
+    border: 1px solid #d4a944;
+    padding: 12px 16px;
+    border-radius: 3px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+  }
+  .tab-bar { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--rule); }
+  .tab { padding: 10px 16px; cursor: pointer; background: none; border: none; color: var(--muted); font-size: 0.85rem; font-weight: 600; }
+  .tab.active { color: var(--ink); border-bottom: 2px solid var(--gold); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .required { color: var(--danger); font-weight: 600; }
+  .main-set {
+    background: #f8f6f2;
+    padding: 16px;
+    border-radius: 3px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>AI Note Test</h1>
+  <div class="subtitle">Confluence Swim · Chunk 1 Backend</div>
+
+  <div class="card">
+    <label>Athlete</label>
+    <select id="athleteId">
+      <option value="ath_jon">Jon Pomper (12)</option>
+      <option value="ath_lana">Lana Pomper (9)</option>
+      <option value="ath_ben">Ben Pomper (12)</option>
+      <option value="ath_kaden">Kaden Sun (10)</option>
+      <option value="ath_farris">Farris (9)</option>
+      <option value="ath_hannah">Hannah Montgomery (12)</option>
+      <option value="ath_grace">Grace Montgomery (12)</option>
+      <option value="ath_marley">Marley Taylor (14)</option>
+      <option value="ath_liam">Liam Aikey (10)</option>
+    </select>
+
+    <div class="row">
+      <div>
+        <label>Category</label>
+        <select id="category">
+          <option value="aerobic">Aerobic</option>
+          <option value="threshold">Threshold</option>
+          <option value="active_rest" selected>Active Rest</option>
+          <option value="recovery">Recovery</option>
+          <option value="quality">Quality</option>
+          <option value="power">Power</option>
+        </select>
+      </div>
+      <div>
+        <label>Stroke Focus</label>
+        <select id="stroke">
+          <option value="mixed">Mixed / Choice</option>
+          <option value="free">Freestyle</option>
+          <option value="back">Backstroke</option>
+          <option value="breast">Breaststroke</option>
+          <option value="fly">Butterfly</option>
+          <option value="im">IM</option>
+        </select>
+      </div>
+    </div>
+
+    <label>Pool Type <span class="required">*required — must click, no default</span></label>
+    <div class="pool-toggle">
+      <button type="button" class="pool-btn" data-pool="SCY" onclick="setPool('SCY')">SCY</button>
+      <button type="button" class="pool-btn" data-pool="LCM" onclick="setPool('LCM')">LCM</button>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Session Number</label>
+        <input id="sessionNumber" type="number" value="1" />
+      </div>
+      <div>
+        <label>Duration (minutes)</label>
+        <input id="durationMinutes" type="number" value="75" />
+      </div>
+    </div>
+
+    <label>Photo of session sheet (JPG or PNG) <span class="required">*required</span></label>
+    <input id="photo" type="file" accept="image/jpeg,image/png" />
+    <div id="photoStatus" class="photo-status">No photo selected</div>
+    <img id="photoPreview" class="photo-preview" style="display:none;" />
+
+    <label>What I was going for (optional)</label>
+    <textarea id="coachIntent" placeholder="e.g., Progressive active rest backstroke, tightening intervals with descending target paces"></textarea>
+
+    <label>What I saw on deck (optional)</label>
+    <textarea id="coachObservation" placeholder="e.g., Handled volume well, pacing inconsistent across groupings, effort level excellent"></textarea>
+
+    <button class="generate" id="generateBtn" disabled onclick="generate()">Generate Note</button>
+  </div>
+
+  <div class="loading" id="loading">Generating note… this takes 15–30 seconds</div>
+
+  <div id="errorBox" class="error" style="display:none;"></div>
+
+  <div id="output" style="display:none;">
+    <div class="tab-bar">
+      <button class="tab active" id="tab-note" onclick="switchTab('note')">Rendered Note</button>
+      <button class="tab" id="tab-json" onclick="switchTab('json')">Raw JSON</button>
+    </div>
+    <div id="noteTab" class="tab-content active">
+      <div class="card">
+        <div id="warningsBox"></div>
+        <div id="mainSetBox"></div>
+        <div class="note-rendered" id="noteRendered"></div>
+      </div>
+    </div>
+    <div id="jsonTab" class="tab-content">
+      <div class="card">
+        <div class="output" id="jsonOutput"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let selectedPool = null;
+let photoBase64 = null;
+let photoMediaType = null;
+
+function setPool(pool) {
+  selectedPool = pool;
+  document.querySelectorAll('.pool-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.pool === pool);
+  });
+  updateGenerateButton();
+}
+
+document.getElementById('photo').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) {
+    photoBase64 = null;
+    photoMediaType = null;
+    document.getElementById('photoStatus').textContent = 'No photo selected';
+    document.getElementById('photoStatus').classList.remove('ready');
+    document.getElementById('photoPreview').style.display = 'none';
+    updateGenerateButton();
+    return;
+  }
+  if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+    document.getElementById('photoStatus').textContent = 'Only JPG and PNG supported. HEIC not accepted yet.';
+    document.getElementById('photoStatus').classList.remove('ready');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result;
+    const base64 = result.split(',')[1];
+    photoBase64 = base64;
+    photoMediaType = file.type;
+    document.getElementById('photoStatus').textContent = '✓ Photo ready (' + Math.round(file.size / 1024) + ' KB)';
+    document.getElementById('photoStatus').classList.add('ready');
+    document.getElementById('photoPreview').src = result;
+    document.getElementById('photoPreview').style.display = 'block';
+    updateGenerateButton();
+  };
+  reader.readAsDataURL(file);
+});
+
+function updateGenerateButton() {
+  document.getElementById('generateBtn').disabled = !(selectedPool && photoBase64);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById(tab + 'Tab').classList.add('active');
+}
+
+async function generate() {
+  const payload = {
+    athleteId: document.getElementById('athleteId').value,
+    category: document.getElementById('category').value,
+    stroke: document.getElementById('stroke').value,
+    poolType: selectedPool,
+    sessionNumber: parseInt(document.getElementById('sessionNumber').value, 10) || null,
+    durationMinutes: parseInt(document.getElementById('durationMinutes').value, 10) || null,
+    photoBase64: photoBase64,
+    photoMediaType: photoMediaType,
+    coachIntent: document.getElementById('coachIntent').value || null,
+    coachObservation: document.getElementById('coachObservation').value || null,
+  };
+
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('output').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('generateBtn').disabled = true;
+
+  try {
+    const res = await fetch('/api/generate-training-note', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('generateBtn').disabled = false;
+
+    if (!res.ok) {
+      showError(data);
+      return;
+    }
+
+    renderNote(data);
+    document.getElementById('output').style.display = 'block';
+  } catch (err) {
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('generateBtn').disabled = false;
+    showError({ error: 'Request failed', detail: String(err) });
+  }
+}
+
+function showError(data) {
+  const box = document.getElementById('errorBox');
+  box.style.display = 'block';
+  box.textContent = (data.error || 'Error') + (data.detail ? '\n\n' + (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail, null, 2)) : '');
+}
+
+function renderNote(data) {
+  const warningsBox = document.getElementById('warningsBox');
+  if (data.warnings && data.warnings.length > 0) {
+    warningsBox.className = 'warnings';
+    warningsBox.innerHTML = '<strong>Warnings:</strong><br>' + data.warnings.map(w => '• ' + w).join('<br>');
+  } else {
+    warningsBox.innerHTML = '';
+    warningsBox.className = '';
+  }
+
+  const mainSetBox = document.getElementById('mainSetBox');
+  if (data.mainSet && data.mainSet.reps) {
+    let html = '<div class="main-set"><strong>' + (data.mainSet.name || 'Main Set') + '</strong><br><br>';
+    data.mainSet.reps.forEach((rep, i) => {
+      html += '#' + (rep.rep || i+1) + ' · ' + (rep.distance || '') + ' · ' + (rep.time || '—');
+      if (rep.hr) html += ' · HR ' + rep.hr;
+      if (rep.splits && rep.splits.length) html += ' (' + rep.splits.join(' / ') + ')';
+      html += '<br>';
+    });
+    if (data.hiLo) {
+      html += '<br><strong>Hi-Lo:</strong> Hi ' + data.hiLo.hi + ' · Lo ' + data.hiLo.lo + ' · Drop ' + data.hiLo.drop;
+    }
+    html += '</div>';
+    mainSetBox.innerHTML = html;
+  } else {
+    mainSetBox.innerHTML = '';
+  }
+
+  const note = data.note || {};
+  const sections = [
+    { num: '01', title: 'What We Did Today', body: note.section_01 },
+    { num: '02', title: 'The Breakdown', body: note.section_02 },
+    { num: '03', title: 'What It Means', body: note.section_03 },
+    { num: '04', title: "What We're Building Toward", body: note.section_04 },
+    { num: '05', title: 'Next Session', body: note.section_05 },
+  ];
+  document.getElementById('noteRendered').innerHTML = sections.map(s => `
+    <div class="section-num">${s.num}</div>
+    <div class="section-title">${s.title}</div>
+    <p>${(s.body || '(empty)').replace(/\n/g, '</p><p>')}</p>
+  `).join('');
+
+  document.getElementById('jsonOutput').textContent = JSON.stringify(data, null, 2);
+}
+</script>
+</body>
+</html>
