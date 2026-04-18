@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -289,7 +290,7 @@
 
   <div class="card photo-section">
     <label>Photo of session sheet (optional — JPG or PNG)</label>
-    <input id="photo" type="file" accept="image/jpeg,image/png" />
+    <input id="photo" type="file" accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif" />
     <div id="photoStatus" class="photo-status">No photo — that's fine, typed data is enough</div>
     <img id="photoPreview" class="photo-preview" style="display:none;" />
   </div>
@@ -442,8 +443,28 @@ document.getElementById('photo').addEventListener('change', (e) => {
     document.getElementById('photoPreview').style.display = 'none';
     return;
   }
-  if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
-    document.getElementById('photoStatus').textContent = 'Only JPG and PNG supported.';
+  const type = file.type.toLowerCase();
+  const ext = (file.name || '').split('.').pop().toLowerCase();
+  const isHeic = type === 'image/heic' || type === 'image/heif' || ext === 'heic' || ext === 'heif';
+
+  if (isHeic) {
+    document.getElementById('photoStatus').textContent = 'Converting HEIC to JPEG...';
+    document.getElementById('photoStatus').classList.remove('ready');
+    convertHeicToJpeg(file).then((result) => {
+      photoBase64 = result.base64;
+      photoMediaType = 'image/jpeg';
+      document.getElementById('photoStatus').textContent = '\u2713 Photo ready (converted from HEIC)';
+      document.getElementById('photoStatus').classList.add('ready');
+      document.getElementById('photoPreview').src = result.dataUrl;
+      document.getElementById('photoPreview').style.display = 'block';
+    }).catch((err) => {
+      document.getElementById('photoStatus').textContent = 'HEIC conversion failed: ' + String(err);
+    });
+    return;
+  }
+
+  if (type !== 'image/jpeg' && type !== 'image/png') {
+    document.getElementById('photoStatus').textContent = 'Only JPG, PNG, and HEIC supported.';
     return;
   }
   const reader = new FileReader();
@@ -457,6 +478,33 @@ document.getElementById('photo').addEventListener('change', (e) => {
   };
   reader.readAsDataURL(file);
 });
+
+function convertHeicToJpeg(file) {
+  return new Promise(function(resolve, reject) {
+    if (!window.heic2any) {
+      var script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js';
+      script.onload = function() { doConvert(file, resolve, reject); };
+      script.onerror = function() { reject(new Error('Failed to load HEIC converter')); };
+      document.head.appendChild(script);
+    } else {
+      doConvert(file, resolve, reject);
+    }
+  });
+}
+
+function doConvert(file, resolve, reject) {
+  heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 })
+    .then(function(jpegBlob) {
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        resolve({ dataUrl: ev.target.result, base64: ev.target.result.split(',')[1] });
+      };
+      reader.onerror = function() { reject(new Error('Failed to read converted file')); };
+      reader.readAsDataURL(jpegBlob);
+    })
+    .catch(function(err) { reject(err); });
+}
 
 function backToForm() {
   document.getElementById('noteView').style.display = 'none';
