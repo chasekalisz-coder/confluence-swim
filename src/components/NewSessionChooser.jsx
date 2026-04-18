@@ -1,3 +1,4 @@
+
 import { fullName } from '../data/athletes.js'
 
 const OPTIONS = [
@@ -6,22 +7,25 @@ const OPTIONS = [
     title: 'Training Session',
     desc: 'Photo upload of a handwritten session sheet. AI generates the full note with performance charts, zones, and Hi-Lo recovery block.',
     color: '#0B1E38',
-    ready: true
-  },
-  {
-    id: 'technique',
-    title: 'Technique Session',
-    desc: 'Stroke correction work. Pick topics, select observed faults from the library, describe what improved and what still needs work.',
-    color: '#2dd4bf',
-    ready: true
+    ready: true,
+    soonLabel: null,
   },
   {
     id: 'meetprep',
     title: 'Meet Prep',
-    desc: 'Pre-competition session. Warmup, race components, short efforts, strategy discussion, how they looked.',
+    desc: 'Pre-competition session. Warmup, race components, short efforts, strategy discussion, how they looked. Personalized per athlete by age, level, and events.',
     color: '#B8921A',
-    ready: false
-  }
+    ready: false,
+    soonLabel: 'Coming soon',
+  },
+  {
+    id: 'technique',
+    title: 'Technique Session',
+    desc: 'Stroke correction work. Pick focus area, describe what improved and what still needs work.',
+    color: '#2dd4bf',
+    ready: false,
+    soonLabel: 'Coming soon',
+  },
 ]
 
 export default function NewSessionChooser({ athlete, onPick, onBack }) {
@@ -46,7 +50,7 @@ export default function NewSessionChooser({ athlete, onPick, onBack }) {
             <div className="chooser-body">
               <div className="chooser-title-row">
                 <h3>{o.title}</h3>
-                {!o.ready && <span className="badge-soon">Coming Phase 5</span>}
+                {o.soonLabel && <span className="badge-soon">{o.soonLabel}</span>}
               </div>
               <p>{o.desc}</p>
             </div>
