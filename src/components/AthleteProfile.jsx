@@ -1,9 +1,9 @@
 
+
 import { useEffect, useState } from 'react'
 import { fullName, initials } from '../data/athletes.js'
 import { loadAthleteSessions } from '../lib/db.js'
 
-// Pretty labels for the category slug stored in the sessions table
 const CATEGORY_DISPLAY = {
   aerobic: 'Aerobic',
   threshold: 'Threshold',
@@ -11,6 +11,8 @@ const CATEGORY_DISPLAY = {
   recovery: 'Recovery',
   quality: 'Quality',
   power: 'Power',
+  meet_prep: 'Meet Prep',
+  technique: 'Technique',
 }
 
 const STROKE_DISPLAY = {
@@ -20,6 +22,14 @@ const STROKE_DISPLAY = {
   breast: 'Breaststroke',
   fly: 'Butterfly',
   im: 'IM',
+  freestyle: 'Freestyle',
+  backstroke: 'Backstroke',
+  breaststroke: 'Breaststroke',
+  butterfly: 'Butterfly',
+  kick: 'Kick',
+  turns: 'Turns',
+  starts: 'Starts',
+  underwaters: 'Underwaters',
 }
 
 function labelCategory(cat) {
@@ -29,10 +39,30 @@ function labelStroke(stroke) {
   return STROKE_DISPLAY[stroke] || ''
 }
 
+function getNoteType(session) {
+  if (session.data?.noteType) return session.data.noteType
+  if (session.category === 'technique') return 'technique'
+  if (session.category === 'meet_prep') return 'meetprep'
+  return 'training'
+}
+
+const NOTE_TYPE_COLORS = {
+  training: '#0B1E38',
+  meetprep: '#B8921A',
+  technique: '#2dd4bf',
+}
+
+const NOTE_TYPE_LABELS = {
+  training: 'Training',
+  meetprep: 'Meet Prep',
+  technique: 'Technique',
+}
+
 export default function AthleteProfile({ athlete, onBack, onNewSession }) {
   const [sessions, setSessions] = useState([])
   const [loadingSessions, setLoadingSessions] = useState(true)
   const [poolFilter, setPoolFilter] = useState('SCY')
+  const [typeFilter, setTypeFilter] = useState('all')
 
   useEffect(() => {
     let active = true
@@ -48,12 +78,26 @@ export default function AthleteProfile({ athlete, onBack, onNewSession }) {
 
   const filteredTimes = athlete.meetTimes.filter(t => t.event.endsWith(poolFilter))
 
-  // Filter sessions by pool type (respecting the SCY/LCM hard separation)
   const filteredSessions = sessions.filter(s => {
     const sessionPool = s.data?.poolType
-    if (!sessionPool) return true   // show pool-unknown sessions in both views as fallback
-    return sessionPool === poolFilter
+    if (sessionPool && sessionPool !== poolFilter) return false
+    if (typeFilter !== 'all') {
+      const noteType = getNoteType(s)
+      if (noteType !== typeFilter) return false
+    }
+    return true
   })
+
+  const poolSessions = sessions.filter(s => {
+    const sessionPool = s.data?.poolType
+    return !sessionPool || sessionPool === poolFilter
+  })
+  const typeCounts = {
+    all: poolSessions.length,
+    training: poolSessions.filter(s => getNoteType(s) === 'training').length,
+    meetprep: poolSessions.filter(s => getNoteType(s) === 'meetprep').length,
+    technique: poolSessions.filter(s => getNoteType(s) === 'technique').length,
+  }
 
   return (
     <div className="page">
@@ -111,29 +155,64 @@ export default function AthleteProfile({ athlete, onBack, onNewSession }) {
           <div className="section-header">
             <h2>Session History</h2>
             <span className="muted">
-              {filteredSessions.length} {poolFilter} session{filteredSessions.length === 1 ? '' : 's'}
+              {filteredSessions.length} session{filteredSessions.length === 1 ? '' : 's'}
             </span>
           </div>
+
+          <div className="type-filter">
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'training', label: 'Training' },
+              { key: 'meetprep', label: 'Meet Prep' },
+              { key: 'technique', label: 'Technique' },
+            ].map(f => (
+              <button
+                key={f.key}
+                className={`type-filter-btn ${typeFilter === f.key ? 'active' : ''}`}
+                onClick={() => setTypeFilter(f.key)}
+              >
+                {f.label}
+                {typeCounts[f.key] > 0 && (
+                  <span className="type-count">{typeCounts[f.key]}</span>
+                )}
+              </button>
+            ))}
+          </div>
+
           {loadingSessions ? (
             <p className="muted">Loading...</p>
           ) : filteredSessions.length === 0 ? (
             <div className="empty-history">
-              <p className="muted">No {poolFilter} sessions recorded yet.</p>
+              <p className="muted">No {typeFilter === 'all' ? poolFilter : NOTE_TYPE_LABELS[typeFilter]} sessions recorded yet.</p>
               <p className="muted small">Click + New Session above to generate the first one.</p>
             </div>
           ) : (
             <div className="session-list">
               {filteredSessions.map(s => {
+                const noteType = getNoteType(s)
                 const stroke = labelStroke(s.data?.stroke)
                 const category = labelCategory(s.category)
-                const subtitle = stroke ? `${category} · ${stroke}` : category
+                const accentColor = NOTE_TYPE_COLORS[noteType] || NOTE_TYPE_COLORS.training
+
+                let subtitle = ''
+                if (noteType === 'technique') {
+                  subtitle = stroke || 'Technique'
+                } else if (noteType === 'meetprep') {
+                  subtitle = 'Meet Prep'
+                } else {
+                  subtitle = stroke ? `${category} · ${stroke}` : category
+                }
+
                 return (
                   <div key={s.id} className="session-row">
-                    <div>
+                    <div className="session-type-accent" style={{ background: accentColor }} />
+                    <div className="session-info">
                       <div className="session-date">{s.date}</div>
                       <div className="session-cat">{subtitle}</div>
                     </div>
-                    <div className="session-arrow">→</div>
+                    <div className="session-type-badge" style={{ color: accentColor }}>
+                      {NOTE_TYPE_LABELS[noteType] || 'Training'}
+                    </div>
                   </div>
                 )
               })}
