@@ -1,3 +1,4 @@
+
 // Vercel serverless function: save a training session to the database
 // POST /api/save-session
 //
@@ -70,14 +71,13 @@ export default async function handler(req, res) {
     };
 
     await sql`
-      INSERT INTO sessions (id, athlete_id, date, category, data, created_at, updated_at)
+      INSERT INTO sessions (id, athlete_id, date, category, data, created_at)
       VALUES (
         ${id},
         ${athleteId},
         ${sessionDate},
         ${category},
         ${JSON.stringify(data)},
-        now(),
         now()
       )
     `;
