@@ -1,4 +1,5 @@
 
+
 import { fullName } from '../data/athletes.js'
 
 const NOTE_TYPE_LABELS = {
@@ -75,6 +76,8 @@ export default function SessionViewer({ session, athlete, onBack }) {
         ) : (
           <StandardNote note={note} sectionTitles={sectionTitles} />
         )}
+
+        <VideoReferences videos={data.videoReferences} />
 
         <div className="sv-footer">
           <span>confluencesport.com · Dallas, TX</span>
@@ -157,4 +160,30 @@ function renderProse(text) {
 function escapeHtml(s) {
   if (!s) return ''
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+function VideoReferences({ videos }) {
+  if (!videos || videos.length === 0) return null
+  return (
+    <div className="sv-video-section">
+      <div className="sv-section-title">VIDEO REFERENCES</div>
+      <div className="sv-video-list">
+        {videos.map((v, i) => (
+          <div key={i} className="sv-video-item">
+            <div className="sv-video-label">{v.label || `Clip ${i + 1}`}</div>
+            <video
+              className="sv-video-player"
+              src={v.url}
+              controls
+              preload="metadata"
+              playsInline
+            />
+            <a className="sv-video-link" href={v.url} target="_blank" rel="noopener noreferrer">
+              Open in new tab ↗
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
