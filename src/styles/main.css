@@ -1,3 +1,4 @@
+
 :root {
   --gold: #B8921A;
   --gold-soft: #d4af3a;
@@ -455,13 +456,22 @@ html, body, #root {
 
 .session-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 12px 0;
   border-bottom: 1px solid var(--border);
+  gap: 12px;
 }
 
 .session-row:last-child { border-bottom: none; }
+
+.session-type-accent {
+  width: 4px;
+  height: 36px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.session-info { flex: 1; min-width: 0; }
 
 .session-date {
   font-weight: 600;
@@ -477,9 +487,61 @@ html, body, #root {
   margin-top: 2px;
 }
 
+.session-type-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
 .session-arrow {
   color: var(--text-muted);
   font-size: 20px;
+}
+
+.type-filter {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.type-filter-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background: var(--elevated);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  border-radius: 20px;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.type-filter-btn:hover { border-color: var(--gold); }
+
+.type-filter-btn.active {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+
+.type-count {
+  background: rgba(255,255,255,0.2);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.type-filter-btn:not(.active) .type-count {
+  background: var(--border);
+  color: var(--text-dim);
 }
 
 .empty-history {
