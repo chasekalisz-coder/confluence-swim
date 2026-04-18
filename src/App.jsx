@@ -41,12 +41,14 @@ export default function App() {
   const pickSessionType = (type) => {
     const athleteId = selectedAthlete?.id
     if (type === 'training' && athleteId) {
-      // Redirect to the standalone training form (Chunk 1–5 output)
       window.location.href = `/test-ai.html?athleteId=${encodeURIComponent(athleteId)}`
       return
     }
-    // Technique and meet prep still coming — for now just stay put
-    alert(`${type} sessions coming soon. For now, only Training is available.`)
+    if (type === 'meetprep' && athleteId) {
+      window.location.href = `/meetprep.html?athleteId=${encodeURIComponent(athleteId)}`
+      return
+    }
+    alert(`${type} sessions coming soon.`)
   }
 
   return (
