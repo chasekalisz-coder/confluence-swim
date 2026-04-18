@@ -143,7 +143,7 @@
   <div class="card photo-section">
     <label>Session Photo (optional)</label>
     <div class="photo-status" id="photoStatus">No photo attached</div>
-    <input type="file" accept="image/jpeg,image/png" onchange="handlePhoto(event)" />
+    <input type="file" accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif" onchange="handlePhoto(event)" />
     <img id="photoPreview" class="photo-preview" style="display:none" />
   </div>
   <div class="card">
@@ -261,13 +261,32 @@ function setPool(pool) {
 }
 
 function handlePhoto(e) {
-  const file = e.target.files[0];
+  var file = e.target.files[0];
   if (!file) return;
-  const type = file.type.toLowerCase();
-  if (type === 'image/heic' || type === 'image/heif') { alert('HEIC format is not supported. Please use JPG or PNG.'); e.target.value = ''; return; }
-  const reader = new FileReader();
+  var type = file.type.toLowerCase();
+  // Also detect HEIC by extension since iOS sometimes doesn't set the MIME
+  var ext = (file.name || '').split('.').pop().toLowerCase();
+  var isHeic = type === 'image/heic' || type === 'image/heif' || ext === 'heic' || ext === 'heif';
+
+  if (isHeic) {
+    document.getElementById('photoStatus').textContent = 'Converting HEIC to JPEG...';
+    convertHeicToJpeg(file).then(function(result) {
+      photoBase64 = result.base64;
+      photoMediaType = 'image/jpeg';
+      document.getElementById('photoStatus').textContent = '\u2713 Photo ready (converted from HEIC)';
+      document.getElementById('photoStatus').classList.add('ready');
+      document.getElementById('photoPreview').src = result.dataUrl;
+      document.getElementById('photoPreview').style.display = 'block';
+    }).catch(function(err) {
+      document.getElementById('photoStatus').textContent = 'HEIC conversion failed: ' + String(err);
+      document.getElementById('photoStatus').style.color = 'var(--danger)';
+    });
+    return;
+  }
+
+  var reader = new FileReader();
   reader.onload = function(ev) {
-    const dataUrl = ev.target.result;
+    var dataUrl = ev.target.result;
     photoBase64 = dataUrl.split(',')[1];
     photoMediaType = type;
     document.getElementById('photoStatus').textContent = '\u2713 Photo ready';
@@ -276,6 +295,34 @@ function handlePhoto(e) {
     document.getElementById('photoPreview').style.display = 'block';
   };
   reader.readAsDataURL(file);
+}
+
+function convertHeicToJpeg(file) {
+  return new Promise(function(resolve, reject) {
+    if (!window.heic2any) {
+      // Load heic2any from CDN
+      var script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js';
+      script.onload = function() { doConvert(file, resolve, reject); };
+      script.onerror = function() { reject(new Error('Failed to load HEIC converter')); };
+      document.head.appendChild(script);
+    } else {
+      doConvert(file, resolve, reject);
+    }
+  });
+}
+
+function doConvert(file, resolve, reject) {
+  heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 })
+    .then(function(jpegBlob) {
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        resolve({ dataUrl: ev.target.result, base64: ev.target.result.split(',')[1] });
+      };
+      reader.onerror = function() { reject(new Error('Failed to read converted file')); };
+      reader.readAsDataURL(jpegBlob);
+    })
+    .catch(function(err) { reject(err); });
 }
 
 function addTopicBlock() {
