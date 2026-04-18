@@ -1,5 +1,4 @@
 
-
 import { useEffect, useState } from 'react'
 import { fullName, initials } from '../data/athletes.js'
 import { loadAthleteSessions } from '../lib/db.js'
@@ -58,7 +57,7 @@ const NOTE_TYPE_LABELS = {
   technique: 'Technique',
 }
 
-export default function AthleteProfile({ athlete, onBack, onNewSession }) {
+export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSession }) {
   const [sessions, setSessions] = useState([])
   const [loadingSessions, setLoadingSessions] = useState(true)
   const [poolFilter, setPoolFilter] = useState('SCY')
@@ -204,7 +203,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession }) {
                 }
 
                 return (
-                  <div key={s.id} className="session-row">
+                  <div key={s.id} className="session-row clickable" onClick={() => onViewSession && onViewSession(s)}>
                     <div className="session-type-accent" style={{ background: accentColor }} />
                     <div className="session-info">
                       <div className="session-date">{s.date}</div>
@@ -213,6 +212,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession }) {
                     <div className="session-type-badge" style={{ color: accentColor }}>
                       {NOTE_TYPE_LABELS[noteType] || 'Training'}
                     </div>
+                    <div className="session-arrow">→</div>
                   </div>
                 )
               })}
@@ -223,3 +223,4 @@ export default function AthleteProfile({ athlete, onBack, onNewSession }) {
     </div>
   )
 }
+
