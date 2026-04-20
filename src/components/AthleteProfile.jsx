@@ -1,4 +1,5 @@
 
+
 import { useEffect, useState } from 'react'
 import { fullName, initials } from '../data/athletes.js'
 import { loadAthleteSessions, deleteSession, updateAthlete, deleteAthlete } from '../lib/db.js'
@@ -71,6 +72,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
     setEditData({
       first: athlete.first || '',
       last: athlete.last || '',
+      age: athlete.age != null ? String(athlete.age) : '',
       dob: athlete.dob || '',
       events: [...(athlete.events || [])],
       meetTimes: [...(athlete.meetTimes || [])],
@@ -82,7 +84,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
   const saveEdit = async () => {
     setSaving(true)
     try {
-      const age = editData.dob ? calcAge(editData.dob) : athlete.age
+      const age = editData.age ? parseInt(editData.age) : athlete.age
       const updated = { ...athlete, first: editData.first, last: editData.last, dob: editData.dob, age, events: editData.events, meetTimes: editData.meetTimes, goalTimes: editData.goalTimes }
       await updateAthlete(athlete.id, updated)
       setEditing(false)
@@ -127,9 +129,9 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
             <div><label className="edit-label">First Name</label><input className="edit-input" value={editData.first} onChange={e => setEditData({...editData, first: e.target.value})} /></div>
             <div><label className="edit-label">Last Name</label><input className="edit-input" value={editData.last} onChange={e => setEditData({...editData, last: e.target.value})} /></div>
           </div>
-          <div style={{marginBottom:16}}>
-            <label className="edit-label">Birthday (e.g., June 4 or 2014-06-04)</label>
-            <input className="edit-input" value={editData.dob} onChange={e => setEditData({...editData, dob: e.target.value})} placeholder="June 4" />
+          <div style={{display:'grid',gridTemplateColumns:'100px 1fr',gap:12,marginBottom:16}}>
+            <div><label className="edit-label">Age</label><input className="edit-input" type="number" value={editData.age} onChange={e => setEditData({...editData, age: e.target.value})} placeholder="12" /></div>
+            <div><label className="edit-label">Birthday (e.g., June 4)</label><input className="edit-input" value={editData.dob} onChange={e => setEditData({...editData, dob: e.target.value})} placeholder="June 4" /></div>
           </div>
           <div style={{marginBottom:16}}>
             <label className="edit-label">Primary Events</label>
