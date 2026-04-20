@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -253,15 +254,6 @@
   <div class="card">
     <label>Athlete</label>
     <select id="athleteId" onchange="onAthleteChange()">
-      <option value="ath_jon">Jon Pomper (12)</option>
-      <option value="ath_lana">Lana Pomper (9)</option>
-      <option value="ath_ben">Ben Pomper (12)</option>
-      <option value="ath_kaden">Kaden Sun (10)</option>
-      <option value="ath_farris">Farris (9)</option>
-      <option value="ath_hannah">Hannah Montgomery (12)</option>
-      <option value="ath_grace">Grace Montgomery (12)</option>
-      <option value="ath_marley">Marley Taylor (14)</option>
-      <option value="ath_liam">Liam Aikey (10)</option>
     </select>
 
     <div class="row">
@@ -763,28 +755,38 @@ function setPdfTitle(name) {
 }
 
 // ═══ INIT ═══
-(function init() {
+(async function init() {
   // Set session date to today
   var today = new Date().toISOString().split('T')[0];
   var dateInput = document.getElementById('sessionDate');
   if (dateInput) dateInput.value = today;
 
+  // Load athletes from database
+  try {
+    var res = await fetch('/api/db', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'listAthletes' }) });
+    var data = await res.json();
+    if (data.athletes) {
+      var sel = document.getElementById('athleteId');
+      data.athletes.forEach(function(r) {
+        var a = r.data || r;
+        var opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = (a.first || '') + ' ' + (a.last || '') + (a.age ? ' (' + a.age + ')' : '');
+        sel.appendChild(opt);
+      });
+      var params = new URLSearchParams(window.location.search);
+      var aid = params.get('athleteId');
+      if (aid) {
+        sel.value = aid;
+        sel.style.borderColor = 'var(--gold)';
+        sel.style.background = '#FAF4EA';
+        onAthleteChange();
+      }
+    }
+  } catch(e) { console.warn('Failed to load athletes:', e); }
+
   // Add first event block automatically
   addEventBlock();
-
-  // Read URL params
-  const params = new URLSearchParams(window.location.search);
-  const athleteId = params.get('athleteId');
-  if (athleteId) {
-    const sel = document.getElementById('athleteId');
-    const valid = Array.from(sel.options).some(o => o.value === athleteId);
-    if (valid) {
-      sel.value = athleteId;
-      sel.style.borderColor = 'var(--gold)';
-      sel.style.background = '#FAF4EA';
-      onAthleteChange();
-    }
-  }
 })();
 </script>
 </body>
