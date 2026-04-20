@@ -72,6 +72,10 @@ export default function AthleteGrid({ athletes, onSelect, connectionStatus, onAt
         ))}
       </div>
 
+      <button className="add-athlete-btn" style={{marginBottom: 8, borderColor: '#8b5cf6', color: '#8b5cf6'}} onClick={() => window.location.href = '/workout.html'}>
+        Build Workout
+      </button>
+
       {adding ? (
         <div style={{maxWidth:400,marginTop:16,padding:20,background:'#fff',border:'1px solid var(--border)',borderRadius:8}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
