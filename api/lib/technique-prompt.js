@@ -115,18 +115,25 @@ NON-NEGOTIABLE GUARDRAILS
    Only discuss faults the coach selected. Do not infer additional
    problems not checked. If the coach didn't select it, don't add it.
 
-4. VOICE:
+4. NO COACH REFERENCES:
+   NEVER say "Coach Chase", "the coach noted", "the coach observed",
+   or any third-person coach reference. Write in first person ("I noticed",
+   "We worked on") or direct observation ("His elbow dropped").
+   The coach is the AUTHOR, not a character in the note.
+
+5. VOICE:
    Professional, disciplined, biomechanically precise but parent-readable.
-   Tight prose, no rambling. Use first-person where natural: "I could see..."
-   "We focused on..." "I want ${pronounHim} to..."
+   CONCISE. Each section should be 1-2 short paragraphs, 3-4 sentences each.
+   Every sentence must contain a specific observation or biomechanical fact.
+   Cut anything that doesn't add new information. No rambling, no filler.
    Explain WHY a fault matters, not just WHAT the fault is.
 
-5. CONNECT TO EVENTS:
+6. CONNECT TO EVENTS:
    Tie corrections to ${athlete.firstName}'s primary events
    (${(athlete.events || []).join(', ')}). Why does this correction
    matter for ${pronounHis} races?
 
-6. ELITE REFERENCES:
+7. ELITE REFERENCES:
    Permitted sparingly with dignity. "See how Dressel keeps his head
    neutral at the breath" = good. "Just like Dressel!" = bad.
 
@@ -138,10 +145,9 @@ Return ONLY valid JSON with this exact structure:
 
 {
   "note": {
-    "section_01": "WHAT WE WORKED ON — 2-3 paragraphs. Cover each topic/fault area the coach selected. Be specific about drills, cues, and focus. Reference the specific faults by name. Trace cause-effect chains.",
-    "section_02": "WHAT IMPROVED — 2-3 paragraphs. Focus on the 'what improved' notes. Describe what the correction looked like in practice. Be visual — help the parent picture before and after. Connect to biomechanics.",
-    "section_03": "WHAT'S NEXT — 1-2 paragraphs. Based on 'what needs work' notes, describe what ${pronounHe} should focus on. If X is still happening, explain what it affects downstream.",
-    "section_04": "NEXT SESSION — 1-2 paragraphs. Concrete prescription. Specific drills, specific cues. 'Sculling drill with fists closed' not 'work on catch.' Something the family can reference."
+    "section_01": "WHAT WE WORKED ON — 1-2 paragraphs. Cover each topic/fault area the coach selected. Be specific about drills, cues, and focus. Reference the specific faults by name. Trace cause-effect chains.",
+    "section_02": "WHAT IMPROVED — 1-2 paragraphs. Focus on the 'what improved' notes. Describe what the correction looked like in practice. Connect to biomechanics — why does this improvement matter?",
+    "section_03": "WHAT'S NEXT — 1-2 paragraphs. Based on 'what needs work' notes, describe what ${pronounHe} should focus on. If X is still happening, explain what it affects downstream."
   },
   "topicSummary": [
     {
@@ -157,12 +163,13 @@ Return ONLY valid JSON with this exact structure:
 
 RULES FOR THE PROSE:
 - Reference specific faults by name, not vaguely
-- 2-3 paragraphs per section maximum
+- 1-2 paragraphs per section, 3-4 sentences each. Cut filler ruthlessly.
 - Short sentences. Punchy. Professional.
 - Always explain the WHY, not just the WHAT
 - ${athlete.firstName} is the subject — use ${pronounHis} name and pronouns
 - Tie corrections to ${pronounHis} primary events
-- End NEXT SESSION with something concrete
+- NEVER say "Coach Chase", "the coach", or any third-person coach reference
+- 3 sections only. Do NOT include a 4th section.
 `;
 }
 
