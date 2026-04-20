@@ -31,7 +31,7 @@ const OPTIONS = [
   {
     id: 'sprint',
     title: 'Sprint Lab',
-    desc: 'Sprint/power session analysis. Upload workout photo, get McEvoy-method science breakdown, goal tracking, and next-session recommendations.',
+    desc: 'Sprint/power training analysis built on the methodology of Cam McEvoy, Tim Lane, Dave Durden, Herbie Behm, and other world-class sprint coaches. Upload your workout for scientific breakdown, goal tracking, performance analysis, weight training guidance, weekly planning, and personalized next-session recommendations — all driven by your data and targeted toward your specific goal times.',
     color: '#7c3aed',
     ready: true,
     soonLabel: null,
