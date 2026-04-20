@@ -1,4 +1,5 @@
 
+
 import { ATHLETES } from '../data/athletes.js'
 
 async function callDb(action, params = {}) {
@@ -31,7 +32,14 @@ export async function loadAthletes() {
       return { athletes: ATHLETES, status: 'ok' }
     }
     const byId = Object.fromEntries(rows.map(r => [r.id, r.data]))
+    // Start with hardcoded athletes (preserving order), updated from DB
     const ordered = ATHLETES.map(a => byId[a.id] || a)
+    // Append any athletes from DB that aren't in the hardcoded list
+    rows.forEach(r => {
+      if (!ATHLETES.some(a => a.id === r.id)) {
+        ordered.push(r.data)
+      }
+    })
     return { athletes: ordered, status: 'ok' }
   } catch (e) {
     console.warn('loadAthletes failed:', e.message)
