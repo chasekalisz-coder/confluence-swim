@@ -114,6 +114,35 @@ export default async function handler(req, res) {
         return res.status(200).json({ ok: true, deleted: sessionId })
       }
 
+      case 'updateAthlete': {
+        const { athleteId, data } = params
+        if (!athleteId || !data) return res.status(400).json({ error: 'athleteId and data required' })
+        await sql`
+          UPDATE athletes SET data = ${JSON.stringify(data)}::jsonb, updated_at = now()
+          WHERE id = ${athleteId}
+        `
+        return res.status(200).json({ ok: true })
+      }
+
+      case 'addAthlete': {
+        const { athlete } = params
+        if (!athlete || !athlete.id) return res.status(400).json({ error: 'athlete with id required' })
+        await sql`
+          INSERT INTO athletes (id, data)
+          VALUES (${athlete.id}, ${JSON.stringify(athlete)}::jsonb)
+          ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
+        `
+        return res.status(200).json({ ok: true, id: athlete.id })
+      }
+
+      case 'deleteAthlete': {
+        const { athleteId } = params
+        if (!athleteId) return res.status(400).json({ error: 'athleteId required' })
+        await sql`DELETE FROM sessions WHERE athlete_id = ${athleteId}`
+        await sql`DELETE FROM athletes WHERE id = ${athleteId}`
+        return res.status(200).json({ ok: true, deleted: athleteId })
+      }
+
       default:
         return res.status(400).json({ error: `Unknown action: ${action}` })
     }
