@@ -114,17 +114,6 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
     workout: poolSessions.filter(s => getNoteType(s) === 'workout').length,
   }
 
-  const handleDelete = async (e, sessionId) => {
-    e.stopPropagation()
-    if (!confirm('Delete this session? This cannot be undone.')) return
-    try {
-      await deleteSession(sessionId)
-      setSessions(prev => prev.filter(s => s.id !== sessionId))
-    } catch (err) {
-      alert('Delete failed: ' + err.message)
-    }
-  }
-
   return (
     <div className="page">
       <button className="back-link" onClick={onBack}>← All athletes</button>
