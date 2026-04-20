@@ -1062,8 +1062,11 @@ function openCorrectionPanel() {
       html += '<input data-set="' + si + '" data-field="hr" data-idx="' + ri + '" type="text" value="' + escapeAttr(r.hr || '') + '" />';
       html += '<input data-set="' + si + '" data-field="splits" data-idx="' + ri + '" type="text" value="' + escapeAttr(splits) + '" placeholder="e.g. 32.1 / 36.2" />';
     });
-    html += '</div></div>';
+    html += '</div>';
+    html += '<button type="button" class="add-entry-btn" style="margin-top:6px;padding:6px;font-size:0.75rem;" onclick="addEditRep(' + si + ')">+ Add Rep</button>';
+    html += '</div>';
   });
+  html += '<button type="button" class="add-entry-btn" style="margin-top:10px;padding:8px;" onclick="addEditSet()">+ Add Set Section</button>';
   container.innerHTML = html;
 
   // Hi-Lo
@@ -1086,6 +1089,40 @@ function escapeAttr(s) {
   return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function addEditRep(setIdx) {
+  var table = document.querySelector('.edit-reps-table[data-set-idx="' + setIdx + '"]');
+  if (!table) return;
+  var existingReps = table.querySelectorAll('.rep-num-cell');
+  var nextNum = existingReps.length + 1;
+  var html = '<div class="rep-num-cell">' + nextNum + '</div>' +
+    '<input data-set="' + setIdx + '" data-field="distance" data-idx="' + (nextNum - 1) + '" type="text" value="" placeholder="100" />' +
+    '<input data-set="' + setIdx + '" data-field="time" data-idx="' + (nextNum - 1) + '" type="text" value="" placeholder="1:08" />' +
+    '<input data-set="' + setIdx + '" data-field="hr" data-idx="' + (nextNum - 1) + '" type="text" value="" placeholder="" />' +
+    '<input data-set="' + setIdx + '" data-field="splits" data-idx="' + (nextNum - 1) + '" type="text" value="" placeholder="e.g. 32.1 / 36.2" />';
+  table.insertAdjacentHTML('beforeend', html);
+}
+
+function addEditSet() {
+  var container = document.getElementById('editSetsContainer');
+  var existingBlocks = container.querySelectorAll('.edit-set-block');
+  var si = existingBlocks.length;
+  var html = '<div class="edit-set-block" data-set-idx="' + si + '">' +
+    '<label style="color:var(--gold);font-size:0.8rem;margin-bottom:8px;display:block;">New Set</label>' +
+    '<input class="edit-set-name" data-set-idx="' + si + '" type="text" value="" placeholder="e.g., Post Set: 4x50 Fly" style="margin-bottom:8px;" />' +
+    '<div class="edit-reps-table" data-set-idx="' + si + '">' +
+    '<div class="head">#</div><div class="head">Dist</div><div class="head">Time</div><div class="head">HR</div><div class="head">Splits</div>' +
+    '</div>' +
+    '<button type="button" class="add-entry-btn" style="margin-top:6px;padding:6px;font-size:0.75rem;" onclick="addEditRep(' + si + ')">+ Add Rep</button>' +
+    '</div>';
+  // Insert before the "Add Set" button
+  var addSetBtn = container.querySelector('.add-entry-btn:last-child');
+  if (addSetBtn) {
+    addSetBtn.insertAdjacentHTML('beforebegin', html);
+  } else {
+    container.insertAdjacentHTML('beforeend', html);
+  }
+}
+
 // Read current values from the correction form and return a new mainSet + hiLo.
 function collectCorrections() {
   // Collect all sets from the edit panel
@@ -1101,13 +1138,18 @@ function collectCorrections() {
     if (nameInput) set.name = nameInput.value;
 
     const existingReps = set.reps || [];
-    const newReps = existingReps.map(r => ({ ...r }));
+    // Build a new reps array that can grow beyond the original
+    const maxIdx = Math.max(existingReps.length - 1, ...Array.from(block.querySelectorAll('input[data-field="distance"]')).map(inp => parseInt(inp.dataset.idx, 10)));
+    const newReps = [];
+    for (let ri = 0; ri <= maxIdx; ri++) {
+      newReps.push(existingReps[ri] ? { ...existingReps[ri] } : { rep: ri + 1 });
+    }
 
     block.querySelectorAll('input[data-field]').forEach(input => {
       const idx = parseInt(input.dataset.idx, 10);
       const field = input.dataset.field;
       const val = input.value.trim();
-      if (!newReps[idx]) return;
+      if (!newReps[idx]) newReps[idx] = { rep: idx + 1 };
       if (field === 'hr') {
         newReps[idx].hr = val ? parseInt(val, 10) : null;
       } else if (field === 'splits') {
@@ -1116,7 +1158,8 @@ function collectCorrections() {
         newReps[idx][field] = val || null;
       }
     });
-    set.reps = newReps;
+    // Filter out reps with no data
+    set.reps = newReps.filter(r => r.time || r.distance || r.hr);
     sets.push(set);
   });
 
