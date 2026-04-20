@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Confluence Swim — Workout Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{--ink:#121212;--gold:#B8956A;--paper:#FAF9F6;--muted:#6B6B6B;--rule:#E8E4DD;--danger:#B84545;--teal:#2dd4bf;--navy:#0B1E38;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Inter",-apple-system,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;}
+.builder{max-width:860px;margin:0 auto;padding:32px 20px 80px;}
+h1.page-title{font-family:"Fraunces",serif;font-size:1.8rem;font-weight:600;margin:0 0 4px;}
+.page-sub{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;margin-bottom:28px;}
+.page-sub a{color:var(--teal);text-decoration:none;font-weight:600;}
+.card{background:#fff;border:1px solid var(--rule);border-radius:4px;padding:20px;margin-bottom:16px;}
+label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;font-weight:600;}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--rule);border-radius:3px;font-size:.9rem;font-family:inherit;background:#fff;color:var(--ink);margin-bottom:10px;}
+textarea{min-height:40px;resize:vertical;}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pool-toggle{display:flex;gap:6px;margin-bottom:12px;}
+.pool-btn{flex:1;padding:10px;border:2px solid var(--rule);background:#fff;color:var(--ink);font-size:.9rem;font-weight:600;cursor:pointer;border-radius:3px;}
+.pool-btn.active{border-color:var(--teal);background:var(--teal);color:#fff;}
+.section-card{background:#fff;border:1px solid var(--rule);border-radius:4px;margin-bottom:16px;overflow:hidden;}
+.section-header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--navy);color:#fff;cursor:pointer;}
+.section-header h3{font-family:"Fraunces",serif;font-size:1rem;font-weight:500;margin:0;}
+.section-body{padding:16px 20px;}
+.entry{background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:12px;margin-bottom:8px;position:relative;}
+.entry-row{display:flex;flex-wrap:wrap;gap:8px;align-items:end;}
+.entry-row>div{min-width:70px;}
+.entry-row .sm{max-width:80px;flex:0 0 80px;}
+.entry-row .md{max-width:120px;flex:0 0 120px;}
+.entry-row .grow{flex:1;}
+.remove-entry{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px;}
+.remove-entry:hover{color:var(--danger);}
+.add-entry-btn{width:100%;padding:10px;background:#fff;border:2px dashed var(--rule);color:var(--teal);font-size:.82rem;font-weight:600;cursor:pointer;border-radius:3px;}
+.add-entry-btn:hover{border-color:var(--teal);}
+.equip-row{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;}
+.equip-chip{padding:4px 10px;border:1px solid var(--rule);border-radius:14px;font-size:.72rem;cursor:pointer;background:#fff;user-select:none;font-weight:500;}
+.equip-chip.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+.time-toggle{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:.78rem;color:var(--muted);}
+.time-toggle input[type=checkbox]{width:auto;margin:0 4px 0 0;}
+.totals-bar{background:var(--navy);color:#fff;border-radius:4px;padding:16px 20px;margin:20px 0;display:flex;justify-content:space-between;align-items:center;}
+.totals-bar .total-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);font-weight:600;}
+.totals-bar .total-num{font-family:"Fraunces",serif;font-size:1.6rem;font-weight:600;}
+.quote-bar{background:#fff;border:1px solid var(--rule);border-radius:4px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.quote-text{flex:1;font-family:"Fraunces",serif;font-size:.95rem;font-style:italic;color:var(--ink);line-height:1.5;}
+.quote-btn{padding:6px 14px;border:1px solid var(--rule);background:var(--paper);color:var(--muted);font-size:.72rem;font-weight:600;cursor:pointer;border-radius:3px;white-space:nowrap;font-family:inherit;text-transform:uppercase;letter-spacing:.05em;}
+.quote-btn:hover{border-color:var(--gold);color:var(--ink);}
+.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+.btn{padding:12px 20px;border:1px solid var(--rule);background:#fff;color:var(--ink);font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:3px;font-family:inherit;}
+.btn:hover{border-color:var(--gold);}
+.btn-primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+.btn-primary:hover{background:var(--gold);border-color:var(--gold);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.save-section{background:#fff;border:1px solid var(--rule);border-radius:4px;padding:20px;margin-bottom:20px;}
+.athlete-checks{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px;}
+.athlete-check{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--rule);border-radius:3px;cursor:pointer;font-size:.82rem;}
+.athlete-check.selected{border-color:var(--teal);background:#F0FAF9;}
+.athlete-check input{width:auto;margin:0;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#fff;padding:14px 24px;border-radius:4px;font-size:.9rem;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:2000;transition:transform .25s ease;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.error{background:var(--danger);}
+</style>
+</head>
+<body>
+<div class="builder">
+  <h1 class="page-title">Workout Builder</h1>
+  <div class="page-sub">Confluence Swim &middot; <a href="/">&larr; Back to athletes</a></div>
+  <div class="card">
+    <div class="row-2">
+      <div><label>Workout Title (optional)</label><input id="workoutTitle" type="text" placeholder="e.g., Tuesday AM Quality Fly" /></div>
+      <div><label>Date</label><input id="workoutDate" type="date" /></div>
+    </div>
+    <label>Pool</label>
+    <div class="pool-toggle">
+      <button type="button" class="pool-btn" data-pool="SCY" onclick="setPool('SCY')">SCY</button>
+      <button type="button" class="pool-btn" data-pool="LCM" onclick="setPool('LCM')">LCM</button>
+    </div>
+  </div>
+  <div id="sectionsContainer"></div>
+  <div class="totals-bar">
+    <div><div class="total-label">Total Yardage</div></div>
+    <div class="total-num" id="grandTotal">0</div>
+  </div>
+  <div class="quote-bar">
+    <div class="quote-text" id="quoteText"></div>
+    <button class="quote-btn" onclick="nextQuote()">New Quote</button>
+  </div>
+  <div class="save-section">
+    <label>Save to athletes</label>
+    <div class="athlete-checks" id="athleteChecks"></div>
+    <div class="actions">
+      <button class="btn" onclick="downloadDoc()" id="downloadBtn">Download Word Doc</button>
+      <button class="btn btn-primary" onclick="saveWorkout()" id="saveBtn">Save to Selected Athletes</button>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+</div>
+<script>
+var ATHLETES={ath_jon:{name:"Jon Pomper"},ath_lana:{name:"Lana Pomper"},ath_ben:{name:"Ben Pomper"},ath_kaden:{name:"Kaden Sun"},ath_farris:{name:"Farris"},ath_hannah:{name:"Hannah Montgomery"},ath_grace:{name:"Grace Montgomery"},ath_marley:{name:"Marley Taylor"},ath_liam:{name:"Liam Aikey"}};
+var DISTANCES=['25','50','75','100','150','200','300','400','500','600','700','800','900','1000','15','20'];
+var STROKES=['Free','Back','Breast','Fly','IM','Reverse IM','IM Order','Drill','Choice','Kick','Mixed/Custom'];
+var EFFORTS=['','White','Pink','Red','Blue','EZ','Moderate','Strong','Fast','Max','Best Average','Build','Descend'];
+var EQUIPMENT=['Band','Pull Buoy','Paddles','Snorkel','Fins','Kickboard'];
+var SECTIONS=[{id:'warmup',label:'Warmup'},{id:'preset',label:'Preset'},{id:'mainset',label:'Main Set'},{id:'postset',label:'Post Set'}];
+var QUOTES=[
+{text:"The unexamined life is not worth living.",author:"Socrates"},
+{text:"Hardships often prepare ordinary people for an extraordinary destiny.",author:"C.S. Lewis"},
+{text:"You have to go wholeheartedly into anything in order to achieve anything worth having.",author:"Frank Lloyd Wright"},
+{text:"Between stimulus and response there is a space. In that space is our freedom to choose.",author:"Viktor Frankl"},
+{text:"The impediment to action advances action. What stands in the way becomes the way.",author:"Marcus Aurelius"},
+{text:"Experience is a brutal teacher, but you learn. My God, do you learn.",author:"C.S. Lewis"},
+{text:"The truth is more important than the facts.",author:"Frank Lloyd Wright"},
+{text:"No man ever steps in the same river twice, for it is not the same river and he is not the same man.",author:"Heraclitus"},
+{text:"It is not the critic who counts. The credit belongs to the man who is actually in the arena.",author:"Theodore Roosevelt"},
+{text:"We do not see things as they are, we see them as we are.",author:"Anais Nin"},
+{text:"The soul becomes dyed with the color of its thoughts.",author:"Marcus Aurelius"},
+{text:"Until you make the unconscious conscious, it will direct your life and you will call it fate.",author:"Carl Jung"},
+{text:"There are far, far better things ahead than any we leave behind.",author:"C.S. Lewis"},
+{text:"The price of anything is the amount of life you exchange for it.",author:"Henry David Thoreau"},
+{text:"In the middle of difficulty lies opportunity.",author:"Albert Einstein"},
+{text:"What we know is a drop, what we do not know is an ocean.",author:"Isaac Newton"},
+{text:"Life can only be understood backwards; but it must be lived forwards.",author:"Soren Kierkegaard"},
+{text:"He who has a why to live can bear almost any how.",author:"Friedrich Nietzsche"},
+{text:"The wound is the place where the light enters you.",author:"Rumi"},
+{text:"To live is the rarest thing in the world. Most people exist, that is all.",author:"Oscar Wilde"},
+{text:"We suffer more often in imagination than in reality.",author:"Seneca"},
+{text:"Courage, dear heart.",author:"C.S. Lewis"},
+{text:"If you want to test a man's character, give him power.",author:"Abraham Lincoln"},
+{text:"Not everything that is faced can be changed, but nothing can be changed until it is faced.",author:"James Baldwin"},
+{text:"The only true wisdom is in knowing you know nothing.",author:"Socrates"},
+{text:"An idea is salvation by imagination.",author:"Frank Lloyd Wright"},
+{text:"Reality is merely an illusion, albeit a very persistent one.",author:"Albert Einstein"},
+{text:"The first and greatest victory is to conquer yourself.",author:"Plato"},
+{text:"What you do speaks so loudly that I cannot hear what you say.",author:"Ralph Waldo Emerson"},
+{text:"If you are going through hell, keep going.",author:"Winston Churchill"},
+{text:"We are what we pretend to be, so we must be careful about what we pretend to be.",author:"Kurt Vonnegut"},
+{text:"The happiness of your life depends upon the quality of your thoughts.",author:"Marcus Aurelius"},
+{text:"Imagination is more important than knowledge.",author:"Albert Einstein"},
+{text:"The world breaks everyone, and afterward, many are strong at the broken places.",author:"Ernest Hemingway"},
+{text:"Knowing yourself is the beginning of all wisdom.",author:"Aristotle"},
+{text:"The mind is everything. What you think you become.",author:"Buddha"},
+{text:"I have not failed. I have just found 10,000 ways that will not work.",author:"Thomas Edison"},
+{text:"In three words I can sum up everything I learned about life: it goes on.",author:"Robert Frost"},
+{text:"He who conquers himself is the mightiest warrior.",author:"Confucius"},
+{text:"We must all suffer from one of two pains: the pain of discipline or the pain of regret.",author:"Jim Rohn"},
+{text:"It does not matter how slowly you go as long as you do not stop.",author:"Confucius"},
+{text:"Integrity is doing the right thing, even when no one is watching.",author:"C.S. Lewis"},
+{text:"The best way to predict the future is to create it.",author:"Peter Drucker"},
+{text:"The cave you fear to enter holds the treasure you seek.",author:"Joseph Campbell"},
+{text:"It is not because things are difficult that we do not dare; it is because we do not dare that they are difficult.",author:"Seneca"},
+{text:"The two most important days in your life are the day you are born and the day you find out why.",author:"Mark Twain"},
+{text:"A smooth sea never made a skilled sailor.",author:"Franklin D. Roosevelt"},
+{text:"You have power over your mind, not outside events. Realize this, and you will find strength.",author:"Marcus Aurelius"},
+{text:"What we do in life echoes in eternity.",author:"Marcus Aurelius"},
+{text:"The best revenge is to be unlike him who performed the injury.",author:"Marcus Aurelius"},
+{text:"I fear not the man who has practiced 10,000 kicks once, but I fear the man who has practiced one kick 10,000 times.",author:"Bruce Lee"},
+{text:"No man is free who is not master of himself.",author:"Epictetus"},
+{text:"The secret of change is to focus all of your energy not on fighting the old, but on building the new.",author:"Socrates"},
+{text:"A person who never made a mistake never tried anything new.",author:"Albert Einstein"},
+{text:"The best time to plant a tree was 20 years ago. The second best time is now.",author:"Chinese proverb"},
+{text:"Doubt kills more dreams than failure ever will.",author:"Suzy Kassem"},
+{text:"Fall seven times, stand up eight.",author:"Japanese proverb"},
+{text:"The only way to deal with an unfree world is to become so absolutely free that your very existence is an act of rebellion.",author:"Albert Camus"},
+{text:"Those who cannot change their minds cannot change anything.",author:"George Bernard Shaw"},
+{text:"Study nature, love nature, stay close to nature. It will never fail you.",author:"Frank Lloyd Wright"},
+{text:"Less is only more where more is no good.",author:"Frank Lloyd Wright"},
+{text:"One child, one teacher, one book, one pen can change the world.",author:"Malala Yousafzai"},
+{text:"Everything you have ever wanted is on the other side of fear.",author:"George Addair"},
+{text:"Since it is so likely that children will meet cruel enemies, let them at least have heard of brave knights and heroic courage.",author:"C.S. Lewis"},
+{text:"The measure of intelligence is the ability to change.",author:"Albert Einstein"},
+{text:"If you want to go fast, go alone. If you want to go far, go together.",author:"African proverb"},
+{text:"The world as we have created it is a process of our thinking. It cannot be changed without changing our thinking.",author:"Albert Einstein"},
+{text:"Be not afraid of growing slowly, be afraid only of standing still.",author:"Chinese proverb"},
+{text:"Failures are finger posts on the road to achievement.",author:"C.S. Lewis"},
+{text:"You must be the change you wish to see in the world.",author:"Mahatma Gandhi"},
+{text:"The only thing we have to fear is fear itself.",author:"Franklin D. Roosevelt"},
+{text:"I know the price of success: dedication, hard work, and an unremitting devotion to the things you want to see happen.",author:"Frank Lloyd Wright"},
+{text:"Out of your vulnerabilities will come your strength.",author:"Sigmund Freud"},
+{text:"Those who have a strong enough why can bear almost any how.",author:"Viktor Frankl"},
+{text:"Turn your wounds into wisdom.",author:"Oprah Winfrey"},
+{text:"The only impossible journey is the one you never begin.",author:"Tony Robbins"},
+{text:"We are mirrors whose brightness is wholly derived from the sun that shines upon us.",author:"C.S. Lewis"},
+{text:"To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment.",author:"Ralph Waldo Emerson"},
+{text:"Do not go where the path may lead, go instead where there is no path and leave a trail.",author:"Ralph Waldo Emerson"},
+{text:"The purpose of life is not to be happy. It is to be useful, to be honorable, to be compassionate.",author:"Ralph Waldo Emerson"},
+{text:"What lies behind us and what lies before us are tiny matters compared to what lies within us.",author:"Ralph Waldo Emerson"},
+{text:"Man is not worried by real problems so much as by his imagined anxieties about real problems.",author:"Epictetus"},
+{text:"A man who dares to waste one hour of time has not discovered the value of life.",author:"Charles Darwin"},
+{text:"It is not the strongest of the species that survives, nor the most intelligent, but the one most responsive to change.",author:"Charles Darwin"},
+];
+var selectedPool=null;
+var quoteIndex=Math.floor(Math.random()*QUOTES.length);
+function setPool(p){selectedPool=p;document.querySelectorAll('.pool-btn').forEach(function(b){b.classList.toggle('active',b.dataset.pool===p)});}
+(function init(){
+  document.getElementById('workoutDate').value=new Date().toISOString().split('T')[0];
+  SECTIONS.forEach(function(s){
+    var html='<div class="section-card"><div class="section-header" onclick="toggleSection(\''+s.id+'\')"><h3>'+s.label+' <span id="sYd_'+s.id+'" style="margin-left:8px;font-size:.75rem;color:var(--gold);font-weight:600;">0 yds</span></h3><span style="font-size:.8rem;">&#x25BC;</span></div><div class="section-body" id="sBody_'+s.id+'"><div style="margin-bottom:12px;"><label>Section Title (optional)</label><input type="text" id="sTitle_'+s.id+'" placeholder="e.g., Build to Race Pace" /></div><div id="entries_'+s.id+'"></div><button class="add-entry-btn" onclick="addEntry(\''+s.id+'\')">+ Add Set</button></div></div>';
+    document.getElementById('sectionsContainer').insertAdjacentHTML('beforeend',html);
+  });
+  var acHtml='';
+  Object.keys(ATHLETES).forEach(function(id){acHtml+='<label class="athlete-check"><input type="checkbox" value="'+id+'" onchange="this.parentElement.classList.toggle(\'selected\',this.checked)"> '+ATHLETES[id].name+'</label>';});
+  document.getElementById('athleteChecks').innerHTML=acHtml;
+  var params=new URLSearchParams(window.location.search);
+  var aid=params.get('athleteId');
+  if(aid){document.querySelectorAll('.athlete-check input').forEach(function(cb){if(cb.value===aid){cb.checked=true;cb.closest('.athlete-check').classList.add('selected');}});}
+  showQuote();
+})();
+function toggleSection(id){var b=document.getElementById('sBody_'+id);b.style.display=b.style.display==='none'?'':'none';}
+var entryCounters={};
+function addEntry(sid){
+  if(!entryCounters[sid])entryCounters[sid]=0;entryCounters[sid]++;
+  var n=entryCounters[sid],eid=sid+'_e'+n;
+  var strokeOpts=STROKES.map(function(s){return '<option>'+s+'</option>';}).join('');
+  var effortOpts=EFFORTS.map(function(e){return '<option>'+(e||'-- Effort --')+'</option>';}).join('');
+  var distOpts=DISTANCES.map(function(d){return '<option value="'+d+'">'+d+'</option>';}).join('');
+  var equipHtml=EQUIPMENT.map(function(eq){return '<span class="equip-chip" data-eq="'+eq+'" onclick="this.classList.toggle(\'on\')">'+eq+'</span>';}).join('');
+  var html='<div class="entry" id="'+eid+'"><button class="remove-entry" onclick="removeEntry(\''+sid+'\',\''+eid+'\')">&times;</button><div class="entry-row"><div class="sm"><label>Reps</label><input type="number" class="e-reps" value="1" min="1" onchange="recalc(\''+sid+'\')"></div><div class="sm"><label>Dist</label><select class="e-dist" onchange="handleDistChange(this,\''+sid+'\')">'+distOpts+'<option value="custom">Other</option></select><input type="number" class="e-dist-custom" style="display:none;margin-top:4px;" placeholder="Custom" onchange="recalc(\''+sid+'\')"></div><div class="md"><label>Stroke</label><select class="e-stroke">'+strokeOpts+'</select></div><div class="md"><label>Effort</label><select class="e-effort">'+effortOpts+'</select></div><div class="md"><label>Interval</label><input type="text" class="e-interval" placeholder="1:30"></div></div><div class="equip-row">'+equipHtml+'</div><div><label>Description (optional)</label><textarea class="e-desc" placeholder="e.g., 100 fr/bk by 25, 100 IM drill, 100 IM swim"></textarea></div><div class="time-toggle"><input type="checkbox" class="e-times" id="t_'+eid+'"><label for="t_'+eid+'">Time slots</label><input type="checkbox" class="e-splits" id="sp_'+eid+'"><label for="sp_'+eid+'">Splits</label></div></div>';
+  document.getElementById('entries_'+sid).insertAdjacentHTML('beforeend',html);recalc(sid);
+}
+function removeEntry(sid,eid){var el=document.getElementById(eid);if(el)el.remove();recalc(sid);}
+function handleDistChange(sel,sid){var custom=sel.parentElement.querySelector('.e-dist-custom');if(sel.value==='custom'){custom.style.display='';custom.focus();}else{custom.style.display='none';custom.value='';}recalc(sid);}
+function getDistVal(entry){var sel=entry.querySelector('.e-dist');if(sel.value==='custom')return parseInt(entry.querySelector('.e-dist-custom').value)||0;return parseInt(sel.value)||0;}
+function recalc(sid){
+  var total=0;document.querySelectorAll('#entries_'+sid+' .entry').forEach(function(e){total+=(parseInt(e.querySelector('.e-reps').value)||0)*getDistVal(e);});
+  document.getElementById('sYd_'+sid).textContent=total.toLocaleString()+' yds';recalcGrand();
+}
+function recalcGrand(){
+  var g=0;SECTIONS.forEach(function(s){document.querySelectorAll('#entries_'+s.id+' .entry').forEach(function(e){g+=(parseInt(e.querySelector('.e-reps').value)||0)*getDistVal(e);});});
+  document.getElementById('grandTotal').textContent=g.toLocaleString();
+}
+function showQuote(){var q=QUOTES[quoteIndex%QUOTES.length];document.getElementById('quoteText').textContent='"'+q.text+'" -- '+q.author;}
+function nextQuote(){quoteIndex++;showQuote();}
+function collectWorkout(){
+  var workout={title:document.getElementById('workoutTitle').value.trim()||null,sections:[]};
+  SECTIONS.forEach(function(s){
+    var sTitle=(document.getElementById('sTitle_'+s.id)||{}).value||null;var entries=[];
+    document.querySelectorAll('#entries_'+s.id+' .entry').forEach(function(e){
+      var equip=[];e.querySelectorAll('.equip-chip.on').forEach(function(c){equip.push(c.dataset.eq);});
+      var effort=e.querySelector('.e-effort').value;if(effort==='-- Effort --')effort=null;
+      entries.push({reps:parseInt(e.querySelector('.e-reps').value)||1,distance:getDistVal(e),stroke:e.querySelector('.e-stroke').value,effort:effort,interval:e.querySelector('.e-interval').value.trim()||null,equipment:equip,description:e.querySelector('.e-desc').value.trim()||null,showTimes:e.querySelector('.e-times').checked,showSplits:e.querySelector('.e-splits').checked});
+    });
+    if(entries.length>0)workout.sections.push({id:s.id,label:s.label,title:sTitle,entries:entries});
+  });
+  var ty=0;workout.sections.forEach(function(sec){sec.entries.forEach(function(en){ty+=en.reps*en.distance;});});
+  workout.totalYardage=ty;workout.quote=QUOTES[quoteIndex%QUOTES.length];return workout;
+}
+function getSelectedAthletes(){var ids=[];document.querySelectorAll('.athlete-check input:checked').forEach(function(cb){ids.push(cb.value);});return ids;}
+async function downloadDoc(){
+  var workout=collectWorkout();if(workout.sections.length===0){showToast('Add at least one set',true);return;}
+  var btn=document.getElementById('downloadBtn');btn.disabled=true;btn.textContent='Generating...';
+  try{
+    var athletes=getSelectedAthletes();var name=athletes.length===1?ATHLETES[athletes[0]].name:'Workout';
+    var res=await fetch('/api/generate-workout-doc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workout:workout,athleteName:name,poolType:selectedPool,date:document.getElementById('workoutDate').value,quote:workout.quote})});
+    if(!res.ok){var err=await res.json();throw new Error(err.error||'Failed');}
+    var blob=await res.blob();var url=URL.createObjectURL(blob);var a=document.createElement('a');
+    a.href=url;a.download=(name||'Workout')+'.docx';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    showToast('Word doc downloaded!');
+  }catch(err){showToast('Download failed: '+err.message,true);}
+  btn.disabled=false;btn.textContent='Download Word Doc';
+}
+async function saveWorkout(){
+  var athletes=getSelectedAthletes();if(athletes.length===0){showToast('Select at least one athlete',true);return;}
+  if(!selectedPool){showToast('Select SCY or LCM',true);return;}
+  var workout=collectWorkout();if(workout.sections.length===0){showToast('Add at least one set',true);return;}
+  var btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Saving...';
+  var saved=0;
+  for(var i=0;i<athletes.length;i++){
+    var payload={athleteId:athletes[i],date:document.getElementById('workoutDate').value,category:'workout',poolType:selectedPool,stroke:null,sessionNumber:null,durationMinutes:null,coachIntent:null,coachObservation:null,mainSet:null,hiLo:null,note:{workout:workout},charts:[],warnings:[],rawModelOutput:null,correctedData:null,wasRegenerated:false,model:null,noteType:'workout'};
+    try{var res=await fetch('/api/save-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(res.ok)saved++;}catch(e){}
+  }
+  showToast('Saved to '+saved+' athlete'+(saved===1?'':'s'));
+  btn.disabled=false;btn.textContent='Save to Selected Athletes';
+}
+function showToast(msg,isError){var t=document.getElementById('toast');t.textContent=msg;t.classList.toggle('error',!!isError);t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3800);}
+</script>
+</body>
+</html>
