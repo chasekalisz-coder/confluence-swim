@@ -306,6 +306,8 @@
   }
 
   .hilo-edit-block { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--rule); }
+  .edit-set-block { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
+  .edit-set-block:last-child { border-bottom: none; }
   .hilo-edit-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -400,6 +402,32 @@
     font-weight: 600;
   }
   .athlete-tags .sep { color: var(--gold); margin: 0 8px; }
+
+  /* Set overview */
+  .set-overview-box {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--gold);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    border-radius: 2px;
+  }
+  .set-overview-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .set-overview-text {
+    font-family: "Inter", sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--ink);
+    margin: 0;
+    white-space: pre-line;
+  }
 
   /* Main set box */
   .main-set-box {
@@ -750,6 +778,10 @@
 
     <div class="row">
       <div>
+        <label>Session Date</label>
+        <input id="sessionDate" type="date" />
+      </div>
+      <div>
         <label>Session Number</label>
         <input id="sessionNumber" type="number" value="1" />
       </div>
@@ -788,8 +820,7 @@
   <div class="action-bar">
     <button class="action-btn" onclick="backToForm()">← New Session</button>
     <button class="action-btn" onclick="openCorrectionPanel()">Edit Data</button>
-    <button class="action-btn" onclick="window.print()">Print / Save PDF</button>
-    <button class="action-btn primary" onclick="saveSession()">Save to Athlete</button>
+    <button class="action-btn primary" id="printSaveBtn" onclick="saveAndPrint()">Print / Save PDF</button>
   </div>
 
   <!-- Correction panel (modal) -->
@@ -803,11 +834,7 @@
         <button class="modal-close" onclick="closeCorrectionPanel()">×</button>
       </div>
       <div class="modal-body">
-        <label>Main set name</label>
-        <input id="editMainSetName" type="text" />
-
-        <label>Reps</label>
-        <div id="editRepsTable" class="edit-reps-table"></div>
+        <div id="editSetsContainer"></div>
 
         <div class="hilo-edit-block">
           <label>Hi-Lo Pulse Test (leave blank if not measured)</label>
@@ -1009,32 +1036,35 @@ function showError(data) {
 function openCorrectionPanel() {
   if (!currentNoteData) return;
 
-  const mainSet = currentNoteData.mainSet || {};
+  // Gather all sets — use new "sets" array if available, fall back to mainSet
+  const sets = currentNoteData.sets || [];
+  if (sets.length === 0 && currentNoteData.mainSet) {
+    sets.push(Object.assign({}, currentNoteData.mainSet, { label: 'Main Set' }));
+  }
   const hiLo = currentNoteData.hiLo || null;
 
-  document.getElementById('editMainSetName').value = mainSet.name || '';
-
-  // Build rep rows
-  const reps = mainSet.reps || [];
-  const tableEl = document.getElementById('editRepsTable');
-  let html = `
-    <div class="head">#</div>
-    <div class="head">Dist</div>
-    <div class="head">Time</div>
-    <div class="head">HR</div>
-    <div class="head">Splits (slash-sep.)</div>
-  `;
-  reps.forEach((r, i) => {
-    const splits = Array.isArray(r.splits) ? r.splits.join(' / ') : '';
-    html += `
-      <div class="rep-num-cell">${r.rep}</div>
-      <input data-field="distance" data-idx="${i}" type="text" value="${escapeAttr(r.distance || '')}" />
-      <input data-field="time" data-idx="${i}" type="text" value="${escapeAttr(r.time || '')}" />
-      <input data-field="hr" data-idx="${i}" type="text" value="${escapeAttr(r.hr || '')}" />
-      <input data-field="splits" data-idx="${i}" type="text" value="${escapeAttr(splits)}" placeholder="e.g. 32.1 / 36.2" />
-    `;
+  // Build a section per set
+  const container = document.getElementById('editSetsContainer');
+  let html = '';
+  sets.forEach((set, si) => {
+    const setLabel = set.label || ('Set ' + (si + 1));
+    html += '<div class="edit-set-block" data-set-idx="' + si + '">';
+    html += '<label style="color:var(--gold);font-size:0.8rem;margin-bottom:8px;display:block;">' + escapeHtml(setLabel) + '</label>';
+    html += '<input class="edit-set-name" data-set-idx="' + si + '" type="text" value="' + escapeAttr(set.name || '') + '" placeholder="Set name" style="margin-bottom:8px;" />';
+    html += '<div class="edit-reps-table" data-set-idx="' + si + '">';
+    html += '<div class="head">#</div><div class="head">Dist</div><div class="head">Time</div><div class="head">HR</div><div class="head">Splits</div>';
+    const reps = set.reps || [];
+    reps.forEach((r, ri) => {
+      const splits = Array.isArray(r.splits) ? r.splits.join(' / ') : '';
+      html += '<div class="rep-num-cell">' + r.rep + '</div>';
+      html += '<input data-set="' + si + '" data-field="distance" data-idx="' + ri + '" type="text" value="' + escapeAttr(r.distance || '') + '" />';
+      html += '<input data-set="' + si + '" data-field="time" data-idx="' + ri + '" type="text" value="' + escapeAttr(r.time || '') + '" />';
+      html += '<input data-set="' + si + '" data-field="hr" data-idx="' + ri + '" type="text" value="' + escapeAttr(r.hr || '') + '" />';
+      html += '<input data-set="' + si + '" data-field="splits" data-idx="' + ri + '" type="text" value="' + escapeAttr(splits) + '" placeholder="e.g. 32.1 / 36.2" />';
+    });
+    html += '</div></div>';
   });
-  tableEl.innerHTML = html;
+  container.innerHTML = html;
 
   // Hi-Lo
   document.getElementById('editHiLoHi').value = hiLo?.hi ?? '';
@@ -1058,26 +1088,40 @@ function escapeAttr(s) {
 
 // Read current values from the correction form and return a new mainSet + hiLo.
 function collectCorrections() {
-  const mainSet = { ...(currentNoteData.mainSet || {}) };
-  mainSet.name = document.getElementById('editMainSetName').value;
+  // Collect all sets from the edit panel
+  const setBlocks = document.querySelectorAll('.edit-set-block');
+  const existingSets = currentNoteData.sets || [];
+  const sets = [];
 
-  const existingReps = mainSet.reps || [];
-  const newReps = existingReps.map((r, i) => ({ ...r }));
+  setBlocks.forEach((block) => {
+    const si = parseInt(block.dataset.setIdx, 10);
+    const existingSet = existingSets[si] || currentNoteData.mainSet || {};
+    const set = { ...existingSet };
+    const nameInput = block.querySelector('.edit-set-name');
+    if (nameInput) set.name = nameInput.value;
 
-  document.querySelectorAll('#editRepsTable input').forEach(input => {
-    const idx = parseInt(input.dataset.idx, 10);
-    const field = input.dataset.field;
-    const val = input.value.trim();
-    if (!newReps[idx]) return;
-    if (field === 'hr') {
-      newReps[idx].hr = val ? parseInt(val, 10) : null;
-    } else if (field === 'splits') {
-      newReps[idx].splits = val ? val.split(/\s*\/\s*/).filter(Boolean) : [];
-    } else {
-      newReps[idx][field] = val || null;
-    }
+    const existingReps = set.reps || [];
+    const newReps = existingReps.map(r => ({ ...r }));
+
+    block.querySelectorAll('input[data-field]').forEach(input => {
+      const idx = parseInt(input.dataset.idx, 10);
+      const field = input.dataset.field;
+      const val = input.value.trim();
+      if (!newReps[idx]) return;
+      if (field === 'hr') {
+        newReps[idx].hr = val ? parseInt(val, 10) : null;
+      } else if (field === 'splits') {
+        newReps[idx].splits = val ? val.split(/\s*\/\s*/).filter(Boolean) : [];
+      } else {
+        newReps[idx][field] = val || null;
+      }
+    });
+    set.reps = newReps;
+    sets.push(set);
   });
-  mainSet.reps = newReps;
+
+  // mainSet = first set for backward compatibility
+  const mainSet = sets[0] || currentNoteData.mainSet || {};
 
   const hi = document.getElementById('editHiLoHi').value.trim();
   const lo = document.getElementById('editHiLoLo').value.trim();
@@ -1090,17 +1134,15 @@ function collectCorrections() {
     hiLo = { hi: hiN, lo: loN, drop };
   }
 
-  return { mainSet, hiLo };
+  return { mainSet, sets, hiLo };
 }
 
-// User clicked "Save Corrections" — apply changes to current note WITHOUT calling AI.
-// Updates the display and marks data as corrected.
 function saveCorrectionsOnly() {
-  const { mainSet, hiLo } = collectCorrections();
+  const { mainSet, sets, hiLo } = collectCorrections();
   currentNoteData.mainSet = mainSet;
+  currentNoteData.sets = sets;
   currentNoteData.hiLo = hiLo;
-  currentNoteData.correctedData = { mainSet, hiLo };
-  // Note prose stays the same since we didn't regenerate.
+  currentNoteData.correctedData = { mainSet, sets, hiLo };
   renderNote(currentNoteData);
   closeCorrectionPanel();
   showToast('Corrections saved. Note prose unchanged — click Regenerate to rewrite with new numbers.');
@@ -1108,7 +1150,7 @@ function saveCorrectionsOnly() {
 
 // User clicked "Regenerate with Corrections" — call AI with corrected data as authoritative.
 async function regenerateWithCorrections() {
-  const { mainSet, hiLo } = collectCorrections();
+  const { mainSet, sets, hiLo } = collectCorrections();
   const meta = currentNoteData._formMeta;
 
   const payload = {
@@ -1153,13 +1195,39 @@ async function regenerateWithCorrections() {
 
 // ═══ SAVE TO DATABASE ═══
 
+var sessionSaved = false;
+
+async function saveAndPrint() {
+  // If already saved, just print
+  if (sessionSaved) { window.print(); return; }
+
+  var btn = document.getElementById('printSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    await saveSession();
+    sessionSaved = true;
+    btn.textContent = 'Print / Save PDF';
+    btn.disabled = false;
+    window.print();
+  } catch (err) {
+    btn.textContent = 'Print / Save PDF';
+    btn.disabled = false;
+    // Save failed but still let them print
+    showToast('Save failed — printing anyway. Error: ' + String(err), true);
+    window.print();
+  }
+}
+
 async function saveSession() {
-  if (!currentNoteData) return;
+  if (!currentNoteData) throw new Error('No note data');
   const meta = currentNoteData._formMeta || {};
+  const sessionDate = document.getElementById('sessionDate')?.value || new Date().toISOString().split('T')[0];
 
   const payload = {
     athleteId: meta.athleteId,
-    date: new Date().toISOString().split('T')[0],   // YYYY-MM-DD, today
+    date: sessionDate,
     category: meta.category,
     poolType: meta.poolType,
     stroke: meta.stroke,
@@ -1176,24 +1244,33 @@ async function saveSession() {
     correctedData: currentNoteData.correctedData || null,
     wasRegenerated: !!currentNoteData.wasRegenerated,
     model: currentNoteData.model,
+    noteType: 'training',
   };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
 
   try {
     const res = await fetch('/api/save-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     const data = await res.json();
 
     if (!res.ok) {
-      showToast('Save failed: ' + (data.error || 'unknown'), true);
-      return;
+      throw new Error(data.error || 'Save failed');
     }
 
-    showToast('Session saved to ' + (ATHLETE_DISPLAY[meta.athleteId] || meta.athleteId));
+    showToast('Saved to ' + (ATHLETE_DISPLAY[meta.athleteId] || meta.athleteId));
   } catch (err) {
-    showToast('Save failed: ' + String(err), true);
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      throw new Error('Save timed out — try again');
+    }
+    throw err;
   }
 }
 
@@ -1206,6 +1283,18 @@ function showToast(msg, isError = false) {
 }
 
 // ═══ NOTE RENDER ═══
+
+function setPdfTitle(name) {
+  if (!name) return;
+  var parts = name.split(' ');
+  var first = parts[0] || '';
+  var last = parts.slice(1).join(' ') || '';
+  var now = new Date();
+  var mm = String(now.getMonth() + 1).padStart(2, '0');
+  var dd = String(now.getDate()).padStart(2, '0');
+  var yyyy = now.getFullYear();
+  document.title = first.charAt(0) + '.' + last + ' ' + mm + '/' + dd + '/' + yyyy;
+}
 
 const ATHLETE_DISPLAY = {
   ath_jon: 'Jon Pomper',
@@ -1253,6 +1342,9 @@ function renderNote(data) {
 
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Set document title for PDF filename: J.Pomper 04/18/2026
+  setPdfTitle(athleteName);
 
   // Warnings go outside the note card, above the action bar's print scope
   const warningsEl = document.getElementById('warningsContainer');
@@ -1340,6 +1432,8 @@ function renderNote(data) {
       <div class="athlete-rule"></div>
       <div class="athlete-tags">${tagsHtml}</div>
     </div>
+
+    ${data.setOverview ? `<div class="set-overview-box"><div class="set-overview-label">Session Overview</div><pre class="set-overview-text">${escapeHtml(data.setOverview)}</pre></div>` : ''}
 
     <div class="main-set-box">
       <div class="main-set-label">Today's Main Set</div>
@@ -1653,6 +1747,11 @@ function renderInternalSplits(rep) {
 
 // ═══ INIT — handle URL params for athlete pre-selection ═══
 (function initFromUrl() {
+  // Set date picker to today
+  var today = new Date().toISOString().split('T')[0];
+  var dateInput = document.getElementById('sessionDate');
+  if (dateInput) dateInput.value = today;
+
   const params = new URLSearchParams(window.location.search);
   const athleteId = params.get('athleteId');
   if (athleteId) {
