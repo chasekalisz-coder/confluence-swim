@@ -1,4 +1,5 @@
 
+
 import { useState } from 'react'
 import { fullName, initials, primaryEvents } from '../data/athletes.js'
 import { addAthlete } from '../lib/db.js'
@@ -7,6 +8,7 @@ export default function AthleteGrid({ athletes, onSelect, connectionStatus, onAt
   const [adding, setAdding] = useState(false)
   const [newFirst, setNewFirst] = useState('')
   const [newLast, setNewLast] = useState('')
+  const [newAge, setNewAge] = useState('')
   const [newDob, setNewDob] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -26,7 +28,7 @@ export default function AthleteGrid({ athletes, onSelect, connectionStatus, onAt
       id,
       first: newFirst.trim(),
       last: newLast.trim(),
-      age: null,
+      age: newAge ? parseInt(newAge) : null,
       dob: newDob.trim() || null,
       events: [],
       meetTimes: [],
@@ -38,6 +40,7 @@ export default function AthleteGrid({ athletes, onSelect, connectionStatus, onAt
       setAdding(false)
       setNewFirst('')
       setNewLast('')
+      setNewAge('')
       setNewDob('')
     } catch (err) { alert('Failed to add: ' + err.message) }
     setSaving(false)
@@ -82,7 +85,10 @@ export default function AthleteGrid({ athletes, onSelect, connectionStatus, onAt
             <input className="edit-input" placeholder="First name" value={newFirst} onChange={e => setNewFirst(e.target.value)} style={{marginBottom:0}} />
             <input className="edit-input" placeholder="Last name" value={newLast} onChange={e => setNewLast(e.target.value)} style={{marginBottom:0}} />
           </div>
-          <input className="edit-input" placeholder="Birthday (e.g., June 4)" value={newDob} onChange={e => setNewDob(e.target.value)} />
+          <div style={{display:'grid',gridTemplateColumns:'80px 1fr',gap:8,marginBottom:8}}>
+            <input className="edit-input" type="number" placeholder="Age" value={newAge} onChange={e => setNewAge(e.target.value)} style={{marginBottom:0}} />
+            <input className="edit-input" placeholder="Birthday (e.g., June 4)" value={newDob} onChange={e => setNewDob(e.target.value)} style={{marginBottom:0}} />
+          </div>
           <div style={{display:'flex',gap:8}}>
             <button className="btn btn-outline" onClick={() => setAdding(false)}>Cancel</button>
             <button className="btn btn-primary" onClick={handleAdd} disabled={saving || !newFirst.trim()}>{saving ? 'Adding...' : 'Add Athlete'}</button>
