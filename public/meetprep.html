@@ -273,6 +273,10 @@
         <label>Meet Date (optional)</label>
         <input id="meetDate" type="date" />
       </div>
+      <div>
+        <label>Session Date</label>
+        <input id="sessionDate" type="date" />
+      </div>
     </div>
 
     <label>Pool Type <span class="required">*required</span></label>
@@ -309,8 +313,7 @@
 <div id="noteView" class="note-page" style="display:none;">
   <div class="action-bar">
     <button class="action-btn" onclick="backToForm()">← New Meet Prep</button>
-    <button class="action-btn" onclick="window.print()">Print / Save PDF</button>
-    <button class="action-btn primary" onclick="saveSession()">Save to Athlete</button>
+    <button class="action-btn primary" id="printSaveBtn" onclick="saveAndPrint()">Print / Save PDF</button>
   </div>
   <div id="saveToast" class="save-toast"></div>
   <div class="note" id="noteRoot"></div>
@@ -357,12 +360,27 @@ function onAthleteChange() {
   });
 }
 
+var ALL_SWIMMING_EVENTS = [
+  '50 Free','100 Free','200 Free','500 Free','1000 Free','1650 Free',
+  '50 Back','100 Back','200 Back',
+  '50 Breast','100 Breast','200 Breast',
+  '50 Fly','100 Fly','200 Fly',
+  '100 IM','200 IM','400 IM',
+];
+
 function populateEventSelect(selectEl) {
   const athleteId = document.getElementById('athleteId').value;
   const athlete = ATHLETES[athleteId];
-  if (!athlete) return;
-  const options = athlete.events.map(e => `<option value="${e}">${e}</option>`);
-  selectEl.innerHTML = '<option value="">Pick event...</option>' + options.join('');
+  const athleteEvents = athlete ? athlete.events : [];
+
+  // Show athlete's events first (with marker), then all others
+  const primaryOpts = athleteEvents.map(e => `<option value="${e}">★ ${e}</option>`);
+  const otherEvents = ALL_SWIMMING_EVENTS.filter(e => !athleteEvents.includes(e));
+  const otherOpts = otherEvents.map(e => `<option value="${e}">${e}</option>`);
+
+  selectEl.innerHTML = '<option value="">Pick event...</option>' +
+    (primaryOpts.length ? '<optgroup label="Primary Events">' + primaryOpts.join('') + '</optgroup>' : '') +
+    '<optgroup label="All Events">' + otherOpts.join('') + '</optgroup>';
 }
 
 function addEventBlock() {
@@ -579,12 +597,31 @@ function showError(data) {
 }
 
 // ═══ SAVE ═══
+var sessionSaved = false;
+
+async function saveAndPrint() {
+  if (sessionSaved) { window.print(); return; }
+  var btn = document.getElementById('printSaveBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    await saveSession();
+    sessionSaved = true;
+    btn.textContent = 'Print / Save PDF'; btn.disabled = false;
+    window.print();
+  } catch (err) {
+    btn.textContent = 'Print / Save PDF'; btn.disabled = false;
+    showToast('Save failed — printing anyway. ' + String(err), true);
+    window.print();
+  }
+}
+
 async function saveSession() {
-  if (!currentNoteData) return;
+  if (!currentNoteData) throw new Error('No note data');
   const meta = currentNoteData._formMeta || {};
+  const sessionDate = document.getElementById('sessionDate')?.value || new Date().toISOString().split('T')[0];
   const payload = {
     athleteId: meta.athleteId,
-    date: new Date().toISOString().split('T')[0],
+    date: sessionDate,
     category: 'meet_prep',
     poolType: meta.poolType,
     stroke: null,
@@ -601,16 +638,24 @@ async function saveSession() {
     correctedData: null,
     wasRegenerated: false,
     model: currentNoteData.model,
+    noteType: 'meetprep',
   };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
     const res = await fetch('/api/save-session', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payload), signal: controller.signal,
     });
+    clearTimeout(timeout);
     const data = await res.json();
-    if (!res.ok) { showToast('Save failed: ' + (data.error || 'unknown'), true); return; }
+    if (!res.ok) throw new Error(data.error || 'Save failed');
     showToast('Meet prep saved!');
-  } catch (err) { showToast('Save failed: ' + String(err), true); }
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw new Error('Save timed out');
+    throw err;
+  }
 }
 
 function showToast(msg, isError = false) {
@@ -627,6 +672,7 @@ function renderNote(data) {
   const athleteId = meta.athleteId;
   const athleteInfo = ATHLETES[athleteId] || {};
   const athleteName = athleteInfo.name || athleteId;
+  setPdfTitle(athleteName);
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const note = data.note || {};
 
@@ -709,8 +755,20 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function setPdfTitle(name) {
+  if (!name) return;
+  var p = name.split(' '); var f = p[0] || ''; var l = p.slice(1).join(' ') || '';
+  var n = new Date();
+  document.title = f.charAt(0) + '.' + l + ' ' + String(n.getMonth()+1).padStart(2,'0') + '/' + String(n.getDate()).padStart(2,'0') + '/' + n.getFullYear();
+}
+
 // ═══ INIT ═══
 (function init() {
+  // Set session date to today
+  var today = new Date().toISOString().split('T')[0];
+  var dateInput = document.getElementById('sessionDate');
+  if (dateInput) dateInput.value = today;
+
   // Add first event block automatically
   addEventBlock();
 
