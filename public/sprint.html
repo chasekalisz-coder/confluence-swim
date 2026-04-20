@@ -7,7 +7,7 @@
 <title>Confluence Swim — Sprint Lab</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/charts.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js"></script>
+<script src="/heic-helper.js"></script>
 <style>
 :root{--ink:#121212;--gold:#B8956A;--paper:#FAF9F6;--muted:#6B6B6B;--rule:#E8E4DD;--danger:#B84545;--teal:#2dd4bf;--navy:#0B1E38;--sprint:#7c3aed;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -169,16 +169,11 @@ function setPool(p) {
 document.getElementById('photo').addEventListener('change', async function(e) {
   var file = e.target.files[0];
   if (!file) return;
-  var ext = file.name.split('.').pop().toLowerCase();
-  var type = file.type.toLowerCase();
-  var isHeic = type === 'image/heic' || type === 'image/heif' || ext === 'heic' || ext === 'heif';
 
-  if (isHeic) {
+  if (isHeicFile(file)) {
     document.getElementById('photoStatus').textContent = 'Converting HEIC...';
     try {
-      var blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
-      if (Array.isArray(blob)) blob = blob[0];
-      file = new File([blob], file.name.replace(/\.heic$/i, '.jpg'), { type: 'image/jpeg' });
+      file = await convertHeicToJpeg(file);
     } catch(err) {
       document.getElementById('photoStatus').textContent = 'HEIC conversion failed: ' + err.message;
       return;
