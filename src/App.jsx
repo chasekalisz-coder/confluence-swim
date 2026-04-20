@@ -1,4 +1,5 @@
 
+
 import { useEffect, useState } from 'react'
 import { loadAthletes } from './lib/db.js'
 import Header from './components/Header.jsx'
@@ -69,6 +70,10 @@ export default function App() {
     }
     if (type === 'technique' && athleteId) {
       window.location.href = `/technique.html?athleteId=${encodeURIComponent(athleteId)}`
+      return
+    }
+    if (type === 'sprint' && athleteId) {
+      window.location.href = `/sprint.html?athleteId=${encodeURIComponent(athleteId)}`
       return
     }
     if (type === 'workout' && athleteId) {
