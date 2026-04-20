@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/charts.css" />
 <style>
   :root {
     --ink: #121212;
@@ -1447,8 +1449,8 @@ function renderNote(data) {
     </div>
   `).join('');
 
-  // Charts
-  const chartsHtml = renderCharts(data);
+  // Charts — new system
+  const chartsHtml = (typeof renderAllCharts === 'function') ? renderAllCharts(data) : '';
 
   // Tags row under athlete name
   const tags = [categoryLabel, strokeLabel, meta.poolType].filter(Boolean);
@@ -1482,7 +1484,6 @@ function renderNote(data) {
       <div class="main-set-label">Today's Main Set</div>
       <div class="main-set-name">${escapeHtml(data.mainSet?.name || 'Main Set')}</div>
       ${mainSetTableHtml}
-      ${hiLoHtml}
     </div>
 
     ${sectionsHtml}
@@ -1512,282 +1513,6 @@ function escapeHtml(s) {
     .replace(/'/g, '&#039;');
 }
 
-// ═══ CHARTS (SVG, print-safe) ═══
-
-function renderCharts(data) {
-  const selected = data.charts || [];
-  const reps = data.mainSet?.reps || [];
-  const mainSetZone = data.mainSet?.zone || null;
-
-  if (selected.length === 0 && reps.length === 0 && !data.hiLo) return '';
-
-  const chartEls = [];
-
-  // Always show rep detail cards if we have reps
-  if (reps.length > 0) {
-    chartEls.push(renderRepCards(reps, mainSetZone));
-  }
-
-  // Chart 1: rep times bar
-  if (selected.includes('rep_times_bar') && reps.length > 0) {
-    chartEls.push(renderRepTimesBar(reps, mainSetZone));
-  }
-
-  // Chart 2: HR line
-  if (selected.includes('hr_line') && reps.filter(r => r.hr).length >= 2) {
-    chartEls.push(renderHrLine(reps));
-  }
-
-  // Chart 3: opening 50 drift
-  if (selected.includes('opening_50_drift') && reps.length > 0) {
-    const opening50s = reps.map(r => {
-      if (r.splits && r.splits.length >= 1) return parseTimeToSeconds(r.splits[0]);
-      return null;
-    });
-    if (opening50s.filter(s => s !== null).length >= 2) {
-      chartEls.push(renderOpening50Drift(reps, opening50s));
-    }
-  }
-
-  // Chart 4: internal splits of a specific rep (last rep usually)
-  if (selected.includes('rep_internal_splits') && reps.length > 0) {
-    const target = reps[reps.length - 1];
-    if (target.splits && target.splits.length >= 2) {
-      chartEls.push(renderInternalSplits(target));
-    }
-  }
-
-  if (chartEls.length === 0) return '';
-
-  return `
-    <div class="charts-block">
-      <div class="charts-label">Performance Data</div>
-      ${chartEls.join('')}
-    </div>
-  `;
-}
-
-// Parse "M:SS.SS" or "SS.SS" to seconds (float)
-function parseTimeToSeconds(t) {
-  if (!t) return null;
-  const s = String(t).trim();
-  if (s.includes(':')) {
-    const [m, sec] = s.split(':');
-    return parseInt(m, 10) * 60 + parseFloat(sec);
-  }
-  return parseFloat(s);
-}
-
-function formatSecondsAsTime(secs) {
-  if (secs >= 60) {
-    const m = Math.floor(secs / 60);
-    const s = (secs - m * 60).toFixed(2);
-    return `${m}:${s.padStart(5, '0')}`;
-  }
-  return secs.toFixed(2);
-}
-
-function getZoneColor(zone) {
-  const map = {
-    white: '#D6D3CC', pink: '#E89EA4', red: '#D95555',
-    blue: '#6B8AB8', purple: '#8A6BB8',
-  };
-  return map[zone] || '#999';
-}
-
-function renderRepCards(reps, fallbackZone) {
-  const cards = reps.map(r => {
-    const zone = r.zone || fallbackZone || null;
-    const dotHtml = zone ? `<span class="zone-dot" style="background:${getZoneColor(zone)}"></span>` : '';
-    return `
-      <div class="rep-card">
-        <div class="rep-num">${dotHtml}Rep ${r.rep}${r.distance ? ' · ' + r.distance : ''}</div>
-        <div class="rep-time">${r.time || '—'}</div>
-        <div class="rep-hr">${r.hr ? 'HR ' + r.hr : ''}</div>
-      </div>
-    `;
-  }).join('');
-  return `<div class="chart-container"><div class="chart-title">Rep Detail</div><div class="rep-cards">${cards}</div></div>`;
-}
-
-function renderRepTimesBar(reps, fallbackZone) {
-  const width = 700, height = 280;
-  const padL = 60, padR = 20, padT = 30, padB = 50;
-  const chartW = width - padL - padR;
-  const chartH = height - padT - padB;
-
-  const times = reps.map(r => parseTimeToSeconds(r.time)).filter(t => t !== null);
-  if (times.length === 0) return '';
-  const minT = Math.min(...times);
-  const maxT = Math.max(...times);
-  const pad = (maxT - minT) * 0.15 + 1;
-  const yMin = Math.max(0, minT - pad);
-  const yMax = maxT + pad;
-
-  const barW = chartW / reps.length * 0.7;
-  const spacing = chartW / reps.length;
-
-  let bars = '';
-  let labels = '';
-  reps.forEach((r, i) => {
-    const t = parseTimeToSeconds(r.time);
-    if (t === null) return;
-    const x = padL + spacing * i + (spacing - barW) / 2;
-    const h = ((t - yMin) / (yMax - yMin)) * chartH;
-    const y = padT + chartH - h;
-    const zone = r.zone || fallbackZone;
-    const color = zone ? getZoneColor(zone) : '#888';
-    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="${color}" rx="2" />`;
-    bars += `<text x="${x + barW/2}" y="${y - 6}" text-anchor="middle" font-size="11" font-family="Inter, sans-serif" fill="#333">${r.time}</text>`;
-    labels += `<text x="${x + barW/2}" y="${padT + chartH + 18}" text-anchor="middle" font-size="10" font-family="Inter, sans-serif" fill="#6B6B6B">Rep ${r.rep}</text>`;
-  });
-
-  // Y-axis labels (3 tick marks)
-  const ticks = [yMin, (yMin+yMax)/2, yMax];
-  const yAxis = ticks.map(v => {
-    const y = padT + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
-    return `<text x="${padL - 8}" y="${y + 3}" text-anchor="end" font-size="10" font-family="Inter, sans-serif" fill="#888">${formatSecondsAsTime(v)}</text>
-            <line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" stroke="#E8E4DD" stroke-width="1" />`;
-  }).join('');
-
-  return `
-    <div class="chart-container">
-      <div class="chart-title">Rep Times</div>
-      <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
-        ${yAxis}
-        ${bars}
-        ${labels}
-      </svg>
-    </div>
-  `;
-}
-
-function renderHrLine(reps) {
-  const width = 700, height = 240;
-  const padL = 50, padR = 20, padT = 30, padB = 50;
-  const chartW = width - padL - padR;
-  const chartH = height - padT - padB;
-
-  const points = reps.filter(r => r.hr).map(r => ({ rep: r.rep, hr: r.hr, zone: r.zone }));
-  if (points.length < 2) return '';
-
-  const hrs = points.map(p => p.hr);
-  const minH = Math.min(...hrs) - 2;
-  const maxH = Math.max(...hrs) + 2;
-  const spacing = chartW / (reps.length - 1 || 1);
-
-  let polyPts = [];
-  let dots = '';
-  let labels = '';
-  reps.forEach((r, i) => {
-    if (!r.hr) return;
-    const x = padL + spacing * i;
-    const y = padT + chartH - ((r.hr - minH) / (maxH - minH)) * chartH;
-    polyPts.push(`${x},${y}`);
-    const color = r.zone ? getZoneColor(r.zone) : '#D95555';
-    dots += `<circle cx="${x}" cy="${y}" r="5" fill="${color}" stroke="white" stroke-width="2" />`;
-    dots += `<text x="${x}" y="${y - 10}" text-anchor="middle" font-size="11" font-family="Inter, sans-serif" fill="#333">${r.hr}</text>`;
-    labels += `<text x="${x}" y="${padT + chartH + 18}" text-anchor="middle" font-size="10" font-family="Inter, sans-serif" fill="#6B6B6B">Rep ${r.rep}</text>`;
-  });
-
-  const ticks = [minH, Math.round((minH+maxH)/2), maxH];
-  const yAxis = ticks.map(v => {
-    const y = padT + chartH - ((v - minH) / (maxH - minH)) * chartH;
-    return `<text x="${padL - 8}" y="${y + 3}" text-anchor="end" font-size="10" font-family="Inter, sans-serif" fill="#888">${v}</text>
-            <line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" stroke="#E8E4DD" stroke-width="1" />`;
-  }).join('');
-
-  return `
-    <div class="chart-container">
-      <div class="chart-title">Heart Rate (10-sec count)</div>
-      <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
-        ${yAxis}
-        <polyline points="${polyPts.join(' ')}" fill="none" stroke="#D95555" stroke-width="2" />
-        ${dots}
-        ${labels}
-      </svg>
-    </div>
-  `;
-}
-
-function renderOpening50Drift(reps, opening50s) {
-  const width = 700, height = 260;
-  const padL = 60, padR = 20, padT = 30, padB = 50;
-  const chartW = width - padL - padR;
-  const chartH = height - padT - padB;
-
-  const valid = reps.map((r, i) => ({ rep: r.rep, t: opening50s[i] })).filter(p => p.t !== null);
-  if (valid.length < 2) return '';
-
-  const ts = valid.map(v => v.t);
-  const minT = Math.min(...ts);
-  const maxT = Math.max(...ts);
-  const pad = (maxT - minT) * 0.2 + 0.5;
-
-  const barW = chartW / valid.length * 0.7;
-  const spacing = chartW / valid.length;
-
-  let bars = '';
-  let labels = '';
-  valid.forEach((v, i) => {
-    const x = padL + spacing * i + (spacing - barW) / 2;
-    const h = ((v.t - (minT - pad)) / ((maxT + pad) - (minT - pad))) * chartH;
-    const y = padT + chartH - h;
-    const color = `rgba(184, 149, 106, ${0.4 + 0.6 * (i / (valid.length - 1))})`;
-    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="${color}" rx="2" />`;
-    bars += `<text x="${x + barW/2}" y="${y - 6}" text-anchor="middle" font-size="11" font-family="Inter, sans-serif" fill="#333">${v.t.toFixed(2)}</text>`;
-    labels += `<text x="${x + barW/2}" y="${padT + chartH + 18}" text-anchor="middle" font-size="10" font-family="Inter, sans-serif" fill="#6B6B6B">Rep ${v.rep}</text>`;
-  });
-
-  return `
-    <div class="chart-container">
-      <div class="chart-title">Opening 50 Drift (accumulating fatigue)</div>
-      <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
-        ${bars}
-        ${labels}
-      </svg>
-    </div>
-  `;
-}
-
-function renderInternalSplits(rep) {
-  const width = 700, height = 240;
-  const padL = 60, padR = 20, padT = 30, padB = 50;
-  const chartW = width - padL - padR;
-  const chartH = height - padT - padB;
-
-  const splits = rep.splits.map(s => parseTimeToSeconds(s)).filter(s => s !== null);
-  if (splits.length < 2) return '';
-
-  const minS = Math.min(...splits);
-  const maxS = Math.max(...splits);
-  const pad = (maxS - minS) * 0.2 + 0.5;
-
-  const barW = chartW / splits.length * 0.7;
-  const spacing = chartW / splits.length;
-
-  let bars = '';
-  let labels = '';
-  splits.forEach((s, i) => {
-    const x = padL + spacing * i + (spacing - barW) / 2;
-    const h = ((s - (minS - pad)) / ((maxS + pad) - (minS - pad))) * chartH;
-    const y = padT + chartH - h;
-    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="#B8956A" rx="2" />`;
-    bars += `<text x="${x + barW/2}" y="${y - 6}" text-anchor="middle" font-size="11" font-family="Inter, sans-serif" fill="#333">${formatSecondsAsTime(s)}</text>`;
-    labels += `<text x="${x + barW/2}" y="${padT + chartH + 18}" text-anchor="middle" font-size="10" font-family="Inter, sans-serif" fill="#6B6B6B">${(i+1) * 50}</text>`;
-  });
-
-  return `
-    <div class="chart-container">
-      <div class="chart-title">Rep ${rep.rep} Internal Splits</div>
-      <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
-        ${bars}
-        ${labels}
-      </svg>
-    </div>
-  `;
-}
-
 // ═══ INIT — handle URL params for athlete pre-selection ═══
 (function initFromUrl() {
   // Set date picker to today
@@ -1815,5 +1540,6 @@ function renderInternalSplits(rep) {
   }
 })();
 </script>
+<script src="/charts.js"></script>
 </body>
 </html>
