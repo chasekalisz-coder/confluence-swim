@@ -1,14 +1,9 @@
-// Vercel serverless function: all database operations for Confluence Swim.
-// Browser calls POST /api/db with { action: '...', ...params }
-// Server runs the query against Neon and returns the result.
-// The connection string lives in Vercel env vars and NEVER touches the browser.
 
 import { neon } from '@neondatabase/serverless'
 
 const sql = neon(process.env.DATABASE_URL)
 
 export default async function handler(req, res) {
-  // Allow simple health check via GET
   if (req.method === 'GET') {
     try {
       const rows = await sql`SELECT 1 as ok`
@@ -35,7 +30,6 @@ export default async function handler(req, res) {
   try {
     switch (action) {
       case 'setupSchema': {
-        // Create tables if they don't exist. Idempotent.
         await sql`
           CREATE TABLE IF NOT EXISTS athletes (
             id text PRIMARY KEY,
@@ -69,7 +63,6 @@ export default async function handler(req, res) {
         if (!Array.isArray(athletes) || athletes.length === 0) {
           return res.status(400).json({ error: 'athletes array required' })
         }
-        // Upsert each athlete
         for (const a of athletes) {
           await sql`
             INSERT INTO athletes (id, data)
@@ -112,6 +105,13 @@ export default async function handler(req, res) {
             data = EXCLUDED.data
         `
         return res.status(200).json({ ok: true })
+      }
+
+      case 'deleteSession': {
+        const { sessionId } = params
+        if (!sessionId) return res.status(400).json({ error: 'sessionId required' })
+        await sql`DELETE FROM sessions WHERE id = ${sessionId}`
+        return res.status(200).json({ ok: true, deleted: sessionId })
       }
 
       default:
