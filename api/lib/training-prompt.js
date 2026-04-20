@@ -1,3 +1,4 @@
+
 // Build the system prompt for a training note generation.
 // All coaching philosophy, guardrails, and interpretive framework live here.
 // Edit this file to tune the AI's voice and behavior.
@@ -193,20 +194,25 @@ OUTPUT FORMAT
 Return ONLY a JSON object, no preamble, no markdown fences. Schema:
 
 {
-  "mainSet": {
-    "name": "string — e.g., '10x100 Free @ 1:15'",
-    "zone": "white|pink|red|blue|purple|null",
-    "interval": "string or null",
-    "reps": [
-      {
-        "rep": 1,
-        "distance": "100",
-        "time": "1:08",
-        "hr": 26,
-        "splits": ["32.1", "36.2"]
-      }
-    ]
-  },
+  "setOverview": "A clean, simple text block listing every set in the session. Example:\nWARMUP: 400 Choice\nMAIN SET: 8x100 Free @ 1:30 — White\nPOST SET: 4x50 Fly @ :45 — Red\nHI-LO: 30 / 19 (drop 11)\n\nThis appears at the top of the note before any prose. Factual only — distances, intervals, zones. No analysis.",
+  "sets": [
+    {
+      "name": "string — e.g., '8x100 Free @ 1:30'",
+      "label": "Main Set|Post Set|Preset|Warmup",
+      "zone": "white|pink|red|blue|purple|null",
+      "interval": "string or null",
+      "reps": [
+        {
+          "rep": 1,
+          "distance": "100",
+          "time": "1:08",
+          "hr": 26,
+          "splits": ["32.1", "36.2"]
+        }
+      ]
+    }
+  ],
+  "mainSet": "KEEP THIS for backward compatibility — copy the primary set data here (same format as sets[0])",
   "hiLo": {
     "hi": 30,
     "lo": 19,
@@ -222,6 +228,10 @@ Return ONLY a JSON object, no preamble, no markdown fences. Schema:
   "charts": ["rep_times_bar", "hr_line"],
   "warnings": ["Rep 4 HR was unreadable on photo"]
 }
+
+IMPORTANT: If the photo shows multiple sets with times (e.g., a main set AND a post set),
+extract EACH as a separate entry in the "sets" array with its own label, name, and reps.
+Also copy the primary set into "mainSet" for backward compatibility.
 
 Return ONLY this JSON. No explanations before or after.`;
 }
