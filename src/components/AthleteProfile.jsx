@@ -244,7 +244,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
                       className="session-delete"
                       title="Delete session"
                       onClick={(e) => handleDelete(s.id, e)}
-                    >×</button>
+                    >{'\u00D7'}</button>
                     <div className="session-arrow">→</div>
                   </div>
                 )
