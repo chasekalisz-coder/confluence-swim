@@ -1,7 +1,8 @@
 
+
 import { useEffect, useState } from 'react'
 import { fullName, initials } from '../data/athletes.js'
-import { loadAthleteSessions } from '../lib/db.js'
+import { loadAthleteSessions, deleteSession } from '../lib/db.js'
 
 const CATEGORY_DISPLAY = {
   aerobic: 'Aerobic',
@@ -42,6 +43,7 @@ function getNoteType(session) {
   if (session.data?.noteType) return session.data.noteType
   if (session.category === 'technique') return 'technique'
   if (session.category === 'meet_prep') return 'meetprep'
+  if (session.category === 'workout') return 'workout'
   return 'training'
 }
 
@@ -49,12 +51,14 @@ const NOTE_TYPE_COLORS = {
   training: '#0B1E38',
   meetprep: '#B8921A',
   technique: '#2dd4bf',
+  workout: '#8b5cf6',
 }
 
 const NOTE_TYPE_LABELS = {
   training: 'Training',
   meetprep: 'Meet Prep',
   technique: 'Technique',
+  workout: 'Workout',
 }
 
 export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSession }) {
@@ -74,6 +78,17 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
     })
     return () => { active = false }
   }, [athlete.id])
+
+  const handleDelete = async (sessionId, e) => {
+    e.stopPropagation()
+    if (!window.confirm('Delete this session? This cannot be undone.')) return
+    try {
+      await deleteSession(sessionId)
+      setSessions(prev => prev.filter(s => s.id !== sessionId))
+    } catch (err) {
+      alert('Delete failed: ' + err.message)
+    }
+  }
 
   const filteredTimes = athlete.meetTimes.filter(t => t.event.endsWith(poolFilter))
 
@@ -96,6 +111,18 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
     training: poolSessions.filter(s => getNoteType(s) === 'training').length,
     meetprep: poolSessions.filter(s => getNoteType(s) === 'meetprep').length,
     technique: poolSessions.filter(s => getNoteType(s) === 'technique').length,
+    workout: poolSessions.filter(s => getNoteType(s) === 'workout').length,
+  }
+
+  const handleDelete = async (e, sessionId) => {
+    e.stopPropagation()
+    if (!confirm('Delete this session? This cannot be undone.')) return
+    try {
+      await deleteSession(sessionId)
+      setSessions(prev => prev.filter(s => s.id !== sessionId))
+    } catch (err) {
+      alert('Delete failed: ' + err.message)
+    }
   }
 
   return (
@@ -164,6 +191,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
               { key: 'training', label: 'Training' },
               { key: 'meetprep', label: 'Meet Prep' },
               { key: 'technique', label: 'Technique' },
+              { key: 'workout', label: 'Workout' },
             ].map(f => (
               <button
                 key={f.key}
@@ -212,6 +240,11 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
                     <div className="session-type-badge" style={{ color: accentColor }}>
                       {NOTE_TYPE_LABELS[noteType] || 'Training'}
                     </div>
+                    <button
+                      className="session-delete"
+                      title="Delete session"
+                      onClick={(e) => handleDelete(s.id, e)}
+                    >×</button>
                     <div className="session-arrow">→</div>
                   </div>
                 )
@@ -223,4 +256,3 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
     </div>
   )
 }
-
