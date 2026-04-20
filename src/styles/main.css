@@ -1,4 +1,5 @@
 
+
 :root {
   --gold: #B8921A;
   --gold-soft: #d4af3a;
@@ -971,3 +972,17 @@ html, body, #root {
   .sv-video-section { page-break-inside: avoid; }
   .sv-video-link { color: var(--text); }
 }
+
+/* Edit athlete */
+.edit-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+.edit-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; font-family: inherit; background: #fff; color: var(--text); margin-bottom: 10px; }
+.edit-input:focus { outline: none; border-color: var(--gold); }
+.event-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; font-size: 12px; }
+.chip-x { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 0 2px; line-height: 1; }
+.chip-x:hover { color: #B84545; }
+.add-btn { background: none; border: 2px dashed var(--border); color: var(--text-muted); padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; width: 100%; margin-top: 4px; }
+.add-btn:hover { border-color: var(--gold); color: var(--gold); }
+.btn-danger { background: none; border: 1px solid #B84545; color: #B84545; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.btn-danger:hover { background: #B84545; color: #fff; }
+.add-athlete-btn { width: 100%; padding: 20px; border: 2px dashed var(--border); background: none; border-radius: 8px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+.add-athlete-btn:hover { border-color: var(--gold); color: var(--gold); }
