@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,6 +51,10 @@ textarea{min-height:60px;resize:vertical;}
 .section-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.15em;color:var(--sprint);font-weight:600;margin-bottom:10px;}
 .section-content p{font-size:.92rem;line-height:1.7;margin-bottom:10px;}
 .note-footer{display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding-top:16px;border-top:1px solid var(--rule);margin-top:32px;}
+.workout-box{background:#fff;border:1px solid var(--rule);border-radius:4px;padding:16px 20px;margin-bottom:24px;}
+.workout-box-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.15em;color:var(--sprint);font-weight:600;margin-bottom:10px;}
+.wo-line{font-size:.88rem;line-height:1.7;padding:2px 0;}
+.wo-label{display:inline-block;width:60px;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;vertical-align:top;}
 .actions-bar{display:flex;gap:8px;margin-top:20px;}
 .actions-bar .btn{width:auto;flex:1;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#fff;padding:14px 24px;border-radius:4px;font-size:.9rem;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:2000;transition:transform .25s;pointer-events:none;}
@@ -278,9 +283,39 @@ function renderNote(data, athlete) {
     if (typeof renderAllCharts === 'function') chartsHtml = renderAllCharts(fakeData);
   }
 
+  // Build workout overview box from sprint data
+  var workoutBox = '';
+  if (data.sprintData && data.sprintData.structure) {
+    var s = data.sprintData.structure;
+    var lines = [];
+    if (s.warmup) lines.push('<div class="wo-line"><span class="wo-label">Warmup</span>' + esc(s.warmup) + '</div>');
+    if (s.preSet) lines.push('<div class="wo-line"><span class="wo-label">Pre-Set</span>' + esc(s.preSet) + '</div>');
+    if (s.mainBlocks && s.mainBlocks.length > 0) {
+      s.mainBlocks.forEach(function(b) {
+        var detail = esc(b.name || '');
+        if (b.equipment && b.equipment.length) detail += ' · ' + b.equipment.join(', ');
+        if (b.resistance) detail += ' · ' + esc(b.resistance);
+        if (b.tempo) detail += ' · ' + esc(b.tempo) + ' tempo';
+        if (b.rest) detail += ' · ' + esc(b.rest);
+        lines.push('<div class="wo-line"><span class="wo-label">Main</span>' + detail + '</div>');
+      });
+    }
+    if (s.finishSet) lines.push('<div class="wo-line"><span class="wo-label">Finish</span>' + esc(s.finishSet) + '</div>');
+    if (data.sprintData.timedEfforts && data.sprintData.timedEfforts.length > 0) {
+      var times = data.sprintData.timedEfforts.map(function(t) { return 'R' + t.round + ': ' + t.time; }).join(' · ');
+      lines.push('<div class="wo-line"><span class="wo-label">Times</span>' + times + '</div>');
+    }
+    if (lines.length > 0) {
+      workoutBox = '<div class="workout-box"><div class="workout-box-label">Workout</div>' + lines.join('') + '</div>';
+    }
+  }
+
+  function esc(str) { return str == null ? '' : String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
   document.getElementById('noteRoot').innerHTML =
     '<div class="note-header"><div class="note-logo">Confluence Swim<br><span style="font-size:.6rem;color:var(--sprint);font-family:Inter,sans-serif;text-transform:uppercase;letter-spacing:.1em;">Sprint Lab</span></div><div class="note-meta"><div><strong>' + dateStr + '</strong></div><div>' + (selectedPool || '') + '</div><div>Robson & Lindley &middot; SMU</div></div></div>' +
     '<div class="athlete-block"><div class="athlete-label">Athlete</div><h2 class="athlete-name">' + athleteName + '</h2><div class="athlete-rule"></div><div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Sprint/Power &middot; ' + (selectedPool||'') + '</div></div>' +
+    workoutBox +
     sectionsHtml +
     chartsHtml +
     '<div class="note-footer"><div>confluencesport.com &middot; Dallas, TX</div><div>Athlete Use Only</div></div>';
