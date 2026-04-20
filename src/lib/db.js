@@ -56,3 +56,15 @@ export async function saveSession(session) {
 export async function deleteSession(sessionId) {
   return callDb('deleteSession', { sessionId })
 }
+
+export async function updateAthlete(athleteId, data) {
+  return callDb('updateAthlete', { athleteId, data })
+}
+
+export async function addAthlete(athlete) {
+  return callDb('addAthlete', { athlete })
+}
+
+export async function deleteAthlete(athleteId) {
+  return callDb('deleteAthlete', { athleteId })
+}
