@@ -38,7 +38,7 @@ const NOTE_TYPE_COLORS = {
   training: '#0B1E38', meetprep: '#B8921A', technique: '#2dd4bf', workout: '#8b5cf6',
 }
 const NOTE_TYPE_LABELS = {
-  training: 'Training', meetprep: 'Meet Prep', technique: 'Technique', workout: 'Workout',
+  training: 'Training', meetprep: 'Meet Prep', technique: 'Technique', workout: 'Workout', sprint: 'Sprint Lab',
 }
 
 export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSession, onAthleteUpdated, onAthleteDeleted }) {
@@ -251,7 +251,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
             <span className="muted">{filteredSessions.length} session{filteredSessions.length === 1 ? '' : 's'}</span>
           </div>
           <div className="type-filter">
-            {[{key:'all',label:'All'},{key:'training',label:'Training'},{key:'meetprep',label:'Meet Prep'},{key:'technique',label:'Technique'},{key:'workout',label:'Workout'}].map(f => (
+            {[{key:'all',label:'All'},{key:'training',label:'Training'},{key:'meetprep',label:'Meet Prep'},{key:'technique',label:'Technique'},{key:'workout',label:'Workout'},{key:'sprint',label:'Sprint Lab'}].map(f => (
               <button key={f.key} className={`type-filter-btn ${typeFilter === f.key ? 'active' : ''}`} onClick={() => setTypeFilter(f.key)}>
                 {f.label}{typeCounts[f.key] > 0 && <span className="type-count">{typeCounts[f.key]}</span>}
               </button>
