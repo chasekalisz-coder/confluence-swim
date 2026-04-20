@@ -1,58 +1,124 @@
 
-import { ATHLETES } from '../data/athletes.js'
+import { neon } from '@neondatabase/serverless'
 
-async function callDb(action, params = {}) {
-  const res = await fetch('/api/db', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, ...params })
-  })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
-  return data
-}
+const sql = neon(process.env.DATABASE_URL)
 
-export async function checkDbHealth() {
-  try {
-    const res = await fetch('/api/db', { method: 'GET' })
-    const data = await res.json().catch(() => ({}))
-    return { ok: res.ok && data.dbConnected, data }
-  } catch (e) {
-    return { ok: false, error: e.message }
-  }
-}
-
-export async function loadAthletes() {
-  try {
-    await callDb('setupSchema')
-    const { athletes: rows } = await callDb('listAthletes')
-    if (!rows || rows.length === 0) {
-      await callDb('seedAthletes', { athletes: ATHLETES })
-      return { athletes: ATHLETES, status: 'ok' }
+export default async function handler(req, res) {
+  if (req.method === 'GET') {
+    try {
+      const rows = await sql`SELECT 1 as ok`
+      return res.status(200).json({
+        ok: true,
+        dbConnected: Array.isArray(rows) && rows[0]?.ok === 1,
+        hasConnectionString: Boolean(process.env.DATABASE_URL)
+      })
+    } catch (e) {
+      return res.status(500).json({
+        ok: false,
+        error: e.message,
+        hasConnectionString: Boolean(process.env.DATABASE_URL)
+      })
     }
-    const byId = Object.fromEntries(rows.map(r => [r.id, r.data]))
-    const ordered = ATHLETES.map(a => byId[a.id] || a)
-    return { athletes: ordered, status: 'ok' }
-  } catch (e) {
-    console.warn('loadAthletes failed:', e.message)
-    return { athletes: ATHLETES, status: 'error', error: e.message }
   }
-}
 
-export async function loadAthleteSessions(athleteId) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const { action, ...params } = req.body || {}
+
   try {
-    const { sessions } = await callDb('listAthleteSessions', { athleteId })
-    return sessions || []
+    switch (action) {
+      case 'setupSchema': {
+        await sql`
+          CREATE TABLE IF NOT EXISTS athletes (
+            id text PRIMARY KEY,
+            data jsonb NOT NULL,
+            created_at timestamptz DEFAULT now(),
+            updated_at timestamptz DEFAULT now()
+          )
+        `
+        await sql`
+          CREATE TABLE IF NOT EXISTS sessions (
+            id text PRIMARY KEY,
+            athlete_id text NOT NULL,
+            date text,
+            category text,
+            data jsonb NOT NULL,
+            created_at timestamptz DEFAULT now()
+          )
+        `
+        await sql`CREATE INDEX IF NOT EXISTS sessions_athlete_id_idx ON sessions(athlete_id)`
+        await sql`CREATE INDEX IF NOT EXISTS sessions_created_at_idx ON sessions(created_at DESC)`
+        return res.status(200).json({ ok: true })
+      }
+
+      case 'listAthletes': {
+        const rows = await sql`SELECT id, data FROM athletes ORDER BY id`
+        return res.status(200).json({ ok: true, athletes: rows })
+      }
+
+      case 'seedAthletes': {
+        const { athletes } = params
+        if (!Array.isArray(athletes) || athletes.length === 0) {
+          return res.status(400).json({ error: 'athletes array required' })
+        }
+        for (const a of athletes) {
+          await sql`
+            INSERT INTO athletes (id, data)
+            VALUES (${a.id}, ${JSON.stringify(a)}::jsonb)
+            ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
+          `
+        }
+        return res.status(200).json({ ok: true, count: athletes.length })
+      }
+
+      case 'listAthleteSessions': {
+        const { athleteId } = params
+        if (!athleteId) return res.status(400).json({ error: 'athleteId required' })
+        const rows = await sql`
+          SELECT id, athlete_id, date, category, data, created_at
+          FROM sessions
+          WHERE athlete_id = ${athleteId}
+          ORDER BY created_at DESC
+        `
+        return res.status(200).json({ ok: true, sessions: rows })
+      }
+
+      case 'saveSession': {
+        const { session } = params
+        if (!session || !session.id || !session.athlete_id) {
+          return res.status(400).json({ error: 'session with id and athlete_id required' })
+        }
+        await sql`
+          INSERT INTO sessions (id, athlete_id, date, category, data)
+          VALUES (
+            ${session.id},
+            ${session.athlete_id},
+            ${session.date || null},
+            ${session.category || null},
+            ${JSON.stringify(session.data || session)}::jsonb
+          )
+          ON CONFLICT (id) DO UPDATE SET
+            date = EXCLUDED.date,
+            category = EXCLUDED.category,
+            data = EXCLUDED.data
+        `
+        return res.status(200).json({ ok: true })
+      }
+
+      case 'deleteSession': {
+        const { sessionId } = params
+        if (!sessionId) return res.status(400).json({ error: 'sessionId required' })
+        await sql`DELETE FROM sessions WHERE id = ${sessionId}`
+        return res.status(200).json({ ok: true, deleted: sessionId })
+      }
+
+      default:
+        return res.status(400).json({ error: `Unknown action: ${action}` })
+    }
   } catch (e) {
-    console.warn('loadAthleteSessions failed:', e.message)
-    return []
+    console.error('DB error:', e)
+    return res.status(500).json({ ok: false, error: e.message })
   }
-}
-
-export async function saveSession(session) {
-  return callDb('saveSession', { session })
-}
-
-export async function deleteSession(sessionId) {
-  return callDb('deleteSession', { sessionId })
 }
