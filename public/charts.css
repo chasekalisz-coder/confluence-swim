@@ -1,0 +1,92 @@
+/* ═══ CONFLUENCE SWIM CHART STYLES ═══ */
+
+.perf-section { border-top: 1px solid #E8E4DD; margin-top: 32px; padding-top: 24px; }
+.perf-header { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.15em; color: #B8956A; font-weight: 600; margin-bottom: 20px; }
+
+.chart-set-block { margin-bottom: 28px; padding-bottom: 20px; border-bottom: 0.5px solid #E8E4DD; }
+.chart-set-block:last-child { border-bottom: none; }
+.chart-set-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #B8956A; font-weight: 500; margin-bottom: 4px; }
+.chart-set-name { font-size: 16px; font-weight: 500; margin-bottom: 12px; font-family: "Fraunces", Georgia, serif; }
+
+/* Bars */
+.chart-bars-row { display: flex; gap: 6px; align-items: flex-end; margin-bottom: 6px; }
+.chart-bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.chart-bar { width: 100%; min-width: 16px; border-radius: 3px 3px 0 0; }
+.chart-bar-time { font-size: 11px; font-weight: 500; margin-bottom: 3px; white-space: nowrap; }
+.chart-bar-label { font-size: 10px; color: #6B6B6B; margin-top: 4px; }
+
+/* Pacing tags */
+.pacing-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 8px; margin-top: 8px; font-weight: 500; }
+.tag-green { background: #EAF3DE; color: #27500A; }
+.tag-amber { background: #FAEEDA; color: #633806; }
+
+/* Split cards */
+.split-cards-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.split-card { flex: 1; min-width: 100px; max-width: 150px; background: #FAF9F6; border-radius: 8px; padding: 8px 10px; text-align: center; border: 0.5px solid #E8E4DD; }
+.split-rep { font-size: 10px; color: #6B6B6B; margin-bottom: 2px; }
+.split-time { font-size: 13px; font-weight: 500; }
+.split-halves { display: flex; gap: 4px; justify-content: center; margin-top: 4px; }
+.split-half { font-size: 10px; padding: 1px 5px; border-radius: 3px; }
+.split-front { background: #E6F1FB; color: #0C447C; }
+.split-back { background: #EAF3DE; color: #27500A; }
+.split-back-pos { background: #FCEBEB; color: #791F1F; }
+.neg-label { font-size: 10px; color: #27500A; text-align: center; margin-top: 2px; }
+.pos-label { font-size: 10px; color: #791F1F; text-align: center; margin-top: 2px; }
+
+/* Stat block */
+.stat-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+.stat-item { flex: 1; text-align: center; padding: 12px; background: #FAF9F6; border-radius: 8px; border: 0.5px solid #E8E4DD; }
+.stat-rep { font-size: 10px; color: #6B6B6B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.stat-time { font-size: 22px; font-weight: 500; }
+.stat-arrow { font-size: 16px; color: #1D9E75; display: flex; align-items: center; justify-content: center; padding: 0 4px; flex-shrink: 0; }
+
+/* Pace delta */
+.pace-delta { font-size: 10px; margin-top: 2px; font-weight: 500; }
+.delta-fast { color: #27500A; }
+.delta-slow { color: #791F1F; }
+
+/* Summary cards */
+.summary-row { display: flex; gap: 12px; margin-top: 12px; }
+.summary-card { flex: 1; background: #FAF9F6; border-radius: 8px; padding: 10px 12px; }
+.summary-label { font-size: 10px; color: #6B6B6B; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; }
+.summary-val { font-size: 18px; font-weight: 500; }
+.summary-sub { font-size: 11px; color: #6B6B6B; margin-top: 2px; }
+
+/* Hi-Lo */
+.hilo-module { background: #FAF9F6; border-radius: 8px; padding: 16px 20px; margin-top: 16px; border: 0.5px solid #E8E4DD; }
+.hilo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center; margin-bottom: 10px; }
+.hilo-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #6B6B6B; font-weight: 500; margin-bottom: 4px; }
+.hilo-val { font-family: "Fraunces", Georgia, serif; font-size: 1.8rem; font-weight: 600; }
+.hilo-good { color: #27500A; }
+.hilo-building { color: #854F0B; }
+.hilo-context { font-size: 13px; color: #6B6B6B; text-align: center; padding-top: 8px; border-top: 0.5px solid #E8E4DD; }
+
+/* Chart SVG */
+.chart-svg { width: 100%; max-width: 600px; height: auto; margin-bottom: 12px; }
+
+/* Legend */
+.chart-legend { display: flex; gap: 16px; font-size: 11px; color: #6B6B6B; margin-bottom: 8px; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+/* Insight bar */
+.insight-bar { background: #FAF9F6; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #6B6B6B; border-left: 3px solid #B8956A; margin-top: 10px; line-height: 1.5; }
+
+/* Effort distribution */
+.effort-dist-bar { height: 28px; display: flex; border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+
+/* Duration */
+.dur-row { display: flex; gap: 6px; align-items: flex-end; margin-bottom: 4px; }
+.dur-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.dur-bar { width: 100%; border-radius: 3px 3px 0 0; }
+.dur-time { font-size: 11px; font-weight: 500; margin-bottom: 3px; }
+.dur-label { font-size: 9px; color: #6B6B6B; margin-top: 3px; text-align: center; }
+
+/* Print */
+@media print {
+  .perf-section { page-break-inside: avoid; }
+  .chart-set-block { page-break-inside: avoid; }
+  .hilo-module { page-break-inside: avoid; }
+  .summary-row { page-break-inside: avoid; }
+  .chart-svg { max-width: 500px; }
+}
