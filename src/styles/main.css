@@ -697,16 +697,17 @@ html, body, #root {
 
 .session-delete {
   background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 18px;
+  border: 1px solid transparent;
+  color: #ccc;
+  font-size: 20px;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 10px;
   line-height: 1;
   border-radius: 3px;
   flex-shrink: 0;
+  font-weight: 300;
 }
-.session-delete:hover { color: #B84545; background: #fce8e8; }
+.session-delete:hover { color: #B84545; background: #fce8e8; border-color: #f5c6c6; }
 
 /* ===== Session Viewer ===== */
 .session-viewer-actions {
