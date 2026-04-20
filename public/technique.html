@@ -126,6 +126,7 @@
       <option value="ath_liam">Liam Aikey (10)</option>
     </select>
     <div class="row">
+      <div><label>Session Date</label><input id="sessionDate" type="date" /></div>
       <div><label>Duration (minutes)</label><input id="duration" type="number" placeholder="e.g., 60" /></div>
       <div><label>Session Number (optional)</label><input id="sessionNum" type="number" placeholder="e.g., 12" /></div>
     </div>
@@ -158,8 +159,7 @@
 <div id="noteView" class="note-page" style="display:none">
   <div class="action-bar">
     <button class="action-btn" onclick="backToForm()">&larr; New Technique Session</button>
-    <button class="action-btn" onclick="window.print()">Print / Save PDF</button>
-    <button class="action-btn primary" onclick="saveSession()">Save to Athlete</button>
+    <button class="action-btn primary" id="printSaveBtn" onclick="saveAndPrint()">Print / Save PDF</button>
   </div>
   <div id="saveToast" class="save-toast"></div>
   <div class="note" id="noteRoot"></div>
@@ -368,12 +368,26 @@ function onCategoryChange(num) {
   if (!topic) return;
   const cat = topic.categories.find(c => c.id === catId);
   if (!cat) return;
-  document.getElementById('faultsGrid' + num).innerHTML = cat.faults.map(f => '<div class="fault-chip" onclick="toggleFault(this)">' + escapeHtml(f) + '</div>').join('');
+  var chipsHtml = cat.faults.map(f => '<div class="fault-chip" onclick="toggleFault(this)">' + escapeHtml(f) + '</div>').join('');
+  chipsHtml += '<div class="custom-faults" style="width:100%;margin-top:8px;">';
+  chipsHtml += '<div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;font-weight:600;">Custom faults (type in)</div>';
+  for (var cf = 1; cf <= 3; cf++) {
+    chipsHtml += '<input type="text" class="custom-fault-input" data-block="' + num + '" placeholder="Custom fault ' + cf + '" style="width:100%;padding:6px 10px;border:1px solid var(--rule);border-radius:3px;font-size:0.82rem;margin-bottom:4px;" oninput="updateGenerateButton()" />';
+  }
+  chipsHtml += '</div>';
+  document.getElementById('faultsGrid' + num).innerHTML = chipsHtml;
   updateGenerateButton();
 }
 
 function toggleFault(el) { el.classList.toggle('selected'); updateGenerateButton(); }
-function updateGenerateButton() { document.getElementById('generateBtn').disabled = !(selectedPool && document.querySelectorAll('.fault-chip.selected').length > 0); }
+function updateGenerateButton() {
+  var hasChips = document.querySelectorAll('.fault-chip.selected').length > 0;
+  var hasCustom = false;
+  document.querySelectorAll('.custom-fault-input').forEach(function(inp) {
+    if (inp.value.trim()) hasCustom = true;
+  });
+  document.getElementById('generateBtn').disabled = !(selectedPool && (hasChips || hasCustom));
+}
 
 function addVideoSlot() {
   if (videoSlotCount >= 2) return;
@@ -457,6 +471,7 @@ async function generate() {
     const cat = topic ? topic.categories.find(c => c.id === catId) : null;
     const faults = [];
     block.querySelectorAll('.fault-chip.selected').forEach(chip => faults.push(chip.textContent.trim()));
+    block.querySelectorAll('.custom-fault-input').forEach(inp => { var v = inp.value.trim(); if (v) faults.push(v); });
     topicBlocks.push({ topicId, topicLabel: topic ? topic.label : topicId, categoryId: catId, categoryLabel: cat ? cat.label : catId, faults, whatImproved: (block.querySelector('.what-improved') || {}).value?.trim() || null, whatNeedsWork: (block.querySelector('.what-needs-work') || {}).value?.trim() || null });
   });
   if (topicBlocks.length === 0) return;
@@ -479,16 +494,42 @@ async function generate() {
 function showError(data) { const box = document.getElementById('errorBox'); box.style.display = 'block'; box.textContent = (data.error || 'Error') + (data.detail ? '\n\n' + (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail, null, 2)) : ''); }
 function backToForm() { document.getElementById('noteView').style.display = 'none'; document.getElementById('formView').style.display = 'block'; currentNoteData = null; }
 
-async function saveSession() {
-  if (!currentNoteData) return;
-  const meta = currentNoteData._formMeta || {};
-  const payload = { athleteId: meta.athleteId, date: new Date().toISOString().split('T')[0], category: 'technique', poolType: meta.poolType, stroke: null, sessionNumber: meta.sessionNumber || null, durationMinutes: meta.durationMinutes || null, coachIntent: null, coachObservation: null, mainSet: null, hiLo: null, note: currentNoteData.note, charts: [], warnings: currentNoteData.warnings, rawModelOutput: currentNoteData.rawModelOutput, correctedData: null, wasRegenerated: false, model: currentNoteData.model, noteType: 'technique', videoReferences: videoRefs.map(function(v) { return { label: v.label, url: v.url }; }) };
+var sessionSaved = false;
+
+async function saveAndPrint() {
+  if (sessionSaved) { window.print(); return; }
+  var btn = document.getElementById('printSaveBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    const res = await fetch('/api/save-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    await saveSession();
+    sessionSaved = true;
+    btn.textContent = 'Print / Save PDF'; btn.disabled = false;
+    window.print();
+  } catch (err) {
+    btn.textContent = 'Print / Save PDF'; btn.disabled = false;
+    showToast('Save failed — printing anyway. ' + String(err), true);
+    window.print();
+  }
+}
+
+async function saveSession() {
+  if (!currentNoteData) throw new Error('No note data');
+  const meta = currentNoteData._formMeta || {};
+  const sessionDate = document.getElementById('sessionDate')?.value || new Date().toISOString().split('T')[0];
+  const payload = { athleteId: meta.athleteId, date: sessionDate, category: 'technique', poolType: meta.poolType, stroke: null, sessionNumber: meta.sessionNumber || null, durationMinutes: meta.durationMinutes || null, coachIntent: null, coachObservation: null, mainSet: null, hiLo: null, note: currentNoteData.note, charts: [], warnings: currentNoteData.warnings, rawModelOutput: currentNoteData.rawModelOutput, correctedData: null, wasRegenerated: false, model: currentNoteData.model, noteType: 'technique', videoReferences: videoRefs.map(function(v) { return { label: v.label, url: v.url }; }) };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch('/api/save-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: controller.signal });
+    clearTimeout(timeout);
     const data = await res.json();
-    if (!res.ok) { showToast('Save failed: ' + (data.error || 'unknown'), true); return; }
+    if (!res.ok) throw new Error(data.error || 'Save failed');
     showToast('Technique session saved!');
-  } catch (err) { showToast('Save failed: ' + String(err), true); }
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw new Error('Save timed out');
+    throw err;
+  }
 }
 
 function showToast(msg, isError = false) { const toast = document.getElementById('saveToast'); toast.textContent = msg; toast.classList.toggle('error', isError); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3800); }
@@ -497,6 +538,7 @@ function renderNote(data) {
   const meta = data._formMeta;
   const athleteInfo = ATHLETES[meta.athleteId] || {};
   const athleteName = athleteInfo.name || meta.athleteId;
+  setPdfTitle(athleteName);
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const note = data.note || {};
   const sections = [{ key: 'section_01', num: '01', title: 'WHAT WE WORKED ON' },{ key: 'section_02', num: '02', title: 'WHAT IMPROVED' },{ key: 'section_03', num: '03', title: "WHAT\u2019S NEXT" },{ key: 'section_04', num: '04', title: 'NEXT SESSION' }];
@@ -508,8 +550,15 @@ function renderNote(data) {
 
 function renderProse(text) { if (!text) return ''; return text.split(/\n\n+/).map(p => p.trim()).filter(Boolean).map(p => '<p>' + escapeHtml(p).replace(/\n/g, '<br>') + '</p>').join(''); }
 function escapeHtml(s) { if (s === null || s === undefined) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function setPdfTitle(name) { if (!name) return; var p = name.split(' '); var f = p[0] || ''; var l = p.slice(1).join(' ') || ''; var n = new Date(); document.title = f.charAt(0) + '.' + l + ' ' + String(n.getMonth()+1).padStart(2,'0') + '/' + String(n.getDate()).padStart(2,'0') + '/' + n.getFullYear(); }
 
 (function init() {
+  // Set date picker to today
+  var today = new Date().toISOString().split('T')[0];
+  var dateInput = document.getElementById('sessionDate');
+  if (dateInput) dateInput.value = today;
+
+  document.getElementById('sessionDate').value = new Date().toISOString().split('T')[0];
   addTopicBlock();
   const params = new URLSearchParams(window.location.search);
   const athleteId = params.get('athleteId');
