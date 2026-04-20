@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="/heic-helper.js"></script>
 <style>
   :root {
     --ink: #121212;
@@ -452,14 +453,18 @@ document.getElementById('photo').addEventListener('change', (e) => {
   if (isHeic) {
     document.getElementById('photoStatus').textContent = 'Converting HEIC to JPEG...';
     document.getElementById('photoStatus').classList.remove('ready');
-    convertHeicToJpeg(file).then((result) => {
-      photoBase64 = result.base64;
-      photoMediaType = 'image/jpeg';
-      document.getElementById('photoStatus').textContent = '\u2713 Photo ready (converted from HEIC)';
-      document.getElementById('photoStatus').classList.add('ready');
-      document.getElementById('photoPreview').src = result.dataUrl;
-      document.getElementById('photoPreview').style.display = 'block';
-    }).catch((err) => {
+    convertHeicToJpeg(file).then(function(convertedFile) {
+      var reader2 = new FileReader();
+      reader2.onload = function() {
+        photoBase64 = reader2.result.split(',')[1];
+        photoMediaType = 'image/jpeg';
+        document.getElementById('photoStatus').textContent = '\u2713 Photo ready (converted from HEIC)';
+        document.getElementById('photoStatus').classList.add('ready');
+        document.getElementById('photoPreview').src = reader2.result;
+        document.getElementById('photoPreview').style.display = 'block';
+      };
+      reader2.readAsDataURL(convertedFile);
+    }).catch(function(err) {
       document.getElementById('photoStatus').textContent = 'HEIC conversion failed: ' + String(err);
     });
     return;
@@ -480,33 +485,6 @@ document.getElementById('photo').addEventListener('change', (e) => {
   };
   reader.readAsDataURL(file);
 });
-
-function convertHeicToJpeg(file) {
-  return new Promise(function(resolve, reject) {
-    if (!window.heic2any) {
-      var script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js';
-      script.onload = function() { doConvert(file, resolve, reject); };
-      script.onerror = function() { reject(new Error('Failed to load HEIC converter')); };
-      document.head.appendChild(script);
-    } else {
-      doConvert(file, resolve, reject);
-    }
-  });
-}
-
-function doConvert(file, resolve, reject) {
-  heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 })
-    .then(function(jpegBlob) {
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        resolve({ dataUrl: ev.target.result, base64: ev.target.result.split(',')[1] });
-      };
-      reader.onerror = function() { reject(new Error('Failed to read converted file')); };
-      reader.readAsDataURL(jpegBlob);
-    })
-    .catch(function(err) { reject(err); });
-}
 
 function backToForm() {
   document.getElementById('noteView').style.display = 'none';
