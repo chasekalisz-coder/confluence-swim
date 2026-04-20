@@ -1,5 +1,6 @@
 
 
+
 import { fullName } from '../data/athletes.js'
 
 const OPTIONS = [
@@ -24,6 +25,14 @@ const OPTIONS = [
     title: 'Technique Session',
     desc: 'Stroke correction work. Pick focus area, select observed faults, describe what improved and what still needs work.',
     color: '#2dd4bf',
+    ready: true,
+    soonLabel: null,
+  },
+  {
+    id: 'sprint',
+    title: 'Sprint Lab',
+    desc: 'Sprint/power session analysis. Upload workout photo, get McEvoy-method science breakdown, goal tracking, and next-session recommendations.',
+    color: '#7c3aed',
     ready: true,
     soonLabel: null,
   },
