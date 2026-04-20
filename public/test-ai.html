@@ -736,15 +736,6 @@
   <div class="card">
     <label>Athlete</label>
     <select id="athleteId">
-      <option value="ath_jon">Jon Pomper (12)</option>
-      <option value="ath_lana">Lana Pomper (9)</option>
-      <option value="ath_ben">Ben Pomper (12)</option>
-      <option value="ath_kaden">Kaden Sun (10)</option>
-      <option value="ath_farris">Farris (9)</option>
-      <option value="ath_hannah">Hannah Montgomery (12)</option>
-      <option value="ath_grace">Grace Montgomery (12)</option>
-      <option value="ath_marley">Marley Taylor (14)</option>
-      <option value="ath_liam">Liam Aikey (10)</option>
     </select>
 
     <div class="row">
@@ -1341,17 +1332,30 @@ function setPdfTitle(name) {
   document.title = first.charAt(0) + '.' + last + ' ' + mm + '/' + dd + '/' + yyyy;
 }
 
-const ATHLETE_DISPLAY = {
-  ath_jon: 'Jon Pomper',
-  ath_lana: 'Lana Pomper',
-  ath_ben: 'Ben Pomper',
-  ath_kaden: 'Kaden Sun',
-  ath_farris: 'Farris',
-  ath_hannah: 'Hannah Montgomery',
-  ath_grace: 'Grace Montgomery',
-  ath_marley: 'Marley Taylor',
-  ath_liam: 'Liam Aikey',
-};
+const ATHLETE_DISPLAY = {};
+
+// Load athletes dynamically from database
+(async function loadAthleteOptions() {
+  try {
+    var res = await fetch('/api/db', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'listAthletes' }) });
+    var data = await res.json();
+    if (data.athletes) {
+      var sel = document.getElementById('athleteId');
+      data.athletes.forEach(function(r) {
+        var a = r.data || r;
+        var name = (a.first || '') + ' ' + (a.last || '');
+        ATHLETE_DISPLAY[a.id] = name.trim();
+        var opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = name.trim() + (a.age ? ' (' + a.age + ')' : '');
+        sel.appendChild(opt);
+      });
+      var params = new URLSearchParams(window.location.search);
+      var aid = params.get('athleteId');
+      if (aid) sel.value = aid;
+    }
+  } catch(e) { console.warn('Failed to load athletes:', e); }
+})();
 
 const CATEGORY_DISPLAY = {
   aerobic: 'Aerobic',
