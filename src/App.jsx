@@ -1,5 +1,4 @@
 
-
 import { useEffect, useState } from 'react'
 import { loadAthletes } from './lib/db.js'
 import Header from './components/Header.jsx'
@@ -44,6 +43,20 @@ export default function App() {
     setView('view-session')
   }
 
+  const handleAthleteUpdated = (updated) => {
+    setAthletes(prev => prev.map(a => a.id === updated.id ? updated : a))
+    setSelectedAthlete(updated)
+  }
+
+  const handleAthleteDeleted = (athleteId) => {
+    setAthletes(prev => prev.filter(a => a.id !== athleteId))
+    goHome()
+  }
+
+  const handleAthleteAdded = (newAthlete) => {
+    setAthletes(prev => [...prev, newAthlete])
+  }
+
   const pickSessionType = (type) => {
     const athleteId = selectedAthlete?.id
     if (type === 'training' && athleteId) {
@@ -58,35 +71,35 @@ export default function App() {
       window.location.href = `/technique.html?athleteId=${encodeURIComponent(athleteId)}`
       return
     }
+    if (type === 'workout' && athleteId) {
+      window.location.href = `/workout.html?athleteId=${encodeURIComponent(athleteId)}`
+      return
+    }
     alert(`${type} sessions coming soon.`)
   }
 
   return (
     <div className="app">
-      <Header
-        view={view}
-        athlete={selectedAthlete}
-        onHome={goHome}
-      />
-
+      <Header view={view} athlete={selectedAthlete} onHome={goHome} />
       <main className="main">
         {view === 'home' && (
           <AthleteGrid
             athletes={athletes}
             onSelect={selectAthlete}
             connectionStatus={connectionStatus}
+            onAthleteAdded={handleAthleteAdded}
           />
         )}
-
         {view === 'athlete' && selectedAthlete && (
           <AthleteProfile
             athlete={selectedAthlete}
             onBack={goHome}
             onNewSession={startNewSession}
             onViewSession={viewSession}
+            onAthleteUpdated={handleAthleteUpdated}
+            onAthleteDeleted={handleAthleteDeleted}
           />
         )}
-
         {view === 'new-session' && selectedAthlete && (
           <NewSessionChooser
             athlete={selectedAthlete}
@@ -94,7 +107,6 @@ export default function App() {
             onBack={() => setView('athlete')}
           />
         )}
-
         {view === 'view-session' && selectedAthlete && selectedSession && (
           <SessionViewer
             session={selectedSession}
@@ -103,12 +115,10 @@ export default function App() {
           />
         )}
       </main>
-
       <footer className="app-footer">
         <div>confluencesport.com · Dallas, TX</div>
-        <div className="version">v0.4.0 · Phase 4</div>
+        <div className="version">v0.5.0</div>
       </footer>
     </div>
   )
 }
-
