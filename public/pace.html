@@ -285,14 +285,15 @@ body::after {
 }
 
 @keyframes circlePopIn {
-  0% { transform: scale(0); opacity: 0; }
-  60% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: scale(0) rotate(-90deg); opacity: 0; }
+  50% { transform: scale(1.3) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 @keyframes textSlideIn {
-  0% { transform: translateX(-30px); opacity: 0; }
-  100% { transform: translateX(0); opacity: 1; }
+  0% { transform: translateX(-60px); opacity: 0; letter-spacing: 8px; }
+  60% { transform: translateX(4px); opacity: 1; letter-spacing: 0px; }
+  100% { transform: translateX(0); opacity: 1; letter-spacing: 0px; }
 }
 
 .goout-animate .goout-circle {
@@ -306,11 +307,11 @@ body::after {
 }
 
 .goout-animate.visible .goout-circle {
-  animation: circlePopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: circlePopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .goout-animate.visible .goout-text {
-  animation: textSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  animation: textSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
 }
 
 @keyframes clockSpin {
@@ -611,7 +612,7 @@ body::after {
 
 .pace-card.visible .pace-clock-track {
   opacity: 1;
-  animation: clockSpin 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: clockSpin 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .pace-clock-hand {
@@ -629,7 +630,7 @@ body::after {
 
 .pace-card.visible .pace-clock-hand {
   opacity: 1;
-  animation: handSweep 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: handSweep 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .pace-clock-dot {
@@ -651,7 +652,7 @@ body::after {
 }
 
 .pace-card.visible .pace-clock-value {
-  animation: fadeInValue 0.4s ease 0.7s forwards;
+  animation: fadeInValue 0.5s ease 1.8s forwards;
 }
 
 .pace-label {
@@ -1044,7 +1045,7 @@ function generate() {
       const shadow=c.replace(/[\d.]+\)$/,'0.2)');
       html+=`<div class="chart-bar-col">
         <span class="chart-bar-time" style="font-size:${fontSize}px">${fmtTime(s.time)}</span>
-        <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${shadow};transition:height 1.2s cubic-bezier(0.22,1,0.36,1)"></div>
+        <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${shadow};transition:height 1.6s cubic-bezier(0.22,1,0.36,1)"></div>
         <span class="chart-bar-label" style="font-size:${labelSize}px">${label}#${i+1}</span>
       </div>`;
     });
@@ -1060,7 +1061,7 @@ function generate() {
         const shadow=c.replace(/[\d.]+\)$/,'0.2)');
         html+=`<div class="chart-bar-col">
           <span class="chart-bar-time" style="font-size:8px">${fmtTime(s.time)}</span>
-          <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${shadow};transition:height 1.2s cubic-bezier(0.22,1,0.36,1)"></div>
+          <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${shadow};transition:height 1.6s cubic-bezier(0.22,1,0.36,1)"></div>
           <span class="chart-bar-label" style="font-size:7px">${label}#${i+halfIdx+1}</span>
         </div>`;
       });
@@ -1127,7 +1128,7 @@ function generate() {
         bars.forEach((bar, i) => {
           setTimeout(() => {
             bar.style.height = bar.dataset.h + 'px';
-          }, i * 80);
+          }, i * 100);
         });
         observer.unobserve(entry.target);
       }
