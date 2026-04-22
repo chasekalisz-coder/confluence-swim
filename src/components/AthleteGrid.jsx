@@ -1,5 +1,6 @@
 
 
+
 import { useState } from 'react'
 import { fullName, initials, primaryEvents } from '../data/athletes.js'
 import { addAthlete } from '../lib/db.js'
@@ -75,9 +76,24 @@ export default function AthleteGrid({ athletes, onSelect, connectionStatus, onAt
         ))}
       </div>
 
-      <button className="add-athlete-btn" style={{marginBottom: 8, borderColor: '#8b5cf6', color: '#8b5cf6'}} onClick={() => window.location.href = '/workout.html'}>
-        Build Workout
-      </button>
+      <div style={{display:'flex', gap:12, marginBottom:8, marginTop:8}}>
+        <button className="tool-card" onClick={() => window.location.href = '/workout.html'} style={{flex:1, padding:'18px 20px', background:'linear-gradient(135deg, rgba(20,28,50,0.9), rgba(15,22,40,0.95))', border:'1px solid rgba(148,163,184,0.1)', borderRadius:12, cursor:'pointer', display:'flex', alignItems:'center', gap:14, transition:'all 0.25s', position:'relative', overflow:'hidden', textAlign:'left'}}>
+          <div style={{width:42, height:42, borderRadius:10, background:'rgba(212,168,83,0.1)', border:'1px solid rgba(212,168,83,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'#d4a853'}}>⚡</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14, fontWeight:600, color:'#f1f5f9', marginBottom:2}}>Build Workout</div>
+            <div style={{fontSize:11, color:'#64748b'}}>AI-powered workout builder</div>
+          </div>
+          <span style={{color:'#334155', fontSize:18}}>→</span>
+        </button>
+        <button className="tool-card" onClick={() => window.location.href = '/pace.html'} style={{flex:1, padding:'18px 20px', background:'linear-gradient(135deg, rgba(20,28,50,0.9), rgba(15,22,40,0.95))', border:'1px solid rgba(148,163,184,0.1)', borderRadius:12, cursor:'pointer', display:'flex', alignItems:'center', gap:14, transition:'all 0.25s', position:'relative', overflow:'hidden', textAlign:'left'}}>
+          <div style={{width:42, height:42, borderRadius:10, background:'rgba(0,186,230,0.1)', border:'1px solid rgba(0,186,230,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'#00bae6'}}>◎</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14, fontWeight:600, color:'#f1f5f9', marginBottom:2}}>Race Pace Calculator</div>
+            <div style={{fontSize:11, color:'#64748b'}}>Elite-modeled target splits</div>
+          </div>
+          <span style={{color:'#334155', fontSize:18}}>→</span>
+        </button>
+      </div>
 
       {adding ? (
         <div style={{maxWidth:400,marginTop:16,padding:20,background:'#fff',border:'1px solid var(--border)',borderRadius:8}}>
