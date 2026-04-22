@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -241,8 +242,8 @@ body::after {
 }
 
 .time-input::placeholder {
-  color: #1e293b;
-  font-size: 14px;
+  color: #334155;
+  font-size: 16px;
   letter-spacing: 1px;
 }
 
@@ -395,10 +396,9 @@ body::after {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 24px 20px 18px;
+  padding: 32px 20px 18px;
   margin-top: 8px;
   position: relative;
-  overflow: hidden;
 }
 
 .chart-container::before {
@@ -665,7 +665,11 @@ body::after {
   <div class="selector-group">
     <div class="section-label">Goal Time</div>
     <div class="time-input-row">
-      <input type="text" class="time-input" id="goalTimeInput" placeholder="e.g. 1:52.40 or 52.40" autocomplete="off">
+      <div style="flex:1; display:flex; align-items:center; background:rgba(8,12,22,0.9); border:1px solid var(--border); border-radius:8px; padding:0 4px; transition:border-color 0.2s" id="timeInputWrap">
+        <input type="text" id="goalMin" placeholder="M" maxlength="2" autocomplete="off" style="width:48px; padding:15px 8px; background:none; border:none; color:var(--text-primary); font-size:20px; font-weight:600; font-family:'JetBrains Mono',monospace; letter-spacing:2px; outline:none; text-align:center">
+        <span style="font-size:22px; font-weight:700; color:#334155; font-family:'JetBrains Mono',monospace">:</span>
+        <input type="text" id="goalSec" placeholder="SS.00" maxlength="5" autocomplete="off" style="flex:1; padding:15px 8px; background:none; border:none; color:var(--text-primary); font-size:20px; font-weight:600; font-family:'JetBrains Mono',monospace; letter-spacing:2px; outline:none">
+      </div>
       <button class="generate-btn" id="generateBtn" onclick="generate()">Generate</button>
     </div>
   </div>
@@ -808,16 +812,26 @@ function clearResults() {
   document.getElementById('resultsContainer').innerHTML='';
 }
 
+function getGoalSeconds() {
+  const m = document.getElementById('goalMin').value.trim();
+  const s = document.getElementById('goalSec').value.trim();
+  if (!s) return null;
+  const min = m ? parseFloat(m) : 0;
+  const sec = parseFloat(s);
+  if (isNaN(sec)) return null;
+  if (isNaN(min)) return null;
+  return min * 60 + sec;
+}
+
 function updateGenBtn() {
   const btn=document.getElementById('generateBtn');
-  const gt=document.getElementById('goalTimeInput').value;
-  const ready=state.event && gt && parseTime(gt)>0;
+  const seconds=getGoalSeconds();
+  const ready=state.event && seconds && seconds>0;
   btn.classList.toggle('ready',ready);
 }
 
 function generate() {
-  const gt=document.getElementById('goalTimeInput').value;
-  const seconds=parseTime(gt);
+  const seconds=getGoalSeconds();
   if (!state.event||!seconds||seconds<=0) return;
   
   const pcts=D[state.course]?.[state.gender]?.[state.event];
@@ -853,9 +867,13 @@ function generate() {
     html+=`</div>`;
 
     // Chart
-    html+=`<div class="chart-container"><div class="chart-bars">`;
+    const avgPct = 100 / splits.length;
+    const avgH = 30+(avgPct/maxP)*105;
+    html+=`<div class="chart-container"><div class="chart-bars" style="position:relative">`;
+    // Average line
+    html+=`<div style="position:absolute;left:0;right:0;bottom:${avgH}px;border-top:2px dashed rgba(148,163,184,0.25);z-index:2;pointer-events:none"><span style="position:absolute;right:0;top:-16px;font-size:9px;color:#64748b;font-family:'JetBrains Mono',monospace">AVG</span></div>`;
     splits.forEach((s,i)=>{
-      const h=35+(s.pct/maxP)*125;
+      const h=30+(s.pct/maxP)*105;
       const c=barColor(s.pct,minP,maxP,i);
       html+=`<div class="chart-bar-col">
         <span class="chart-bar-time">${fmtTime(s.time)}</span>
@@ -917,8 +935,21 @@ function generate() {
 }
 
 // Init
-document.getElementById('goalTimeInput').addEventListener('input', updateGenBtn);
-document.getElementById('goalTimeInput').addEventListener('keydown', e=>{if(e.key==='Enter')generate();});
+document.getElementById('goalMin').addEventListener('input', function(e) {
+  this.value = this.value.replace(/[^\d]/g, '');
+  updateGenBtn();
+  if (this.value.length >= 1) document.getElementById('goalSec').focus();
+});
+document.getElementById('goalSec').addEventListener('input', function(e) {
+  this.value = this.value.replace(/[^\d.]/g, '');
+  updateGenBtn();
+});
+document.getElementById('goalSec').addEventListener('keydown', e=>{if(e.key==='Enter')generate();});
+document.getElementById('goalMin').addEventListener('keydown', e=>{if(e.key==='Enter')generate();});
+document.getElementById('goalMin').addEventListener('focus', ()=>{document.getElementById('timeInputWrap').style.borderColor='rgba(0,186,230,0.35)';});
+document.getElementById('goalMin').addEventListener('blur', ()=>{document.getElementById('timeInputWrap').style.borderColor='';});
+document.getElementById('goalSec').addEventListener('focus', ()=>{document.getElementById('timeInputWrap').style.borderColor='rgba(0,186,230,0.35)';});
+document.getElementById('goalSec').addEventListener('blur', ()=>{document.getElementById('timeInputWrap').style.borderColor='';});
 renderEvents();
 </script>
 
