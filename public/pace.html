@@ -307,11 +307,11 @@ body::after {
 }
 
 .goout-animate.visible .goout-circle {
-  animation: circlePopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: circlePopIn 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .goout-animate.visible .goout-text {
-  animation: textSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+  animation: textSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
 }
 
 @keyframes clockSpin {
@@ -929,13 +929,16 @@ function fmtPace(s) {
   return s.toFixed(1);
 }
 
-function barColor(pct, min, max, idx) {
+function barColor(pct, min, max, idx, total) {
+  if (total === undefined) total = 4;
   if (idx===0) return 'rgba(0, 186, 230, 0.85)';
-  const r=(pct-min)/(max-min||1);
-  if (r<0.3) return 'rgba(0, 230, 138, 0.7)';
-  if (r<0.6) return 'rgba(255, 200, 0, 0.65)';
-  if (r<0.85) return 'rgba(255, 140, 66, 0.7)';
-  return 'rgba(255, 71, 87, 0.75)';
+  if (idx===total-1) return 'rgba(0, 230, 138, 0.75)';
+  // Middle bars: blend from light blue to a neutral warm
+  const ratio = idx / (total - 1);
+  const r = Math.round(180 + ratio * 75);
+  const g = Math.round(210 - ratio * 50);
+  const b = Math.round(240 - ratio * 120);
+  return `rgba(${r}, ${g}, ${b}, 0.7)`;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1039,13 +1042,13 @@ function generate() {
     html+=`<div style="position:absolute;left:0;right:0;bottom:${avgH}px;border-top:2px dashed rgba(0,186,230,0.45);z-index:2;pointer-events:none"><span style="position:absolute;right:0;top:-16px;font-size:9px;color:rgba(0,186,230,0.7);font-weight:600;font-family:'JetBrains Mono',monospace">AVG</span></div>`;
     splits.slice(0, halfIdx).forEach((s,i)=>{
       const h=30+(s.pct/maxP)*105;
-      const c=barColor(s.pct,minP,maxP,i);
+      const c=barColor(s.pct,minP,maxP,i,splits.length);
       const fontSize = twoRows ? 8 : 10;
       const labelSize = twoRows ? 7 : 8;
       const shadow=c.replace(/[\d.]+\)$/,'0.2)');
       html+=`<div class="chart-bar-col">
         <span class="chart-bar-time" style="font-size:${fontSize}px">${fmtTime(s.time)}</span>
-        <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${shadow};transition:height 1.6s cubic-bezier(0.22,1,0.36,1)"></div>
+        <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${shadow};transition:height 2.2s cubic-bezier(0.22,1,0.36,1)"></div>
         <span class="chart-bar-label" style="font-size:${labelSize}px">${label}#${i+1}</span>
       </div>`;
     });
@@ -1057,11 +1060,11 @@ function generate() {
       html+=`<div style="position:absolute;left:0;right:0;bottom:${avgH}px;border-top:2px dashed rgba(0,186,230,0.45);z-index:2;pointer-events:none"></div>`;
       splits.slice(halfIdx).forEach((s,i)=>{
         const h=30+(s.pct/maxP)*105;
-        const c=barColor(s.pct,minP,maxP,i+halfIdx);
+        const c=barColor(s.pct,minP,maxP,i+halfIdx,splits.length);
         const shadow=c.replace(/[\d.]+\)$/,'0.2)');
         html+=`<div class="chart-bar-col">
           <span class="chart-bar-time" style="font-size:8px">${fmtTime(s.time)}</span>
-          <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${shadow};transition:height 1.6s cubic-bezier(0.22,1,0.36,1)"></div>
+          <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${shadow};transition:height 2.2s cubic-bezier(0.22,1,0.36,1)"></div>
           <span class="chart-bar-label" style="font-size:7px">${label}#${i+halfIdx+1}</span>
         </div>`;
       });
@@ -1128,7 +1131,7 @@ function generate() {
         bars.forEach((bar, i) => {
           setTimeout(() => {
             bar.style.height = bar.dataset.h + 'px';
-          }, i * 100);
+          }, i * 130);
         });
         observer.unobserve(entry.target);
       }
