@@ -916,22 +916,47 @@ function generate() {
     });
     html+=`</div>`;
 
-    // Chart
+    // Chart — split into two rows if more than 10 bars
     const avgPct = 100 / splits.length;
     const avgH = 30+(avgPct/maxP)*105;
-    html+=`<div class="chart-container"><div class="chart-bars" style="position:relative">`;
-    // Average line
-    html+=`<div style="position:absolute;left:0;right:0;bottom:${avgH}px;border-top:2px dashed rgba(148,163,184,0.25);z-index:2;pointer-events:none"><span style="position:absolute;right:0;top:-16px;font-size:9px;color:#64748b;font-family:'JetBrains Mono',monospace">AVG</span></div>`;
-    splits.forEach((s,i)=>{
+    const twoRows = splits.length > 10;
+    const halfIdx = twoRows ? Math.ceil(splits.length / 2) : splits.length;
+    
+    html+=`<div class="chart-container">`;
+    
+    // Row 1
+    html+=`<div class="chart-bars" style="position:relative">`;
+    html+=`<div style="position:absolute;left:0;right:0;bottom:${avgH}px;border-top:2px dashed rgba(0,186,230,0.45);z-index:2;pointer-events:none"><span style="position:absolute;right:0;top:-16px;font-size:9px;color:rgba(0,186,230,0.7);font-weight:600;font-family:'JetBrains Mono',monospace">AVG</span></div>`;
+    splits.slice(0, halfIdx).forEach((s,i)=>{
       const h=30+(s.pct/maxP)*105;
       const c=barColor(s.pct,minP,maxP,i);
+      const fontSize = twoRows ? 8 : 10;
+      const labelSize = twoRows ? 7 : 8;
       html+=`<div class="chart-bar-col">
-        <span class="chart-bar-time">${fmtTime(s.time)}</span>
-        <div class="chart-bar" style="height:${h}px;background:${c};box-shadow:0 0 14px ${c.replace(/[\d.]+\)$/,'0.2)')}"></div>
-        <span class="chart-bar-label">${label}#${i+1}</span>
+        <span class="chart-bar-time" style="font-size:${fontSize}px">${fmtTime(s.time)}</span>
+        <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${c.replace(/[\d.]+\)$/,'0.2)'}};transition:height 0.6s cubic-bezier(0.34,1.56,0.64,1)"></div>
+        <span class="chart-bar-label" style="font-size:${labelSize}px">${label}#${i+1}</span>
       </div>`;
     });
-    html+=`</div><div class="chart-avg"><span class="chart-avg-text">AVG ${fmtTime(avg)}/${unit}</span></div></div>`;
+    html+=`</div>`;
+    
+    // Row 2 (if needed)
+    if (twoRows) {
+      html+=`<div class="chart-bars" style="position:relative;margin-top:20px">`;
+      html+=`<div style="position:absolute;left:0;right:0;bottom:${avgH}px;border-top:2px dashed rgba(0,186,230,0.45);z-index:2;pointer-events:none"></div>`;
+      splits.slice(halfIdx).forEach((s,i)=>{
+        const h=30+(s.pct/maxP)*105;
+        const c=barColor(s.pct,minP,maxP,i+halfIdx);
+        html+=`<div class="chart-bar-col">
+          <span class="chart-bar-time" style="font-size:8px">${fmtTime(s.time)}</span>
+          <div class="chart-bar" data-h="${h}" style="height:0px;background:${c};box-shadow:0 0 14px ${c.replace(/[\d.]+\)$/,'0.2)'}};transition:height 0.6s cubic-bezier(0.34,1.56,0.64,1)"></div>
+          <span class="chart-bar-label" style="font-size:7px">${label}#${i+halfIdx+1}</span>
+        </div>`;
+      });
+      html+=`</div>`;
+    }
+    
+    html+=`<div class="chart-avg"><span class="chart-avg-text">AVG ${fmtTime(avg)}/${unit}</span></div></div>`;
 
     // Go-out speed
     if (splits.length>=2) {
@@ -982,6 +1007,23 @@ function generate() {
 
   document.getElementById('resultsContainer').innerHTML=html;
   document.getElementById('resultsContainer').scrollIntoView({behavior:'smooth',block:'start'});
+  
+  // Animate bars when they scroll into view
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const bars = entry.target.querySelectorAll('.chart-bar[data-h]');
+        bars.forEach((bar, i) => {
+          setTimeout(() => {
+            bar.style.height = bar.dataset.h + 'px';
+          }, i * 40);
+        });
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  
+  document.querySelectorAll('.chart-container').forEach(c => observer.observe(c));
 }
 
 // Init
