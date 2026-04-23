@@ -1,5 +1,7 @@
 // FamilyNav.jsx — top nav used across family-facing pages.
-import swimLogo from '/assets/confluence-swim-white.png'
+// Logo is served from /public/assets/ — reference by URL at runtime,
+// NOT via `import` (Vite/Rollup can't resolve absolute paths at build time).
+const SWIM_LOGO = '/assets/confluence-swim-white.png'
 
 export default function FamilyNav({ active = 'Profile', athleteInitials = '', onNavigate }) {
   const links = [
@@ -18,7 +20,7 @@ export default function FamilyNav({ active = 'Profile', athleteInitials = '', on
   return (
     <nav className="topnav">
       <div className="brand">
-        <img src={swimLogo} alt="Confluence Swim" />
+        <img src={SWIM_LOGO} alt="Confluence Swim" />
       </div>
       <div className="links">
         {links.map(l => (
