@@ -32,8 +32,27 @@ export async function loadAthletes() {
       return { athletes: ATHLETES, status: 'ok' }
     }
     const byId = Object.fromEntries(rows.map(r => [r.id, r.data]))
-    // Start with hardcoded athletes (preserving order), updated from DB
-    const ordered = ATHLETES.map(a => byId[a.id] || a)
+    // Merge local + DB. Local is source of truth for schema/structure and
+    // the new v2 fields (showChampionshipCuts, mockSessions, upcomingMeets,
+    // pastMeets, progression, gender). DB wins for user-editable fields
+    // (meetTimes, goalTimes, events, age, dob) that the admin may have
+    // updated since the seed. This prevents stale DB records from dropping
+    // fields the local data file has added.
+    const ordered = ATHLETES.map(a => {
+      const dbRec = byId[a.id]
+      if (!dbRec) return a
+      return {
+        ...a,           // local wins for new fields
+        ...dbRec,       // DB overrides where both exist
+        // ...then re-assert local for fields we know DB won't have
+        showChampionshipCuts: a.showChampionshipCuts ?? dbRec.showChampionshipCuts,
+        mockSessions:        a.mockSessions        ?? dbRec.mockSessions,
+        upcomingMeets:       a.upcomingMeets       ?? dbRec.upcomingMeets,
+        pastMeets:           a.pastMeets           ?? dbRec.pastMeets,
+        progression:         a.progression         ?? dbRec.progression,
+        gender:              a.gender              ?? dbRec.gender,
+      }
+    })
     // Append any athletes from DB that aren't in the hardcoded list
     rows.forEach(r => {
       if (!ATHLETES.some(a => a.id === r.id)) {
