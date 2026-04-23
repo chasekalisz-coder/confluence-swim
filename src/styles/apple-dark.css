@@ -1522,3 +1522,106 @@ body.v2-active #root {
 .v2 .championship-table {
   margin-top: 24px;
 }
+
+/* ============================================================
+   SPECIALTY VIZ — two options shown side-by-side
+   Shared heading (title/sub), then a 2-column grid with each
+   option in its own card.
+   ============================================================ */
+.v2 .specialty-viz {
+  margin-top: 24px;
+}
+.v2 .specialty-head {
+  margin-bottom: 24px;
+}
+.v2 .specialty-head .title {
+  font-size: 22px; font-weight: 600;
+  letter-spacing: -0.02em; color: var(--v2-text);
+  margin-bottom: 6px;
+}
+.v2 .specialty-head .sub {
+  font-size: 13px; color: var(--v2-text-2);
+}
+
+.v2 .specialty-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.v2 .viz-option {
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 14px;
+  padding: 20px 22px 24px;
+}
+.v2 .viz-option-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--v2-gold);
+  margin-bottom: 16px;
+}
+
+/* ---- Option A: horizontal bars ---- */
+.v2 .specialty-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.v2 .bar-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 40px;
+  gap: 14px;
+  align-items: center;
+}
+.v2 .bar-axis-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; color: var(--v2-text-3);
+}
+.v2 .bar-channel {
+  position: relative;
+  height: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.v2 .bar-fill-specialty {
+  position: relative; z-index: 2;
+  height: 100%;
+  background: linear-gradient(90deg, var(--v2-gold), #e6c178);
+  border-radius: 5px 0 0 5px;
+}
+.v2 .bar-ticks {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 1;
+}
+.v2 .bar-ticks span {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: rgba(255,255,255,0.08);
+}
+.v2 .bar-score {
+  font-size: 13px; font-weight: 600;
+  color: var(--v2-gold);
+  text-align: right;
+  font-family: "SF Mono", ui-monospace, monospace;
+}
+
+/* ---- Option B: radial bloom ---- */
+.v2 .specialty-bloom-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.v2 .specialty-bloom-wrap svg {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+}
+
+/* Mobile: stack the two options */
+@media (max-width: 720px) {
+  .v2 .specialty-options {
+    grid-template-columns: 1fr;
+  }
+}

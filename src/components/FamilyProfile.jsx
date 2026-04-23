@@ -248,10 +248,15 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
           <PowerRankingsList rankings={rankings} />
         </section>
 
-        {/* ============ SPECIALTY RADAR (placeholder shape) ============ */}
+        {/* ============ SPECIALTY — two visual options to pick from ============ */}
         <section>
           <h2 className="section-title">Specialty</h2>
-          <SpecialtyRadar rankings={rankings} athlete={athlete} />
+          <p className="section-lede">
+            Where does {athlete.first} score best across strokes? Each axis is a
+            0-100 score averaged from the standards earned across events in that
+            stroke family.
+          </p>
+          <SpecialtyViz rankings={rankings} athlete={athlete} />
         </section>
 
         {/* ============ TRAINING (placeholder) ============ */}
@@ -620,17 +625,35 @@ function PowerRankingsList({ rankings }) {
   )
 }
 
-function SpecialtyRadar({ rankings, athlete }) {
+// ============================================================
+// SpecialtyViz
+// ============================================================
+// Two alternative visualizations, rendered side-by-side so Chase
+// can pick the one he prefers on the live site. When the winner is
+// chosen the other will be removed.
+//
+// Both render the same 6-axis score data (Free/Back/Breast/Fly/IM/Distance).
+//
+// Option A — Horizontal Bar Chart
+//   Each stroke family on its own row with a bar showing 0-100 score.
+//   Cleanest, most data-dense, zero "radar rip-off" feel.
+//
+// Option B — Radial Bloom
+//   Each stroke family is a petal emanating from center. Petal length =
+//   score. Keeps the "shape at a glance" feel without a hexagon.
+// ============================================================
+function SpecialtyViz({ rankings, athlete }) {
   // Compute a "specialty value" per stroke family from this athlete's rankings.
   // 0 = no data, 100 = all events at top standard.
+  // NOTE: underlying scoring math is placeholder — see PLACEHOLDERS.md for the
+  // Phase 3 plan to tune weights by standard tier.
   const strokeAvg = (strokeKey) => {
     const matching = rankings.filter(r => {
       const parsed = parseEventName(r.event)
       return parsed && parsed.stroke === strokeKey
     })
     if (!matching.length) return 0
-    const total = matching.reduce((a, r) => a + r.pct, 0)
-    return total / matching.length
+    return matching.reduce((a, r) => a + r.pct, 0) / matching.length
   }
   const distanceAvg = () => {
     const longEvents = rankings.filter(r => {
@@ -642,11 +665,11 @@ function SpecialtyRadar({ rankings, athlete }) {
   }
 
   const values = {
-    Free:   strokeAvg('Free'),
-    Back:   strokeAvg('Back'),
-    Breast: strokeAvg('Breast'),
-    Fly:    strokeAvg('Fly'),
-    IM:     strokeAvg('IM'),
+    Free:     strokeAvg('Free'),
+    Back:     strokeAvg('Back'),
+    Breast:   strokeAvg('Breast'),
+    Fly:      strokeAvg('Fly'),
+    IM:       strokeAvg('IM'),
     Distance: distanceAvg(),
   }
 
@@ -657,72 +680,144 @@ function SpecialtyRadar({ rankings, athlete }) {
   if (entries.length >= 3) {
     const top = [...entries].sort((a,b) => b[1]-a[1])
     title = `Strong in ${top[0][0]} & ${top[1][0]}`
-    sub = `Shape leans toward ${top[0][0]} — that's where the current scores are highest.`
-  }
-
-  // Build the SVG polygon points (6 axes, 360° around)
-  const cx = 210, cy = 210, maxR = 150
-  const axes = ['Free', 'Back', 'Breast', 'Fly', 'IM', 'Distance']
-  const points = axes.map((axis, i) => {
-    const angle = (-90 + i * 60) * Math.PI / 180
-    const r = (values[axis] / 100) * maxR
-    return `${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`
-  }).join(' ')
-
-  // Ring guides
-  const ringPts = (scale) => axes.map((_, i) => {
-    const angle = (-90 + i * 60) * Math.PI / 180
-    const r = scale * maxR
-    return `${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`
-  }).join(' ')
-
-  // Label positions (just outside the outer ring)
-  const labelAt = (i, extraR = 20) => {
-    const angle = (-90 + i * 60) * Math.PI / 180
-    const r = maxR + extraR
-    return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) }
+    sub = `The highest current scores come from ${top[0][0]} and ${top[1][0]} events.`
   }
 
   return (
-    <div className="radar-wrap">
-      <svg viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+    <div className="specialty-viz">
+      <div className="specialty-head">
+        <div className="title">{title}</div>
+        <div className="sub">{sub}</div>
+      </div>
+
+      <div className="specialty-options">
+        <div className="viz-option">
+          <div className="viz-option-label">OPTION A — Bar Chart</div>
+          <SpecialtyBars values={values} />
+        </div>
+        <div className="viz-option">
+          <div className="viz-option-label">OPTION B — Radial Bloom</div>
+          <SpecialtyBloom values={values} athlete={athlete} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// Option A — Horizontal bar chart
+// ============================================================
+function SpecialtyBars({ values }) {
+  const axes = ['Free', 'Back', 'Breast', 'Fly', 'IM', 'Distance']
+  const max = Math.max(100, ...Object.values(values))
+  return (
+    <div className="specialty-bars">
+      {axes.map(axis => {
+        const v = values[axis] || 0
+        const pct = Math.min(100, (v / max) * 100)
+        return (
+          <div key={axis} className="bar-row">
+            <div className="bar-axis-label">{axis.toUpperCase()}</div>
+            <div className="bar-channel">
+              <div className="bar-fill-specialty" style={{ width: `${pct}%` }} />
+              <div className="bar-ticks">
+                <span style={{ left: '25%' }} />
+                <span style={{ left: '50%' }} />
+                <span style={{ left: '75%' }} />
+              </div>
+            </div>
+            <div className="bar-score mono">{Math.round(v)}</div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ============================================================
+// Option B — Radial bloom. Each axis is a petal; petal length = score.
+// No connecting polygon (that's what makes a radar chart look
+// like SwimCloud). Each petal is independent.
+// ============================================================
+function SpecialtyBloom({ values, athlete }) {
+  const axes = ['Free', 'Back', 'Breast', 'Fly', 'IM', 'Distance']
+  const cx = 180, cy = 180, maxR = 130, innerR = 18
+
+  const firstInitial = (athlete?.first || '').charAt(0).toUpperCase() || '?'
+
+  return (
+    <div className="specialty-bloom-wrap">
+      <svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="radarFill" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#D4A853" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#8a6d2f" stopOpacity="0.3" />
+          <linearGradient id="petalGradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%"  stopColor="#D4A853" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#8a6d2f" stopOpacity="0.4" />
           </linearGradient>
         </defs>
-        {/* concentric rings */}
-        <g fill="none" stroke="rgba(84,84,88,0.3)" strokeWidth="0.5">
-          <polygon points={ringPts(1)} />
-          <polygon points={ringPts(0.66)} />
-          <polygon points={ringPts(0.33)} />
+
+        {/* Subtle reference rings — no polygon shape */}
+        <g fill="none" stroke="rgba(84,84,88,0.2)" strokeWidth="0.5">
+          <circle cx={cx} cy={cy} r={maxR}      strokeDasharray="2 4" />
+          <circle cx={cx} cy={cy} r={maxR*0.66} strokeDasharray="2 4" />
+          <circle cx={cx} cy={cy} r={maxR*0.33} strokeDasharray="2 4" />
         </g>
-        {/* athlete shape */}
-        <polygon points={points} fill="url(#radarFill)" stroke="#D4A853" strokeWidth="1.5" />
-        {/* axes */}
-        <g stroke="rgba(84,84,88,0.4)" strokeWidth="0.5">
-          {axes.map((_, i) => {
-            const angle = (-90 + i * 60) * Math.PI / 180
-            return (
-              <line
-                key={i}
-                x1={cx} y1={cy}
-                x2={cx + maxR * Math.cos(angle)}
-                y2={cy + maxR * Math.sin(angle)}
-              />
-            )
-          })}
-        </g>
-        {/* labels */}
-        <g fill="#a1a1a6" fontSize="11" fontWeight="600" fontFamily="-apple-system, sans-serif">
+
+        {/* Each axis is an independent petal — tapered bar shape */}
+        {axes.map((axis, i) => {
+          const angle = (-90 + i * 60) * Math.PI / 180
+          const v = values[axis] || 0
+          const petalR = innerR + (v / 100) * (maxR - innerR)
+
+          // Petal is a narrow tapered wedge: wider at center, pointed at tip
+          const petalWidth = 18 // radians equivalent... actually use pixel offset at base
+          const perpAngle = angle + Math.PI / 2
+          const dx = Math.cos(perpAngle) * 10
+          const dy = Math.sin(perpAngle) * 10
+
+          const baseX = cx + innerR * Math.cos(angle)
+          const baseY = cy + innerR * Math.sin(angle)
+          const tipX  = cx + petalR * Math.cos(angle)
+          const tipY  = cy + petalR * Math.sin(angle)
+
+          const p1 = `${baseX + dx},${baseY + dy}`
+          const p2 = `${baseX - dx},${baseY - dy}`
+          const tip = `${tipX},${tipY}`
+
+          return (
+            <polygon
+              key={axis}
+              points={`${p1} ${tip} ${p2}`}
+              fill="url(#petalGradient)"
+              stroke="#D4A853"
+              strokeWidth="0.5"
+              opacity={v > 0 ? 1 : 0.2}
+            />
+          )
+        })}
+
+        {/* Center bubble with athlete initial */}
+        <circle cx={cx} cy={cy} r={innerR} fill="#111" stroke="#D4A853" strokeWidth="1" />
+        <text
+          x={cx} y={cy}
+          textAnchor="middle" dominantBaseline="central"
+          fill="#D4A853" fontSize="14" fontWeight="700"
+          fontFamily="-apple-system, sans-serif"
+        >
+          {firstInitial}
+        </text>
+
+        {/* Axis labels */}
+        <g fill="#a1a1a6" fontSize="10" fontWeight="600" fontFamily="-apple-system, sans-serif">
           {axes.map((axis, i) => {
-            const { x, y } = labelAt(i)
+            const angle = (-90 + i * 60) * Math.PI / 180
+            const lblR = maxR + 20
+            const x = cx + lblR * Math.cos(angle)
+            const y = cy + lblR * Math.sin(angle)
             return (
               <text
                 key={axis}
                 x={x} y={y}
-                textAnchor={x < cx - 10 ? 'end' : x > cx + 10 ? 'start' : 'middle'}
+                textAnchor={x < cx - 5 ? 'end' : x > cx + 5 ? 'start' : 'middle'}
                 dominantBaseline="middle"
               >
                 {axis.toUpperCase()}
@@ -730,17 +825,29 @@ function SpecialtyRadar({ rankings, athlete }) {
             )
           })}
         </g>
+
+        {/* Score value at each petal tip */}
+        <g fill="#D4A853" fontSize="9" fontWeight="700" fontFamily="-apple-system, sans-serif">
+          {axes.map((axis, i) => {
+            const v = values[axis] || 0
+            if (v === 0) return null
+            const angle = (-90 + i * 60) * Math.PI / 180
+            const petalR = innerR + (v / 100) * (maxR - innerR)
+            const scoreR = petalR + 8
+            const x = cx + scoreR * Math.cos(angle)
+            const y = cy + scoreR * Math.sin(angle)
+            return (
+              <text
+                key={axis}
+                x={x} y={y}
+                textAnchor="middle" dominantBaseline="middle"
+              >
+                {Math.round(v)}
+              </text>
+            )
+          })}
+        </g>
       </svg>
-      <div className="radar-legend">
-        <div className="title">{title}</div>
-        <div className="sub">{sub}</div>
-        <div className="keys">
-          <div className="key athlete">
-            <span className="swatch" />
-            <span>{athlete.first}</span>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
