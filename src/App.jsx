@@ -9,6 +9,7 @@ import NewSessionChooser from './components/NewSessionChooser.jsx'
 import SessionViewer from './components/SessionViewer.jsx'
 import FamilyProfile from './components/FamilyProfile.jsx'
 import FamilyNotes from './components/FamilyNotes.jsx'
+import FamilyMeets from './components/FamilyMeets.jsx'
 import './styles/apple-dark.css'
 
 export default function App() {
@@ -118,6 +119,7 @@ export default function App() {
       case 'notes':
         setView('family-notes'); return
       case 'meets':
+        setView('family-meets'); return
       case 'analysis':
       case 'resources':
         alert(`${nextView.charAt(0).toUpperCase() + nextView.slice(1)} page coming soon.`)
@@ -146,6 +148,17 @@ export default function App() {
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
         onViewSession={(session) => viewSession(session, 'family-notes')}
+      />
+    )
+  }
+
+  // ---- v2 Family Meets view ----
+  if (view === 'family-meets') {
+    return (
+      <FamilyMeets
+        athlete={selectedAthlete}
+        onBack={() => setView('family-profile')}
+        onNavigate={handleV2Navigate}
       />
     )
   }
