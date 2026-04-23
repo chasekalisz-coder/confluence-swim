@@ -90,6 +90,36 @@ all placeholder data has been cleared.
 - **What to do:** Delete the `mockSessions` array once real session data
   from Supabase is reliably flowing in.
 
+### 8. Resources Article Bodies
+- **File:** `src/components/FamilyResources.jsx` → `RESOURCES[*].body`
+- **What it is:** Placeholder article prose for Training Zones, Coaching
+  Philosophy, Meet Day Checklist, Glossary (mostly complete), plus
+  short "coming soon" stubs for Nutrition, Equipment, USA Swimming
+  Standards, and FAQ.
+- **Why it's a placeholder:** First draft written in coaching voice as
+  a starting point for Chase to rewrite or approve. Not Chase's own
+  words until he signs off.
+- **What to do:** Chase reviews each article body and either edits,
+  rewrites, or approves. Then the placeholder flag comes off.
+
+### 9. Meet Analyzer Tool Preview
+- **File:** `src/components/FamilyAnalysis.jsx` → `MeetAnalyzerTool`
+- **What it is:** Static input form showing the shape of the eventual
+  tool. All inputs disabled. Banner reads "Coming Soon."
+- **Why it's a placeholder:** Engine + comparison math not built yet.
+  Form shape is locked so families can see what's coming.
+- **What to do:** Wire up event data flow, comparison against elite
+  template, and visualization. Remove the banner.
+
+### 10. Race Pace Calculator Tool Preview
+- **File:** `src/components/FamilyAnalysis.jsx` → `RacePaceTool`
+- **What it is:** Static input form with event / course / goal time
+  fields. Inputs disabled. Banner reads "Coming Soon."
+- **Why it's a placeholder:** Pace engine with elite-template splits
+  not built yet.
+- **What to do:** Build the calculation engine. Pre-populate goal
+  time from athlete profile. Output the split plan.
+
 ---
 
 ## 🟢 LOW PRIORITY — Internal Flags

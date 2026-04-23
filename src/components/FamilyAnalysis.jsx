@@ -14,7 +14,7 @@
 // so it shows a real, dynamic tidbit rather than a hardcoded sentence.
 // ============================================================
 
-import { useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
 import {
@@ -24,6 +24,9 @@ import {
 } from '../lib/calculations.js'
 
 export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
+  // View state: 'index' (default), 'analyzer', 'pace'
+  const [view, setView] = useState('index')
+
   useEffect(() => {
     document.body.classList.add('v2-active')
     return () => { document.body.classList.remove('v2-active') }
@@ -79,6 +82,14 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
     <div className="v2">
       <FamilyNav active="Analysis" athleteInitials={initials} onNavigate={onNavigate} />
       <main className="v2-main">
+        {view === 'analyzer' && (
+          <MeetAnalyzerTool athlete={athlete} onClose={() => setView('index')} />
+        )}
+        {view === 'pace' && (
+          <RacePaceTool athlete={athlete} onClose={() => setView('index')} />
+        )}
+        {view === 'index' && (
+          <>
         {onBack && <button className="back" onClick={onBack}>← Back to Profile</button>}
 
         <div className="page-title">Analysis</div>
@@ -115,7 +126,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
         <div className="tools-grid">
           <div
             className="tool-card analyzer"
-            onClick={() => alert('Meet Analyzer is coming soon.')}
+            onClick={() => { setView('analyzer'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
           >
             <div className="icon-ring">
               <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -144,7 +155,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
 
           <div
             className="tool-card pace"
-            onClick={() => alert('Race Pace Calculator is coming soon.')}
+            onClick={() => { setView('pace'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
           >
             <div className="icon-ring">
               <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -194,6 +205,8 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
             </div>
           )}
         </section>
+          </>
+        )}
       </main>
       <FamilyFooter />
     </div>
@@ -245,4 +258,151 @@ function possessive(athlete) {
   if (p === 'he') return 'his'
   if (p === 'she') return 'her'
   return 'their'
+}
+
+// ============================================================
+// MeetAnalyzerTool — placeholder tool page
+// ============================================================
+// Inline tool view that swaps in place of the Analysis index when
+// the Meet Analyzer card is clicked. Shows what the eventual UI will
+// look like with disabled inputs — sets the visual shape so families
+// can see what's coming. Comparison math is not yet wired up.
+// ============================================================
+function MeetAnalyzerTool({ athlete, onClose }) {
+  return (
+    <div className="tool-view">
+      <button className="back" onClick={onClose}>← Back to Analysis</button>
+
+      <div className="tool-header">
+        <div className="tool-tag">Tool · Preview</div>
+        <h1 className="tool-title">Meet Analyzer</h1>
+        <p className="tool-sub">
+          Paste {possessive(athlete)} splits from any race and compare them against the
+          elite race template. See exactly where time is lost — and what adjustments
+          unlock the next standard.
+        </p>
+      </div>
+
+      <div className="tool-banner">
+        <div className="tb-dot" />
+        <div>
+          <div className="tb-title">Coming Soon</div>
+          <div className="tb-sub">
+            The Meet Analyzer is under active build. This preview shows the input
+            shape — the comparison engine and visualizations ship next. Try entering
+            values to see how the form will feel.
+          </div>
+        </div>
+      </div>
+
+      <div className="tool-form">
+        <div className="tf-section">
+          <label className="tf-label">Event</label>
+          <select className="tf-select" disabled>
+            <option>Select event…</option>
+          </select>
+        </div>
+
+        <div className="tf-grid-2">
+          <div className="tf-section">
+            <label className="tf-label">Course</label>
+            <select className="tf-select" disabled>
+              <option>SCY</option>
+              <option>LCM</option>
+            </select>
+          </div>
+          <div className="tf-section">
+            <label className="tf-label">Meet</label>
+            <input className="tf-input" placeholder="e.g. TAGs Championships" disabled />
+          </div>
+        </div>
+
+        <div className="tf-section">
+          <label className="tf-label">Splits (seconds)</label>
+          <div className="tf-splits-grid">
+            {[1,2,3,4,5,6,7,8].map(i => (
+              <div key={i} className="tf-split-cell">
+                <div className="tf-split-label">Split {i}</div>
+                <input className="tf-input" placeholder="—" disabled />
+              </div>
+            ))}
+          </div>
+          <div className="tf-hint">
+            Splits auto-adjust based on the event distance. Only the relevant cells
+            will be active.
+          </div>
+        </div>
+
+        <button className="tf-submit disabled" disabled>
+          Analyze — coming soon
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// RacePaceTool — placeholder tool page
+// ============================================================
+// Same inline-swap treatment as MeetAnalyzerTool but for the
+// Race Pace Calculator. Preview the form shape; calculation engine
+// ships next.
+// ============================================================
+function RacePaceTool({ athlete, onClose }) {
+  return (
+    <div className="tool-view">
+      <button className="back" onClick={onClose}>← Back to Analysis</button>
+
+      <div className="tool-header">
+        <div className="tool-tag">Tool · Preview</div>
+        <h1 className="tool-title">Race Pace Calculator</h1>
+        <p className="tool-sub">
+          Set a goal time for any event and see the exact splits {athlete.first}
+          needs to swim. Pre-populated with {possessive(athlete)} goal times,
+          built on elite-level race distribution data.
+        </p>
+      </div>
+
+      <div className="tool-banner">
+        <div className="tb-dot" />
+        <div>
+          <div className="tb-title">Coming Soon</div>
+          <div className="tb-sub">
+            The Race Pace Calculator is under active build. This preview shows the
+            input shape — the pace engine with elite-template splits ships next.
+          </div>
+        </div>
+      </div>
+
+      <div className="tool-form">
+        <div className="tf-grid-2">
+          <div className="tf-section">
+            <label className="tf-label">Event</label>
+            <select className="tf-select" disabled>
+              <option>Select event…</option>
+            </select>
+          </div>
+          <div className="tf-section">
+            <label className="tf-label">Course</label>
+            <select className="tf-select" disabled>
+              <option>SCY</option>
+              <option>LCM</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="tf-section">
+          <label className="tf-label">Goal Time</label>
+          <input className="tf-input" placeholder="m:ss.ss" disabled />
+          <div className="tf-hint">
+            Leave blank to use the goal time saved on {possessive(athlete)} profile.
+          </div>
+        </div>
+
+        <button className="tf-submit disabled" disabled>
+          Calculate pace — coming soon
+        </button>
+      </div>
+    </div>
+  )
 }
