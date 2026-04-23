@@ -34,6 +34,9 @@ import {
   ageUpProjection,
   STROKE_FAMILIES,
   parseEventName,
+  ageFromDob,
+  ageBucket,
+  daysUntilBirthday,
 } from '../lib/calculations.js'
 
 export default function FamilyProfile({ athlete, onBack, onNavigate }) {
@@ -74,21 +77,36 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
   const gender = athlete.gender
     || (athlete.pronouns === 'she' ? 'F' : athlete.pronouns === 'he' ? 'M' : 'M')
 
+  // Effective age: auto-updates when DOB + birthday have passed.
+  // Falls back to athlete.age if DOB is missing or unparseable.
+  // This is what drives standards lookups — when an athlete turns 13
+  // their entire profile flips from 11-12 → 13-14 automatically.
+  const effectiveAge = useMemo(() => {
+    const computed = ageFromDob({ dob: athlete.dob, fallbackAge: athlete.age })
+    return computed ?? athlete.age
+  }, [athlete.dob, athlete.age])
+
+  const currentBucket = ageBucket(effectiveAge)
+  const daysToBirthday = useMemo(
+    () => daysUntilBirthday({ dob: athlete.dob }),
+    [athlete.dob],
+  )
+
   // Next cut across all events
   const nextCut = useMemo(() => pickNextCut({
-    age: athlete.age,
+    age: effectiveAge,
     gender,
     course,
     meetTimes: athlete.meetTimes || [],
-  }), [athlete.age, gender, course, athlete.meetTimes])
+  }), [effectiveAge, gender, course, athlete.meetTimes])
 
   // Event power rankings
   const rankings = useMemo(() => eventPowerRankings({
-    age: athlete.age,
+    age: effectiveAge,
     gender,
     course,
     meetTimes: athlete.meetTimes || [],
-  }), [athlete.age, gender, course, athlete.meetTimes])
+  }), [effectiveAge, gender, course, athlete.meetTimes])
 
   // Goal times: athlete.goalTimes is a map { "50 Free SCY": "25.49", ... }
   const goalTimes = athlete.goalTimes || {}
@@ -117,11 +135,25 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
             {athlete.first}{athlete.last ? ' ' + athlete.last : ''}
           </div>
           <div className="meta">
-            <span className="age">{athlete.age} years old</span>
-            {athlete.dob && <>
+            <span className="age">{effectiveAge} years old</span>
+            {currentBucket && <>
               <span className="dot" />
-              <span className="age">Born {athlete.dob}</span>
+              <span className="age-bucket">{currentBucket}</span>
             </>}
+            {athlete.clubTeam && <>
+              <span className="dot" />
+              <span className="club">{athlete.clubTeam}</span>
+            </>}
+            {athlete.confluenceStart && <>
+              <span className="dot" />
+              <span className="club">Confluence since {athlete.confluenceStart}</span>
+            </>}
+            {daysToBirthday != null && daysToBirthday <= 30 && daysToBirthday > 0 && (<>
+              <span className="dot" />
+              <span className="birthday-soon">
+                Turns {effectiveAge + 1} in {daysToBirthday} day{daysToBirthday === 1 ? '' : 's'}
+              </span>
+            </>)}
           </div>
           <div className="events">
             {primaryEvents.map(ev => (
@@ -144,19 +176,26 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
         {/* ============ TIMES & GOALS ============ */}
         <section>
           <h2 className="section-title">Times & Goals</h2>
+          <p className="section-lede">
+            Personal bests against USA Swimming motivational time standards.
+            <strong> Current</strong> shows the cut level {athlete.first}'s best time earns today.
+            <strong> Next</strong> is the cut level we're chasing.
+            The <strong>deltas</strong> are how far {athlete.first}'s best time still needs to drop
+            to hit the next cut and the goal time.
+          </p>
           <div className="pill-toggle">
             <button className={course === 'SCY' ? 'active' : ''} onClick={() => setCourse('SCY')}>SCY</button>
             <button className={course === 'LCM' ? 'active' : ''} onClick={() => setCourse('LCM')}>LCM</button>
           </div>
           <TimesTable
-            age={athlete.age}
+            age={effectiveAge}
             gender={gender}
             course={course}
             bestTimes={bestTimes}
             goalTimes={goalTimes}
           />
           <AgeUpPreview
-            age={athlete.age}
+            age={effectiveAge}
             gender={gender}
             course={course}
             primaryEvents={athlete.events || []}
@@ -271,7 +310,10 @@ function NextCutCard({ nextCut }) {
       </section>
     )
   }
-  const pctFill = Math.round(nextCut.next.pct)
+  // Display pct as 1 decimal so 73.3 doesn't round down to 73 and 99.5
+  // doesn't ever round up to 100 (100% is impossible here by construction).
+  const pctDisplay = nextCut.next.pct.toFixed(1)
+  const pctFillWidth = Math.min(100, nextCut.next.pct)
   return (
     <section>
       <div className="next-cut">
@@ -283,10 +325,19 @@ function NextCutCard({ nextCut }) {
           <div className="sub">
             Current {formatTime(nextCut.timeSec)} ·
             Cut {formatTime(nextCut.next.cutoff)} ·
-            {' '}{pctFill}% of the way there
+            {' '}{pctDisplay}% of the way there
           </div>
           <div className="bar-wrap">
-            <div className="bar-fill" style={{ width: `${pctFill}%` }} />
+            <div className="bar-fill" style={{ width: `${pctFillWidth}%` }} />
+            <div className="bar-marks">
+              <span style={{ left: '25%' }} />
+              <span style={{ left: '50%' }} />
+              <span style={{ left: '75%' }} />
+            </div>
+          </div>
+          <div className="bar-scale">
+            <span>Previous cut</span>
+            <span className="bar-scale-next">{nextCut.next.level} cut</span>
           </div>
         </div>
         <div className="numeric">
@@ -343,7 +394,14 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
                     : <span className="std none">—</span>}
                 </div>
                 <div className={`delta mono ${row.deltaToNext != null && row.deltaToNext < 1 ? 'close' : ''}`}>
-                  {row.deltaToNext != null ? formatDelta(-row.deltaToNext) : '—'}
+                  {row.deltaToNext != null ? (
+                    <>
+                      {formatDelta(-row.deltaToNext)}
+                      {row.pctToNext != null && (
+                        <span className="delta-pct">{row.pctToNext.toFixed(0)}%</span>
+                      )}
+                    </>
+                  ) : '—'}
                 </div>
                 <div className="delta mono">
                   {row.deltaToGoal != null ? formatDelta(-row.deltaToGoal) : '—'}

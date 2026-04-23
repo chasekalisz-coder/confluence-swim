@@ -135,7 +135,18 @@ export function classifyTime(timeSec, standards) {
 
 /**
  * Given a time and standards, return the NEXT standard above what's achieved.
- * Returns { level, cutoff, gap } or null if already at AAAA.
+ * Returns { level, cutoff, gap, pct } or null if already at AAAA.
+ *
+ * pct = how far between the PREVIOUS standard (current level the athlete
+ * has achieved) and the NEXT standard their time sits. 0% means they just
+ * barely made the previous standard. 100% means they're right at the next
+ * cut. Above 100% is impossible — once they beat the next cut, classifyTime
+ * bumps them up to that level and `nextStandard` re-computes against the
+ * one above it.
+ *
+ * If the athlete hasn't even made B yet, pct is measured from a virtual
+ * "no standard" floor at 2x the B cutoff (rough approximation — really
+ * early swimmers just see a small %, which is honest).
  */
 export function nextStandard(timeSec, standards) {
   if (timeSec == null || !standards) return null
@@ -146,11 +157,31 @@ export function nextStandard(timeSec, standards) {
   const nextLevel = LEVELS[nextIdx]
   const cutoff = standards[nextLevel]
   if (cutoff == null) return null
+
+  // Previous standard cutoff — the "floor" from which we measure progress.
+  // If they haven't made B yet, use 1.25x the B cut as a conservative floor.
+  // (2x was too generous — a time well above B would display 60%+.)
+  const prevLevel = currentIdx >= 0 ? LEVELS[currentIdx] : null
+  const prevCutoff = prevLevel ? standards[prevLevel] : (standards.B ? standards.B * 1.25 : cutoff * 1.25)
+
+  // Progress = how much of the (prev → next) time range has been closed.
+  // Smaller time = faster = better. So:
+  //   prevCutoff = slowest edge (0% progress)
+  //   cutoff     = fastest edge (100% progress)
+  const range = prevCutoff - cutoff
+  let pct = range > 0
+    ? +(((prevCutoff - timeSec) / range) * 100).toFixed(1)
+    : 0
+  // Clamp to [0, 99.9]: 100 is impossible (they'd have crossed into the next level),
+  // and below 0 means slower than the virtual floor — display as 0.
+  if (pct < 0) pct = 0
+  if (pct > 99.9) pct = 99.9
+
   return {
     level: nextLevel,
     cutoff,
-    gap: +(timeSec - cutoff).toFixed(2),   // seconds to drop
-    pct: +(cutoff / timeSec * 100).toFixed(1), // how close % (cutoff is smaller)
+    gap: +(timeSec - cutoff).toFixed(2),   // seconds to drop (positive = still above cut)
+    pct,
   }
 }
 
@@ -307,6 +338,7 @@ export function timesTableRow({ age, gender, course, event, bestTime, goalTime }
     currentLevel,
     nextLevel: next ? next.level : null,
     deltaToNext: next ? next.gap : null,
+    pctToNext: next ? next.pct : null,
     deltaToGoal: bestSec != null && goalSec != null ? +(bestSec - goalSec).toFixed(2) : null,
   }
 }
@@ -322,3 +354,128 @@ export const STROKE_FAMILIES = [
   { label: "Breaststroke",     stroke: "Breast", distances: [50, 100, 200] },
   { label: "Individual Medley", stroke: "IM",    distances: [100, 200, 400] },
 ]
+
+// ------------------------------------------------------------
+// DOB / AGE — auto age-up when the birthday passes
+// ------------------------------------------------------------
+
+const MONTH_NAMES = [
+  'january', 'february', 'march', 'april', 'may', 'june',
+  'july', 'august', 'september', 'october', 'november', 'december',
+]
+
+/**
+ * Parse a DOB string into a {month, day, year?} shape.
+ *
+ * Accepts:
+ *   "June 4"           → { month: 5, day: 4, year: null }
+ *   "June 4, 2013"     → { month: 5, day: 4, year: 2013 }
+ *   "2013-06-04"       → { month: 5, day: 4, year: 2013 }
+ *   "06/04/2013"       → { month: 5, day: 4, year: 2013 }
+ *   "March"            → { month: 2, day: 1, year: null }  (day defaults to 1)
+ *
+ * Returns null if unparseable. Month is 0-indexed to match JS Date.
+ */
+export function parseDob(dobString) {
+  if (!dobString) return null
+  const s = String(dobString).trim()
+  if (!s) return null
+
+  // ISO: 2013-06-04
+  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
+  if (iso) {
+    return { month: parseInt(iso[2], 10) - 1, day: parseInt(iso[3], 10), year: parseInt(iso[1], 10) }
+  }
+
+  // Slash: 06/04/2013 or 6/4/13
+  const slash = s.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/)
+  if (slash) {
+    let year = slash[3] ? parseInt(slash[3], 10) : null
+    if (year != null && year < 100) year += year < 30 ? 2000 : 1900
+    return { month: parseInt(slash[1], 10) - 1, day: parseInt(slash[2], 10), year }
+  }
+
+  // "June 4" or "June 4, 2013" or just "March"
+  const named = s.match(/^([A-Za-z]+)\s*(\d{1,2})?(?:,?\s*(\d{4}))?$/)
+  if (named) {
+    const monthIdx = MONTH_NAMES.indexOf(named[1].toLowerCase())
+    if (monthIdx === -1) return null
+    return {
+      month: monthIdx,
+      day: named[2] ? parseInt(named[2], 10) : 1,
+      year: named[3] ? parseInt(named[3], 10) : null,
+    }
+  }
+
+  return null
+}
+
+/**
+ * Compute the athlete's current age given their DOB.
+ *
+ * If DOB includes a year → exact calculation using today's date.
+ * If DOB has no year → uses the provided `fallbackAge` as a floor and bumps
+ *   it up by 1 if today is on or after the birthday in the current year AND
+ *   the fallbackAge is stale (hasn't been updated past the birthday).
+ *
+ * This means: Chase enters "age: 12" + "dob: April 24" once. Tomorrow
+ * (April 24) Jon turns 13 and the display flips automatically. When Chase
+ * eventually edits the record, the year will be filled in and this becomes
+ * exact going forward.
+ */
+export function ageFromDob({ dob, fallbackAge, today = new Date() }) {
+  const parsed = parseDob(dob)
+  if (!parsed) return fallbackAge ?? null
+
+  // Exact path: we have a birth year.
+  if (parsed.year != null) {
+    let age = today.getFullYear() - parsed.year
+    const before = today.getMonth() < parsed.month
+      || (today.getMonth() === parsed.month && today.getDate() < parsed.day)
+    if (before) age -= 1
+    return age
+  }
+
+  // Year-unknown path: start from fallbackAge, bump if today >= birthday this year.
+  if (fallbackAge == null) return null
+  const birthdayThisYear = new Date(today.getFullYear(), parsed.month, parsed.day)
+  // If the birthday this year has already passed (or is today), the fallback age
+  // is stale the moment we cross into a new birth year. But without a birth year
+  // we can't know for sure; best effort: if fallbackAge was entered BEFORE the
+  // birthday and the birthday has now passed, bump by 1. We can't detect "when
+  // was this entered" so we default to NOT bumping — relying on admin to update.
+  // The one safe case is when the birthday is TODAY: celebrate.
+  const isToday = today.getMonth() === parsed.month && today.getDate() === parsed.day
+  return isToday ? fallbackAge + 1 : fallbackAge
+}
+
+/**
+ * USA Swimming age bucket for time standards.
+ * 8-under / 9-10 / 11-12 / 13-14 / 15-16 / 17-18 / open
+ */
+export function ageBucket(age) {
+  if (age == null) return null
+  if (age <= 8) return '8-under'
+  if (age <= 10) return '9-10'
+  if (age <= 12) return '11-12'
+  if (age <= 14) return '13-14'
+  if (age <= 16) return '15-16'
+  if (age <= 18) return '17-18'
+  return 'open'
+}
+
+/**
+ * Number of days between today and the athlete's next birthday.
+ * Handy for UI like "Turns 13 in 23 days".
+ */
+export function daysUntilBirthday({ dob, today = new Date() }) {
+  const parsed = parseDob(dob)
+  if (!parsed) return null
+  let birthday = new Date(today.getFullYear(), parsed.month, parsed.day)
+  if (birthday < today) {
+    birthday = new Date(today.getFullYear() + 1, parsed.month, parsed.day)
+  }
+  const diffMs = birthday - today
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+}
+

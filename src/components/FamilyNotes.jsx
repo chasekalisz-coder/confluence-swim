@@ -14,28 +14,38 @@ import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
 import { loadAthleteSessions } from '../lib/db.js'
 
-// How each stored session.category maps to a family-facing label + color key
+// How each stored session.category maps to a family-facing label + color key.
+// Color keys each get a distinct hue (see CSS .cat-stripe and .cat-label styles).
 const CATEGORY_MAP = {
-  training:  { label: 'Aerobic',   key: 'aerobic'   },
-  aerobic:   { label: 'Aerobic',   key: 'aerobic'   },
-  threshold: { label: 'Threshold', key: 'threshold' },
-  quality:   { label: 'Quality',   key: 'quality'   },
-  sprint:    { label: 'Sprint',    key: 'sprint'    },
-  technique: { label: 'Technique', key: 'technique' },
-  meetprep:  { label: 'Meet Prep', key: 'meetprep'  },
-  meet_prep: { label: 'Meet Prep', key: 'meetprep'  },
-  workout:   { label: 'Workout',   key: 'workout'   },
+  // Training-note categories — families all see as distinct but unified under
+  // "training-type" sessions when filtering. Session title never reads
+  // "Workout session" — it reads the category name as the descriptor.
+  training:    { label: 'Aerobic',      key: 'aerobic'    },
+  aerobic:     { label: 'Aerobic',      key: 'aerobic'    },
+  threshold:   { label: 'Threshold',    key: 'threshold'  },
+  quality:     { label: 'Quality',      key: 'quality'    },
+  sprint:      { label: 'Sprint',       key: 'sprint'     },
+  active_rest: { label: 'Active Rest',  key: 'activerest' },
+  power:       { label: 'Power',        key: 'power'      },
+  // Standalone note types
+  technique:   { label: 'Technique',    key: 'technique'  },
+  meetprep:    { label: 'Meet Prep',    key: 'meetprep'   },
+  meet_prep:   { label: 'Meet Prep',    key: 'meetprep'   },
+  // Fallback — when a session was saved before categories existed
+  workout:     { label: 'Workout',      key: 'workout'    },
 }
 
 // Which categories the filter chips cycle through
 const FILTER_CHIPS = [
-  { id: 'all',       label: 'All' },
-  { id: 'aerobic',   label: 'Aerobic' },
-  { id: 'threshold', label: 'Threshold' },
-  { id: 'quality',   label: 'Quality' },
-  { id: 'sprint',    label: 'Sprint' },
-  { id: 'technique', label: 'Technique' },
-  { id: 'meetprep',  label: 'Meet Prep' },
+  { id: 'all',         label: 'All' },
+  { id: 'aerobic',     label: 'Aerobic' },
+  { id: 'threshold',   label: 'Threshold' },
+  { id: 'quality',     label: 'Quality' },
+  { id: 'sprint',      label: 'Sprint' },
+  { id: 'power',       label: 'Power' },
+  { id: 'activerest',  label: 'Active Rest' },
+  { id: 'technique',   label: 'Technique' },
+  { id: 'meetprep',    label: 'Meet Prep' },
 ]
 
 export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession }) {
@@ -310,16 +320,24 @@ function findMostCommon(items) {
   return best
 }
 
-// Best-effort session-title derivation from whatever data shape the
-// training/sprint/technique pipelines store the note as.
+// Best-effort session-title derivation.
+// Training notes save to data.{title, sessionName, focus, setOverview}.
+// If none of those exist, we fall back to the category label alone —
+// NEVER the literal string "X session" (fixes the "Workout session" /
+// "Aerobic session" placeholder titles).
 function deriveTitle(session) {
   const data = session.data || {}
   if (data.title) return data.title
   if (data.sessionName) return data.sessionName
   if (data.focus) return data.focus
+  if (data.setOverview) {
+    // setOverview is often a longer string — take just the first clause
+    const first = String(data.setOverview).split(/[.—•]/)[0].trim()
+    if (first) return first.length > 70 ? first.slice(0, 67) + '…' : first
+  }
   if (data.category && data.distance) return `${data.category} — ${data.distance} yd`
-  const cat = CATEGORY_MAP[session.category]?.label || 'Session'
-  return `${cat} session`
+  // Bare minimum: just use the clean category label
+  return CATEGORY_MAP[session.category]?.label || 'Session'
 }
 
 function derivePreview(data) {

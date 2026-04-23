@@ -26,6 +26,8 @@
   --v2-green: #30D158;
   --v2-orange: #FF9F0A;
   --v2-red: #FF453A;
+  --v2-pink: #FF6482;      /* Active Rest — soft, gentle tone */
+  --v2-yellow: #FFD60A;    /* Power — high energy */
 }
 
 /* When v2 view is active, FamilyProfile.jsx adds .v2-active to <body>.
@@ -179,13 +181,36 @@ body.v2-active #root {
 .v2 .hero .meta {
   display: flex;
   align-items: center;
-  gap: 18px;
+  flex-wrap: wrap;
+  gap: 12px 18px;
   margin-bottom: 28px;
 }
 .v2 .hero .meta .age {
   font-size: 15px;
   color: var(--v2-text-2);
   font-weight: 500;
+}
+.v2 .hero .meta .age-bucket {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
+  padding: 3px 8px;
+  background: rgba(212, 168, 83, 0.1);
+  border-radius: 4px;
+}
+.v2 .hero .meta .club {
+  font-size: 13px;
+  color: var(--v2-text-2);
+  font-weight: 500;
+}
+.v2 .hero .meta .birthday-soon {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
+  padding: 3px 10px;
+  background: rgba(212, 168, 83, 0.08);
+  border: 0.5px solid rgba(212, 168, 83, 0.3);
+  border-radius: 980px;
 }
 .v2 .hero .meta .dot {
   width: 3px; height: 3px;
@@ -235,17 +260,42 @@ body.v2-active #root {
 .v2 .next-cut .chase .accent { color: var(--v2-gold); }
 .v2 .next-cut .sub { font-size: 14px; color: var(--v2-text-2); }
 .v2 .next-cut .bar-wrap {
+  position: relative;
   margin-top: 20px;
-  height: 6px;
+  height: 10px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 3px;
+  border-radius: 5px;
   overflow: hidden;
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
 }
 .v2 .next-cut .bar-fill {
+  position: relative;
   height: 100%;
   background: linear-gradient(90deg, var(--v2-gold), #e6c178);
-  border-radius: 3px;
+  border-radius: 5px 0 0 5px;
+  z-index: 2;
 }
+.v2 .next-cut .bar-marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.v2 .next-cut .bar-marks span {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.v2 .next-cut .bar-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--v2-text-3);
+}
+.v2 .next-cut .bar-scale-next { color: var(--v2-gold); }
 .v2 .next-cut .numeric { text-align: right; }
 .v2 .next-cut .numeric .gap {
   font-size: 64px; font-weight: 700; letter-spacing: -0.04em;
@@ -786,13 +836,15 @@ body.v2-active #root {
   align-self: stretch;
   min-height: 48px;
 }
-.v2 .note-card .cat-stripe.cat-aerobic   { background: var(--v2-blue);   }
-.v2 .note-card .cat-stripe.cat-threshold { background: var(--v2-teal);   }
-.v2 .note-card .cat-stripe.cat-quality   { background: var(--v2-green);  }
-.v2 .note-card .cat-stripe.cat-sprint    { background: var(--v2-purple); }
-.v2 .note-card .cat-stripe.cat-technique { background: var(--v2-orange); }
-.v2 .note-card .cat-stripe.cat-meetprep  { background: var(--v2-gold);   }
-.v2 .note-card .cat-stripe.cat-workout   { background: var(--v2-text-2); }
+.v2 .note-card .cat-stripe.cat-aerobic    { background: var(--v2-blue);   }
+.v2 .note-card .cat-stripe.cat-threshold  { background: var(--v2-teal);   }
+.v2 .note-card .cat-stripe.cat-quality    { background: var(--v2-green);  }
+.v2 .note-card .cat-stripe.cat-sprint     { background: var(--v2-purple); }
+.v2 .note-card .cat-stripe.cat-power      { background: var(--v2-yellow); }
+.v2 .note-card .cat-stripe.cat-activerest { background: var(--v2-pink);   }
+.v2 .note-card .cat-stripe.cat-technique  { background: var(--v2-orange); }
+.v2 .note-card .cat-stripe.cat-meetprep   { background: var(--v2-gold);   }
+.v2 .note-card .cat-stripe.cat-workout    { background: var(--v2-text-2); }
 
 .v2 .note-card .note-body { min-width: 0; }
 .v2 .note-card .meta {
@@ -812,13 +864,15 @@ body.v2-active #root {
   font-size: 10px; font-weight: 700;
   letter-spacing: 0.12em; text-transform: uppercase;
 }
-.v2 .note-card .cat-label.aerobic   { color: var(--v2-blue);   }
-.v2 .note-card .cat-label.threshold { color: var(--v2-teal);   }
-.v2 .note-card .cat-label.quality   { color: var(--v2-green);  }
-.v2 .note-card .cat-label.sprint    { color: var(--v2-purple); }
-.v2 .note-card .cat-label.technique { color: var(--v2-orange); }
-.v2 .note-card .cat-label.meetprep  { color: var(--v2-gold);   }
-.v2 .note-card .cat-label.workout   { color: var(--v2-text-2); }
+.v2 .note-card .cat-label.aerobic    { color: var(--v2-blue);   }
+.v2 .note-card .cat-label.threshold  { color: var(--v2-teal);   }
+.v2 .note-card .cat-label.quality    { color: var(--v2-green);  }
+.v2 .note-card .cat-label.sprint     { color: var(--v2-purple); }
+.v2 .note-card .cat-label.power      { color: var(--v2-yellow); }
+.v2 .note-card .cat-label.activerest { color: var(--v2-pink);   }
+.v2 .note-card .cat-label.technique  { color: var(--v2-orange); }
+.v2 .note-card .cat-label.meetprep   { color: var(--v2-gold);   }
+.v2 .note-card .cat-label.workout    { color: var(--v2-text-2); }
 
 .v2 .note-card .title {
   font-size: 16px; font-weight: 600;
@@ -1342,3 +1396,31 @@ body.v2-active #root {
   transition: opacity 0.15s;
 }
 .v2 .contact-card a.cc-email:hover { opacity: 0.9; }
+
+/* ============================================================
+   SECTION LEDE — one-paragraph context above data sections
+   ============================================================ */
+.v2 .section-lede {
+  font-size: 13px;
+  color: var(--v2-text-2);
+  line-height: 1.55;
+  margin: -12px 0 24px;
+  max-width: 720px;
+}
+.v2 .section-lede strong {
+  color: var(--v2-text);
+  font-weight: 600;
+}
+
+/* Inline pct next to Δ to Next in the Times & Goals table */
+.v2 .times-table .delta .delta-pct {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px; font-weight: 600;
+  color: var(--v2-text-3);
+  font-family: inherit;
+  letter-spacing: 0.04em;
+}
+.v2 .times-table .delta.close .delta-pct {
+  color: var(--v2-green);
+}
