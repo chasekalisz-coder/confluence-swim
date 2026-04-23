@@ -1217,3 +1217,128 @@ body.v2-active #root {
   font-size: 12px; color: var(--v2-text-3);
   font-family: "SF Mono", ui-monospace, monospace;
 }
+
+/* ============================================================
+   RESOURCES PAGE
+   ============================================================ */
+
+/* About block */
+.v2 .about-block {
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 20px;
+  padding: 36px 40px;
+  margin-bottom: 56px;
+}
+.v2 .about-block .ab-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--v2-gold);
+  margin-bottom: 14px;
+}
+.v2 .about-block .ab-title {
+  font-size: 24px; font-weight: 600;
+  letter-spacing: -0.02em; line-height: 1.25;
+  margin-bottom: 18px;
+  color: var(--v2-text);
+}
+.v2 .about-block .ab-body {
+  font-size: 14px; color: var(--v2-text-2);
+  line-height: 1.6;
+  max-width: 720px;
+}
+.v2 .about-block .ab-body p + p { margin-top: 14px; }
+
+/* Playbook grid */
+.v2 .resource-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 72px;
+}
+.v2 .resource-card {
+  position: relative;
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 14px;
+  padding: 24px 26px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.v2 .resource-card:hover {
+  background: var(--v2-surface-2);
+  border-color: var(--v2-border-strong);
+  transform: translateY(-1px);
+}
+.v2 .resource-card .rc-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: rgba(212,168,83,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.v2 .resource-card .rc-icon svg {
+  width: 20px; height: 20px;
+  stroke: var(--v2-gold);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.v2 .resource-card .rc-title {
+  font-size: 16px; font-weight: 600;
+  letter-spacing: -0.01em; margin-bottom: 8px;
+  color: var(--v2-text);
+}
+.v2 .resource-card .rc-desc {
+  font-size: 13px; color: var(--v2-text-2);
+  line-height: 1.5; margin-bottom: 16px;
+}
+.v2 .resource-card .rc-cta {
+  font-size: 12px; font-weight: 600;
+  color: var(--v2-blue);
+}
+.v2 .resource-card .rc-status {
+  position: absolute;
+  top: 16px; right: 16px;
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.06);
+  color: var(--v2-text-3);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Contact card */
+.v2 .contact-card {
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.v2 .contact-card .cc-title {
+  font-size: 16px; font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--v2-text);
+}
+.v2 .contact-card .cc-sub {
+  font-size: 12px; color: var(--v2-text-2);
+}
+.v2 .contact-card a.cc-email {
+  padding: 10px 18px;
+  background: var(--v2-gold);
+  color: #000;
+  border-radius: 980px;
+  font-size: 13px; font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.v2 .contact-card a.cc-email:hover { opacity: 0.9; }
