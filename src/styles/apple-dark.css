@@ -652,3 +652,196 @@ body.v2-active #root {
   color: var(--v2-text-3);
   font-style: italic;
 }
+
+/* ============================================================
+   SESSION NOTES PAGE
+   ============================================================ */
+.v2 .page-title {
+  font-size: 44px; font-weight: 700;
+  letter-spacing: -0.03em; line-height: 1;
+  margin-bottom: 14px; color: var(--v2-text);
+}
+.v2 .page-sub {
+  font-size: 16px; color: var(--v2-text-2);
+  margin-bottom: 40px; line-height: 1.5;
+  max-width: 620px;
+}
+
+/* Stats strip — 4 numbers across the top */
+.v2 .stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-bottom: 40px;
+  background: var(--v2-border);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.v2 .stats-strip .stat {
+  background: var(--v2-bg);
+  padding: 22px 24px;
+}
+.v2 .stats-strip .stat .label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--v2-text-3); margin-bottom: 10px;
+}
+.v2 .stats-strip .stat .value {
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.03em; line-height: 1;
+  color: var(--v2-text);
+}
+.v2 .stats-strip .stat .value.sm { font-size: 22px; }
+
+/* Filter bar: chips on left, search on right */
+.v2 .filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.v2 .filter-chips {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.v2 .filter-chips .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  background: transparent;
+  border: 0.5px solid var(--v2-border);
+  border-radius: 980px;
+  color: var(--v2-text-2);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.v2 .filter-chips .chip:hover { color: var(--v2-text); }
+.v2 .filter-chips .chip.active {
+  background: var(--v2-text);
+  color: #000;
+  border-color: var(--v2-text);
+}
+.v2 .filter-chips .chip .count-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 980px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--v2-text-3);
+}
+.v2 .filter-chips .chip.active .count-badge {
+  background: rgba(0, 0, 0, 0.15);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.v2 .search-input {
+  flex: 0 0 260px;
+  padding: 9px 14px;
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 980px;
+  color: var(--v2-text);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.v2 .search-input:focus { outline: none; border-color: var(--v2-text-3); }
+.v2 .search-input::placeholder { color: var(--v2-text-3); }
+
+/* Notes feed */
+.v2 .notes-feed { display: flex; flex-direction: column; gap: 12px; }
+.v2 .notes-group { display: flex; flex-direction: column; gap: 12px; }
+.v2 .month-header {
+  padding: 16px 0 4px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--v2-text-3);
+}
+.v2 .notes-group:first-of-type .month-header { padding-top: 0; }
+
+.v2 .note-card {
+  display: grid;
+  grid-template-columns: 3px 1fr auto;
+  gap: 18px;
+  padding: 20px 22px;
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 14px;
+  cursor: pointer;
+  align-items: start;
+  transition: background 0.15s, border-color 0.15s;
+}
+.v2 .note-card:hover {
+  background: var(--v2-surface-2);
+  border-color: var(--v2-border-strong);
+}
+.v2 .note-card .cat-stripe {
+  width: 3px;
+  border-radius: 3px;
+  align-self: stretch;
+  min-height: 48px;
+}
+.v2 .note-card .cat-stripe.cat-aerobic   { background: var(--v2-blue);   }
+.v2 .note-card .cat-stripe.cat-threshold { background: var(--v2-teal);   }
+.v2 .note-card .cat-stripe.cat-quality   { background: var(--v2-green);  }
+.v2 .note-card .cat-stripe.cat-sprint    { background: var(--v2-purple); }
+.v2 .note-card .cat-stripe.cat-technique { background: var(--v2-orange); }
+.v2 .note-card .cat-stripe.cat-meetprep  { background: var(--v2-gold);   }
+.v2 .note-card .cat-stripe.cat-workout   { background: var(--v2-text-2); }
+
+.v2 .note-card .note-body { min-width: 0; }
+.v2 .note-card .meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+.v2 .note-card .meta .dot {
+  width: 2px; height: 2px;
+  background: var(--v2-text-3);
+  border-radius: 50%;
+}
+.v2 .note-card .date {
+  font-size: 11px; color: var(--v2-text-3);
+  font-weight: 600; letter-spacing: 0.04em;
+}
+.v2 .note-card .cat-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.v2 .note-card .cat-label.aerobic   { color: var(--v2-blue);   }
+.v2 .note-card .cat-label.threshold { color: var(--v2-teal);   }
+.v2 .note-card .cat-label.quality   { color: var(--v2-green);  }
+.v2 .note-card .cat-label.sprint    { color: var(--v2-purple); }
+.v2 .note-card .cat-label.technique { color: var(--v2-orange); }
+.v2 .note-card .cat-label.meetprep  { color: var(--v2-gold);   }
+.v2 .note-card .cat-label.workout   { color: var(--v2-text-2); }
+
+.v2 .note-card .title {
+  font-size: 16px; font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+  color: var(--v2-text);
+}
+.v2 .note-card .preview {
+  font-size: 13px;
+  color: var(--v2-text-2);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.v2 .note-card .chev {
+  color: var(--v2-text-3);
+  font-size: 22px;
+  align-self: center;
+  transition: color 0.15s, transform 0.15s;
+}
+.v2 .note-card:hover .chev {
+  color: var(--v2-text);
+  transform: translateX(2px);
+}
