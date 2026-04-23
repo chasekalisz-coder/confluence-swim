@@ -19,7 +19,7 @@
 //  • Resources link
 // ============================================================
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
 import {
@@ -38,6 +38,14 @@ import {
 
 export default function FamilyProfile({ athlete, onBack, onNavigate }) {
   const [course, setCourse] = useState('SCY')
+
+  // While the v2 profile is mounted, flip the document body into dark mode
+  // so the full viewport (including overscroll) is black — not just the
+  // scoped .v2 wrapper. Cleanup on unmount returns legacy views to normal.
+  useEffect(() => {
+    document.body.classList.add('v2-active')
+    return () => { document.body.classList.remove('v2-active') }
+  }, [])
 
   if (!athlete) {
     return (
