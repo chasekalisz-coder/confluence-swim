@@ -331,6 +331,11 @@ export function timesTableRow({ age, gender, course, event, bestTime, goalTime }
   const stds = eventStandards({ age, gender, course, event })
   const currentLevel = bestSec != null && stds ? classifyTime(bestSec, stds) : null
   const next = bestSec != null && stds ? nextStandard(bestSec, stds) : null
+
+  // Unified color rule — applies to every delta on the site.
+  const nextGap = next ? gapToCut(bestSec, next.cutoff) : null
+  const goalGap = (bestSec != null && goalSec != null) ? gapToCut(bestSec, goalSec) : null
+
   return {
     event,
     bestSec,
@@ -339,8 +344,57 @@ export function timesTableRow({ age, gender, course, event, bestTime, goalTime }
     nextLevel: next ? next.level : null,
     deltaToNext: next ? next.gap : null,
     pctToNext: next ? next.pct : null,
+    colorToNext: nextGap ? nextGap.color : null,
     deltaToGoal: bestSec != null && goalSec != null ? +(bestSec - goalSec).toFixed(2) : null,
+    pctToGoal: goalGap ? goalGap.pctOff : null,
+    colorToGoal: goalGap ? goalGap.color : null,
   }
+}
+
+// ------------------------------------------------------------
+// UNIFIED DELTA COLOR RULE
+// ------------------------------------------------------------
+// One rule applied wherever a time-gap appears on the site:
+//   under 2%    → green (close enough to hunt this season)
+//   2-3.5%      → yellow (reachable with focus)
+//   3.5%+       → red (long-term)
+// Regression (bestSec > cutSec by more than noise) → neutral, not red —
+// regressions get their own treatment per-context.
+
+export const PCT_COLOR_GREEN_MAX = 2.0
+export const PCT_COLOR_YELLOW_MAX = 3.5
+
+/**
+ * Given a percent-off-cut value, return 'green' | 'yellow' | 'red' | null.
+ * Null = gap is 0 or negative (already hit the cut).
+ */
+export function pctColor(pctOff) {
+  if (pctOff == null) return null
+  if (pctOff <= 0) return null
+  if (pctOff < PCT_COLOR_GREEN_MAX) return 'green'
+  if (pctOff < PCT_COLOR_YELLOW_MAX) return 'yellow'
+  return 'red'
+}
+
+/**
+ * Given the athlete's best time and a target cut time (both seconds),
+ * return { achieved, deltaSec, pctOff, color }.
+ *
+ *   achieved = true iff best <= cut
+ *   deltaSec = seconds still to drop (positive). Null if already hit.
+ *   pctOff   = percent above the cut (positive). Null if already hit.
+ *   color    = pctColor classification.
+ */
+export function gapToCut(bestSec, cutSec) {
+  if (bestSec == null || cutSec == null) {
+    return { achieved: false, deltaSec: null, pctOff: null, color: null }
+  }
+  if (bestSec <= cutSec) {
+    return { achieved: true, deltaSec: 0, pctOff: 0, color: null }
+  }
+  const deltaSec = +(bestSec - cutSec).toFixed(2)
+  const pctOff = +((deltaSec / cutSec) * 100).toFixed(1)
+  return { achieved: false, deltaSec, pctOff, color: pctColor(pctOff) }
 }
 
 // ------------------------------------------------------------

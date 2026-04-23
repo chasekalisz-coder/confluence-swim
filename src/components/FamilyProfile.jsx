@@ -37,7 +37,14 @@ import {
   ageFromDob,
   ageBucket,
   daysUntilBirthday,
+  gapToCut,
 } from '../lib/calculations.js'
+import {
+  CHAMPIONSHIP_TIERS,
+  CHAMPIONSHIP_TIER_LABELS,
+  championshipCut,
+  txTagsCut,
+} from '../lib/championship-standards.js'
 
 export default function FamilyProfile({ athlete, onBack, onNavigate }) {
   const [course, setCourse] = useState('SCY')
@@ -73,9 +80,11 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
   const primaryEvents = (athlete.events || []).slice(0, 2)
   const otherEvents = (athlete.events || []).slice(2)
 
-  // Gender: athlete may not have this directly; infer from pronouns
+  // Gender is now the admin-only source of truth for standards lookups
+  // and auto-copy pronouns. Falls back to inferring from legacy `pronouns`
+  // field for any record that hasn't been migrated yet.
   const gender = athlete.gender
-    || (athlete.pronouns === 'she' ? 'F' : athlete.pronouns === 'he' ? 'M' : 'M')
+    || (athlete.pronouns === 'she' ? 'F' : 'M')
 
   // Effective age: auto-updates when DOB + birthday have passed.
   // Falls back to athlete.age if DOB is missing or unparseable.
@@ -183,6 +192,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
             The <strong>deltas</strong> are how far {athlete.first}'s best time still needs to drop
             to hit the next cut and the goal time.
           </p>
+          <ColorLegend />
           <div className="pill-toggle">
             <button className={course === 'SCY' ? 'active' : ''} onClick={() => setCourse('SCY')}>SCY</button>
             <button className={course === 'LCM' ? 'active' : ''} onClick={() => setCourse('LCM')}>LCM</button>
@@ -202,6 +212,26 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
             bestTimes={bestTimes}
           />
         </section>
+
+        {/* ============ CHAMPIONSHIP STANDARDS (toggle-gated) ============ */}
+        {athlete.showChampionshipCuts && (
+          <section>
+            <h2 className="section-title">Championship Standards</h2>
+            <p className="section-lede">
+              The national pathway beyond USA Swimming motivationals. <strong>Futures</strong> is
+              the first national-level meet; <strong>Sectionals</strong> is the Southern Zone
+              regional; <strong>Jr Nats</strong> and <strong>Nationals</strong> are the highest
+              domestic tiers. Each cell shows the cut, how far the best time still needs to drop,
+              and the percentage gap.
+            </p>
+            <ColorLegend />
+            <ChampionshipTable
+              gender={gender}
+              course={course}
+              bestTimes={bestTimes}
+            />
+          </section>
+        )}
 
         {/* ============ PROGRESSION (placeholder) ============ */}
         <section>
@@ -352,8 +382,10 @@ function NextCutCard({ nextCut }) {
 }
 
 function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
+  // Current age bucket for TX TAGs lookup
+  const bucket = ageBucket(age)
   return (
-    <div className="times-table">
+    <div className="times-table times-table-with-tags">
       <div className="times-row header">
         <div>Event</div>
         <div>Best</div>
@@ -361,6 +393,7 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
         <div>Current</div>
         <div>Next</div>
         <div>Δ to Next</div>
+        <div>TX TAGs</div>
         <div>Δ to Goal</div>
       </div>
 
@@ -376,6 +409,13 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
               age, gender, course, event: baseEvent,
               bestTime: best, goalTime: goal,
             })
+
+            // TX TAGs lookup + gap
+            const tagsCut = txTagsCut({ gender, ageBucket: bucket, course, event: baseEvent })
+            const tagsGap = (row.bestSec != null && tagsCut != null)
+              ? gapToCut(row.bestSec, tagsCut)
+              : null
+
             return (
               <div className="times-row" key={eventKey}>
                 <div className="event">{dist}</div>
@@ -393,19 +433,98 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
                     ? <span className={`std ${row.nextLevel}`}>{row.nextLevel}</span>
                     : <span className="std none">—</span>}
                 </div>
-                <div className={`delta mono ${row.deltaToNext != null && row.deltaToNext < 1 ? 'close' : ''}`}>
+                <div className={`delta mono delta-${row.colorToNext || 'neutral'}`}>
                   {row.deltaToNext != null ? (
                     <>
                       {formatDelta(-row.deltaToNext)}
                       {row.pctToNext != null && (
-                        <span className="delta-pct">{row.pctToNext.toFixed(0)}%</span>
+                        <span className="delta-pct">{row.pctToNext.toFixed(1)}%</span>
                       )}
                     </>
                   ) : '—'}
                 </div>
-                <div className="delta mono">
-                  {row.deltaToGoal != null ? formatDelta(-row.deltaToGoal) : '—'}
+                <div className="tags-cell">
+                  {tagsGap?.achieved ? (
+                    <span className="hit-pill">✓ Hit</span>
+                  ) : tagsGap ? (
+                    <div className={`stacked-gap delta-${tagsGap.color || 'neutral'}`}>
+                      <div className="stacked-cut mono">{formatTime(tagsCut)}</div>
+                      <div className="stacked-delta mono">−{tagsGap.deltaSec.toFixed(2)}</div>
+                      <div className="stacked-pct">{tagsGap.pctOff.toFixed(1)}%</div>
+                    </div>
+                  ) : (
+                    <span className="std none">—</span>
+                  )}
                 </div>
+                <div className={`delta mono delta-${row.colorToGoal || 'neutral'}`}>
+                  {row.deltaToGoal != null ? (
+                    <>
+                      {formatDelta(-row.deltaToGoal)}
+                      {row.pctToGoal != null && (
+                        <span className="delta-pct">{row.pctToGoal.toFixed(1)}%</span>
+                      )}
+                    </>
+                  ) : '—'}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ============================================================
+// ChampionshipTable
+// ============================================================
+// Higher-level domestic cuts: Futures / Sectionals / Jr Nats / Nationals.
+// Toggle-gated by athlete.showChampionshipCuts so swimmers far from these
+// standards aren't shown a discouraging wall of red deltas.
+// Each cell shows cut time / gap / percentage using the unified color rule.
+function ChampionshipTable({ gender, course, bestTimes }) {
+  return (
+    <div className="times-table championship-table">
+      <div className="times-row header">
+        <div>Event</div>
+        <div>Best</div>
+        {CHAMPIONSHIP_TIERS.map(tier => (
+          <div key={tier}>{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
+        ))}
+      </div>
+
+      {STROKE_FAMILIES.map(fam => (
+        <div key={fam.label}>
+          <div className="stroke-family-label">{fam.label}</div>
+          {fam.distances.map(dist => {
+            const baseEvent = `${dist} ${fam.stroke}`
+            const eventKey = `${baseEvent} ${course}`
+            const best = bestTimes[eventKey]
+            const bestSec = best ? parseTime(best) : null
+
+            return (
+              <div className="times-row" key={eventKey}>
+                <div className="event">{dist}</div>
+                <div className="time mono">{bestSec != null ? formatTime(bestSec) : '—'}</div>
+                {CHAMPIONSHIP_TIERS.map(tier => {
+                  const cut = championshipCut({ tier, gender, course, event: baseEvent })
+                  const gap = (bestSec != null && cut != null) ? gapToCut(bestSec, cut) : null
+                  return (
+                    <div key={tier} className="tags-cell">
+                      {gap?.achieved ? (
+                        <span className="hit-pill">✓ Hit</span>
+                      ) : gap ? (
+                        <div className={`stacked-gap delta-${gap.color || 'neutral'}`}>
+                          <div className="stacked-cut mono">{formatTime(cut)}</div>
+                          <div className="stacked-delta mono">−{gap.deltaSec.toFixed(2)}</div>
+                          <div className="stacked-pct">{gap.pctOff.toFixed(1)}%</div>
+                        </div>
+                      ) : (
+                        <span className="std none">—</span>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )
           })}
@@ -650,6 +769,28 @@ function UpcomingMeetsList({ meets }) {
           <div className="meet-date mono">{m.dateRange || ''}</div>
         </div>
       ))}
+    </div>
+  )
+}
+
+// ============================================================
+// ColorLegend
+// ============================================================
+// Tiny inline key explaining the green/yellow/red delta color rule.
+// Rendered under the lede on any table that uses pctColor().
+// Each label is colored to match its dot so the legend self-teaches.
+function ColorLegend() {
+  return (
+    <div className="color-legend">
+      <span className="legend-item legend-green">
+        <span className="legend-dot" /> Under 2%
+      </span>
+      <span className="legend-item legend-yellow">
+        <span className="legend-dot" /> 2–3.5%
+      </span>
+      <span className="legend-item legend-red">
+        <span className="legend-dot" /> 3.5%+
+      </span>
     </div>
   )
 }
