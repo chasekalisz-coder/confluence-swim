@@ -60,16 +60,24 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
     return () => { document.body.classList.remove('v2-active') }
   }, [])
 
-  // Load sessions for this athlete
+  // Load sessions for this athlete.
+  // If athlete has mockSessions (placeholder data for walkthrough/demo),
+  // merge them in. Real DB sessions always take precedence; mocks fill
+  // empty category tabs so the page isn't all empty states.
   useEffect(() => {
     if (!athlete) return
     let active = true
     setLoading(true)
     loadAthleteSessions(athlete.id).then(s => {
-      if (active) {
-        setSessions(s || [])
-        setLoading(false)
-      }
+      if (!active) return
+      const real = s || []
+      const mocks = (athlete.mockSessions || []).map(m => ({
+        ...m,
+        id: `mock_${m.id || Math.random().toString(36).slice(2, 8)}`,
+        isMock: true,
+      }))
+      setSessions([...real, ...mocks])
+      setLoading(false)
     })
     return () => { active = false }
   }, [athlete?.id])
