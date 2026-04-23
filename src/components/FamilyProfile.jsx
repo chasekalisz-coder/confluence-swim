@@ -236,10 +236,14 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
         {/* ============ PROGRESSION (placeholder) ============ */}
         <section>
           <h2 className="section-title">Progression</h2>
-          <div className="empty-state">
-            Progression chart needs meet-history data (event, time, date).
-            Once meet history is entered, this chart will populate automatically per event.
-          </div>
+          <p className="section-lede">
+            How {athlete.first}'s times have dropped over past meets. Each line is
+            one event. Lower on the chart = faster.
+          </p>
+          <ProgressionChart
+            data={athlete.progression || []}
+            athleteName={athlete.first}
+          />
         </section>
 
         {/* ============ EVENT POWER RANKINGS ============ */}
@@ -715,6 +719,212 @@ function PowerRankingsList({ rankings }) {
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+// ============================================================
+// ProgressionChart
+// ============================================================
+// SVG line chart showing time drops over past meets, one line per event.
+// Expects data shape: [{ event, date, time }]. Time is a string like
+// "1:02.91" which is parsed to seconds. Lower on chart = faster.
+//
+// Plot math:
+//   x-axis: date (earliest left, today right)
+//   y-axis: time in seconds (lower = better, so y-axis is inverted visually)
+//
+// Event selector: dropdown shows all events with data. Only one event
+// line drawn at a time — keeps visual load manageable.
+// ============================================================
+function ProgressionChart({ data, athleteName }) {
+  const [selectedEvent, setSelectedEvent] = useState(null)
+
+  // Group by event
+  const byEvent = useMemo(() => {
+    const m = new Map()
+    for (const row of data) {
+      const sec = parseTime(row.time)
+      if (sec == null) continue
+      if (!row.date) continue
+      const d = new Date(row.date)
+      if (isNaN(d.getTime())) continue
+      if (!m.has(row.event)) m.set(row.event, [])
+      m.get(row.event).push({ date: d, time: sec, raw: row.time })
+    }
+    // Sort each event's points by date
+    for (const [, arr] of m) {
+      arr.sort((a, b) => a.date - b.date)
+    }
+    return m
+  }, [data])
+
+  const eventList = Array.from(byEvent.keys())
+
+  // Default to the event with the most points
+  useEffect(() => {
+    if (!selectedEvent && eventList.length) {
+      const best = eventList.reduce((a, b) =>
+        byEvent.get(a).length >= byEvent.get(b).length ? a : b
+      )
+      setSelectedEvent(best)
+    }
+  }, [eventList, byEvent, selectedEvent])
+
+  if (!eventList.length) {
+    return (
+      <div className="empty-state">
+        Progression chart will populate once meet history is entered.
+      </div>
+    )
+  }
+
+  const points = selectedEvent ? byEvent.get(selectedEvent) || [] : []
+  if (points.length < 2) {
+    return (
+      <div className="empty-state">
+        Need at least 2 dated times for {selectedEvent} to draw progression.
+      </div>
+    )
+  }
+
+  // Plot dims
+  const W = 700, H = 280
+  const padL = 56, padR = 20, padT = 20, padB = 44
+  const plotW = W - padL - padR
+  const plotH = H - padT - padB
+
+  // Axes domain
+  const dates = points.map(p => p.date.getTime())
+  const times = points.map(p => p.time)
+  const xMin = Math.min(...dates)
+  const xMax = Math.max(...dates)
+  const yMin = Math.min(...times)
+  const yMax = Math.max(...times)
+  const yPad = (yMax - yMin) * 0.1 || 1
+  const yDomainMin = yMin - yPad
+  const yDomainMax = yMax + yPad
+
+  const xScale = (d) => padL + ((d - xMin) / (xMax - xMin || 1)) * plotW
+  // Inverted y — fast at top, slow at bottom makes no sense for progression.
+  // Convention here: fast at top (lower time = higher on chart)
+  const yScale = (t) => padT + ((yDomainMax - t) / (yDomainMax - yDomainMin)) * plotH
+
+  const pathD = points.map((p, i) =>
+    `${i === 0 ? 'M' : 'L'} ${xScale(p.date.getTime()).toFixed(1)} ${yScale(p.time).toFixed(1)}`
+  ).join(' ')
+
+  // Y-axis ticks — 4 evenly spaced
+  const yTicks = [0, 1, 2, 3].map(i => {
+    const t = yDomainMin + (i / 3) * (yDomainMax - yDomainMin)
+    return { y: yScale(t), label: formatTime(t) }
+  })
+
+  // Drop first point → last point
+  const firstPt = points[0]
+  const lastPt = points[points.length - 1]
+  const dropSec = firstPt.time - lastPt.time
+  const dropPct = (dropSec / firstPt.time) * 100
+
+  return (
+    <div className="progression-chart">
+      <div className="pc-head">
+        <div className="pc-event-select">
+          <label>Event</label>
+          <select value={selectedEvent || ''} onChange={e => setSelectedEvent(e.target.value)}>
+            {eventList.map(ev => (
+              <option key={ev} value={ev}>{ev}</option>
+            ))}
+          </select>
+        </div>
+        <div className="pc-summary">
+          <span className="pc-drop-label">Drop over span:</span>
+          <span className="pc-drop-val mono">
+            {dropSec > 0 ? '−' : '+'}{Math.abs(dropSec).toFixed(2)}s
+          </span>
+          <span className="pc-drop-pct">
+            ({dropPct > 0 ? '−' : '+'}{Math.abs(dropPct).toFixed(1)}%)
+          </span>
+        </div>
+      </div>
+
+      <svg viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
+        {/* Y-axis gridlines + labels */}
+        <g>
+          {yTicks.map((t, i) => (
+            <g key={i}>
+              <line
+                x1={padL} x2={W - padR}
+                y1={t.y} y2={t.y}
+                stroke="rgba(84,84,88,0.2)"
+                strokeWidth="0.5"
+              />
+              <text
+                x={padL - 8} y={t.y}
+                textAnchor="end"
+                dominantBaseline="middle"
+                fill="#a1a1a6"
+                fontSize="10"
+                fontFamily="SF Mono, ui-monospace, monospace"
+              >
+                {t.label}
+              </text>
+            </g>
+          ))}
+        </g>
+
+        {/* X-axis date labels — first / middle / last */}
+        <g fill="#a1a1a6" fontSize="10" fontFamily="-apple-system, sans-serif">
+          {[firstPt, points[Math.floor(points.length / 2)], lastPt].map((p, i, a) => (
+            <text
+              key={i}
+              x={xScale(p.date.getTime())}
+              y={H - padB + 16}
+              textAnchor={i === 0 ? 'start' : i === a.length - 1 ? 'end' : 'middle'}
+            >
+              {p.date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+            </text>
+          ))}
+        </g>
+
+        {/* The line */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke="#D4A853"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+
+        {/* Data points */}
+        <g>
+          {points.map((p, i) => (
+            <g key={i}>
+              <circle
+                cx={xScale(p.date.getTime())}
+                cy={yScale(p.time)}
+                r="4"
+                fill="#D4A853"
+                stroke="#1a1a1c"
+                strokeWidth="1.5"
+              />
+              {/* Time label above each point */}
+              <text
+                x={xScale(p.date.getTime())}
+                y={yScale(p.time) - 10}
+                textAnchor="middle"
+                fill="#D4A853"
+                fontSize="10"
+                fontWeight="600"
+                fontFamily="SF Mono, ui-monospace, monospace"
+              >
+                {p.raw}
+              </text>
+            </g>
+          ))}
+        </g>
+      </svg>
     </div>
   )
 }

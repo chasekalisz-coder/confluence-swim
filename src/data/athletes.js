@@ -25,6 +25,199 @@ export const ATHLETES = [
       { event: "50 Fly LCM", time: "32.95" }, { event: "100 Fly LCM", time: "1:14.44" },
       { event: "200 Fly LCM", time: "2:42.69" }, { event: "200 IM LCM", time: "2:35.51" },
       { event: "400 IM LCM", time: "5:51.86" }
+    ],
+
+    // ⚠️ PLACEHOLDER DATA — see PLACEHOLDERS.md
+    // Mock upcoming meets for walkthrough. Replace with real schedule.
+    upcomingMeets: [
+      {
+        name: "North Texas Sectionals",
+        location: "SMU · Dallas, TX",
+        startDate: "2026-05-01",
+        endDate: "2026-05-03",
+        entries: [
+          { event: "100 Fly",    seed: "1:02.91" },
+          { event: "200 IM",     seed: "2:15.96" },
+          { event: "200 Fly",    seed: "2:16.46" },
+          { event: "200 Back",   seed: "2:16.90" },
+          { event: "100 Back",   seed: "1:04.55" },
+          { event: "200 Breast", seed: "2:35.92" },
+        ],
+      },
+      {
+        name: "Speedo Summer Invitational",
+        location: "Austin, TX",
+        startDate: "2026-06-05",
+        endDate: "2026-06-07",
+        entries: [
+          { event: "100 Fly",    seed: "1:14.44" },
+          { event: "200 IM",     seed: "2:35.51" },
+          { event: "200 Fly",    seed: "2:42.69" },
+          { event: "100 Back",   seed: "1:13.56" },
+          { event: "200 Back",   seed: "2:33.04" },
+        ],
+      },
+      {
+        name: "TAGs Long Course",
+        location: "San Antonio, TX",
+        startDate: "2026-07-24",
+        endDate: "2026-07-28",
+        entries: [
+          { event: "100 Fly",  seed: "1:14.44" },
+          { event: "200 IM",   seed: "2:35.51" },
+          { event: "400 IM",   seed: "5:51.86" },
+          { event: "200 Fly",  seed: "2:42.69" },
+        ],
+      },
+    ],
+
+    // ⚠️ PLACEHOLDER DATA — see PLACEHOLDERS.md
+    // Mock past meets for walkthrough. Replace with real meet history.
+    pastMeets: [
+      {
+        name: "TAGs Championships",
+        location: "San Antonio, TX",
+        startDate: "2026-03-05",
+        endDate: "2026-03-08",
+        results: [
+          { event: "200 Free", round: "Finals",  time: "2:00.88", delta: -1.69, standard: "AAA", place: "12th", pb: true },
+          { event: "200 Fly",  round: "Finals",  time: "2:16.46", delta: -3.12, standard: "AAA", place: "7th",  pb: true },
+          { event: "100 IM",   round: "Finals",  time: "1:03.11", delta: -2.09, standard: "AAA", place: "13th", pb: true },
+          { event: "500 Free", round: "",        time: "5:20.87", delta: 0.16,  standard: "AA",  place: "10th" },
+          { event: "200 Breast", round: "Prelims", time: "2:38.47", delta: 2.55, standard: "AA",  place: "25th" },
+          { event: "200 IM",   round: "Finals",  time: "2:16.47", delta: 0.51,  standard: "AAA", place: "13th" },
+        ],
+      },
+      {
+        name: "Dallas Mustangs Invitational",
+        location: "SMU · Dallas, TX",
+        startDate: "2026-01-30",
+        endDate: "2026-02-01",
+        results: [
+          { event: "50 Free",   time: "26.22", delta: -0.24, standard: "AA",  place: "8th", pb: true },
+          { event: "100 Free",  time: "57.14", delta: -0.87, standard: "AA",  place: "6th", pb: true },
+          { event: "100 Back",  time: "1:04.55", delta: -0.33, standard: "AAA", place: "4th" },
+        ],
+      },
+      {
+        name: "Lakeside Winter Classic",
+        location: "Frisco, TX",
+        startDate: "2025-12-05",
+        endDate: "2025-12-07",
+        results: [
+          { event: "200 IM",   time: "2:16.47", delta: -1.42, standard: "AAA", place: "3rd", pb: true },
+          { event: "100 Fly",  time: "1:04.31", delta: 1.40,  standard: "AA",  place: "5th" },
+        ],
+      },
+      {
+        name: "North Texas Fall Championships",
+        location: "Frisco, TX",
+        startDate: "2025-10-24",
+        endDate: "2025-10-26",
+        results: [
+          { event: "50 Fly",   time: "29.30", delta: -0.55, standard: "AA",  place: "4th", pb: true },
+          { event: "100 Fly",  time: "1:05.71", delta: -0.89, standard: "AA",  place: "6th" },
+          { event: "200 Fly",  time: "2:19.58", delta: -2.04, standard: "AAA", place: "2nd", pb: true },
+        ],
+      },
+    ],
+
+    // ⚠️ PLACEHOLDER DATA — see PLACEHOLDERS.md
+    // Mock meet-history tuples to populate the Progression chart.
+    // Each tuple: event + date + time (seconds). Oldest → newest.
+    progression: [
+      // 100 Fly SCY — showing steady drop over 2 seasons
+      { event: "100 Fly SCY", date: "2024-11-15", time: "1:12.44" },
+      { event: "100 Fly SCY", date: "2025-02-08", time: "1:09.87" },
+      { event: "100 Fly SCY", date: "2025-05-22", time: "1:07.21" },
+      { event: "100 Fly SCY", date: "2025-08-14", time: "1:06.08" },
+      { event: "100 Fly SCY", date: "2025-11-07", time: "1:04.31" },
+      { event: "100 Fly SCY", date: "2026-02-14", time: "1:03.55" },
+      { event: "100 Fly SCY", date: "2026-03-07", time: "1:02.91" },
+      // 200 IM SCY
+      { event: "200 IM SCY", date: "2024-11-15", time: "2:31.44" },
+      { event: "200 IM SCY", date: "2025-02-08", time: "2:26.77" },
+      { event: "200 IM SCY", date: "2025-05-22", time: "2:22.91" },
+      { event: "200 IM SCY", date: "2025-08-14", time: "2:20.18" },
+      { event: "200 IM SCY", date: "2025-11-07", time: "2:17.89" },
+      { event: "200 IM SCY", date: "2026-02-14", time: "2:16.47" },
+      { event: "200 IM SCY", date: "2026-03-07", time: "2:15.96" },
+      // 200 Fly SCY
+      { event: "200 Fly SCY", date: "2024-11-15", time: "2:32.48" },
+      { event: "200 Fly SCY", date: "2025-02-08", time: "2:27.11" },
+      { event: "200 Fly SCY", date: "2025-05-22", time: "2:23.67" },
+      { event: "200 Fly SCY", date: "2025-08-14", time: "2:20.93" },
+      { event: "200 Fly SCY", date: "2025-10-25", time: "2:19.58" },
+      { event: "200 Fly SCY", date: "2025-12-06", time: "2:18.44" },
+      { event: "200 Fly SCY", date: "2026-03-07", time: "2:16.46" },
+    ],
+
+    // ⚠️ PLACEHOLDER DATA — see PLACEHOLDERS.md
+    // Mock session notes to populate Session Notes feed for walkthrough.
+    // Each mock has a distinct category so every filter tab has content.
+    // Real DB sessions always take precedence; mocks never overwrite real data.
+    mockSessions: [
+      {
+        id: 'aerobic_1', category: 'aerobic', date: '2026-04-15',
+        data: {
+          title: 'Aerobic base — pull, kick, swim rotation',
+          summary: 'Long aerobic set of 8x200 free on 2:50, holding consistent pacing across the set. Followed with 4x100 IM kick at moderate effort.',
+          totalYardage: 4500,
+        },
+      },
+      {
+        id: 'threshold_1', category: 'threshold', date: '2026-04-12',
+        data: {
+          title: 'Threshold broken swims',
+          summary: '5x200 IM broken at the 100 with 10 seconds rest, holding target pace. Strong fly legs throughout.',
+          totalYardage: 3200,
+        },
+      },
+      {
+        id: 'quality_1', category: 'quality', date: '2026-04-09',
+        data: {
+          title: 'Quality race-pace work',
+          summary: '4x100 fly at 200 pace effort with full recovery. Clean splits, final rep fastest.',
+          totalYardage: 2800,
+        },
+      },
+      {
+        id: 'sprint_1', category: 'sprint', date: '2026-04-07',
+        data: {
+          title: 'Sprint and power — 25s and underwaters',
+          summary: 'Max effort 12x25 off blocks with full recovery. Underwater dolphin kick focus — averaged 9 kicks per wall.',
+          totalYardage: 1800,
+        },
+      },
+      {
+        id: 'power_1', category: 'power', date: '2026-04-05',
+        data: {
+          title: 'Dryland power — plyometrics and core',
+          summary: 'Box jumps, medicine ball slams, weighted pull-ups, and anti-rotation core work. Focus on explosiveness.',
+        },
+      },
+      {
+        id: 'active_rest_1', category: 'active_rest', date: '2026-04-14',
+        data: {
+          title: 'Active recovery — easy swim and mobility',
+          summary: 'Easy 2000 free choice between strokes, finishing with foam rolling and shoulder mobility work.',
+          totalYardage: 2000,
+        },
+      },
+      {
+        id: 'technique_1', category: 'technique', date: '2026-04-10',
+        data: {
+          title: 'Butterfly stroke technique — body position',
+          summary: 'Worked on holding higher body position and reducing drag phase. Video review mid-session showed improved hip drive.',
+        },
+      },
+      {
+        id: 'meetprep_1', category: 'meetprep', date: '2026-04-20',
+        data: {
+          title: 'Meet prep — Sectionals race plan',
+          summary: 'Event-by-event race plan for North Texas Sectionals. Reviewed splits targets, warm-up routine, and between-race recovery protocol.',
+        },
+      },
     ]
   },
   {

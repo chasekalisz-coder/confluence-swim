@@ -1690,3 +1690,67 @@ body.v2-active #root {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   PROGRESSION CHART
+   ============================================================ */
+.v2 .progression-chart {
+  margin-top: 16px;
+  padding: 24px 28px;
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 16px;
+}
+.v2 .pc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.v2 .pc-event-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.v2 .pc-event-select label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--v2-text-3);
+}
+.v2 .pc-event-select select {
+  background: var(--v2-surface-2);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 8px;
+  color: var(--v2-text);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.v2 .pc-event-select select:focus {
+  outline: none;
+  border-color: var(--v2-gold);
+}
+.v2 .pc-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+}
+.v2 .pc-drop-label { color: var(--v2-text-3); }
+.v2 .pc-drop-val   {
+  color: var(--v2-green);
+  font-weight: 600;
+  font-size: 14px;
+}
+.v2 .pc-drop-pct   {
+  color: var(--v2-text-2);
+  font-size: 11px;
+}
+.v2 .progression-chart svg {
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  display: block;
+}

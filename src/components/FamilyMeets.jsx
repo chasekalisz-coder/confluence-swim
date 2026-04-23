@@ -140,7 +140,9 @@ export default function FamilyMeets({ athlete, onBack, onNavigate }) {
             className={`tab ${tab === 'upcoming' ? 'active' : ''}`}
             onClick={() => setTab('upcoming')}
           >
-            Upcoming {upcoming.length > 0 && <span className="count">{upcoming.length}</span>}
+            {/* Upcoming tab excludes the first meet since it's already shown
+                in the Next Meet hero above — prevents duplication. */}
+            Upcoming {upcoming.length > 1 && <span className="count">{upcoming.length - 1}</span>}
           </button>
           <button
             className={`tab ${tab === 'past' ? 'active' : ''}`}
@@ -151,13 +153,22 @@ export default function FamilyMeets({ athlete, onBack, onNavigate }) {
         </div>
 
         {/* ===== Upcoming tab ===== */}
-        {tab === 'upcoming' && (
-          upcoming.length === 0 ? (
-            <div className="empty-state">No upcoming meets yet.</div>
-          ) : (
+        {tab === 'upcoming' && (() => {
+          // Skip index 0 — that meet is already shown in the Next Meet hero above.
+          const upcomingRest = upcoming.slice(1)
+          if (upcomingRest.length === 0) {
+            return (
+              <div className="empty-state">
+                {upcoming.length === 0
+                  ? 'No upcoming meets yet.'
+                  : 'No other meets after the one shown above.'}
+              </div>
+            )
+          }
+          return (
             <section>
               <div className="meets-list">
-                {upcoming.map((m, i) => (
+                {upcomingRest.map((m, i) => (
                   <div className="meet-row" key={i}>
                     <div className={`countdown ${m.days != null && m.days <= 14 ? 'close' : ''}`}>
                       <div className="num">{m.days != null ? m.days : '—'}</div>
@@ -175,7 +186,7 @@ export default function FamilyMeets({ athlete, onBack, onNavigate }) {
               </div>
             </section>
           )
-        )}
+        })()}
 
         {/* ===== Past tab ===== */}
         {tab === 'past' && (

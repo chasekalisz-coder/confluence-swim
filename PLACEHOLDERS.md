@@ -49,9 +49,46 @@ all placeholder data has been cleared.
 
 ## 🟡 MEDIUM PRIORITY — Affects Display But Not Numbers
 
-_(Nothing here yet. Will populate when Commit 3 adds mock meet data,
-placeholder session notes for empty category tabs, progression chart
-back-dated times, and Resources article drafts.)_
+### 4. Jon's Mock Upcoming Meets
+- **File:** `src/data/athletes.js` → `ath_jon.upcomingMeets`
+- **What it is:** 3 fake upcoming meets (North Texas Sectionals May 2026,
+  Speedo Summer Invitational June 2026, TAGs Long Course July 2026) with
+  event entries and seed times.
+- **Why it's a placeholder:** So the Meets page has content during
+  walkthrough. No real athlete meet schedule has been entered yet.
+- **What to do:** Replace with real schedule. Delete the entire
+  `upcomingMeets` array if Jon has none scheduled.
+
+### 5. Jon's Mock Past Meets
+- **File:** `src/data/athletes.js` → `ath_jon.pastMeets`
+- **What it is:** 4 fake past meets from Oct 2025 through March 2026
+  with fabricated results (times, deltas, standards, places, PB flags).
+- **Why it's a placeholder:** So the Past tab on the Meets page has
+  content during walkthrough.
+- **What to do:** Replace with real meet history. Delete the
+  `pastMeets` array if pulling from a different source.
+
+### 6. Jon's Mock Progression Data
+- **File:** `src/data/athletes.js` → `ath_jon.progression`
+- **What it is:** 21 fake meet-result tuples (3 events × 7 dates each)
+  showing fabricated steady improvement over 16 months.
+- **Why it's a placeholder:** So the Progression chart on Profile page
+  has drawable data during walkthrough.
+- **What to do:** Replace with real meet-by-meet times derived from
+  actual past meet results. Ideally this is auto-computed from
+  `pastMeets` once real past meets are in — the mock array is a
+  stopgap until that pipeline is built.
+
+### 7. Jon's Mock Session Notes
+- **File:** `src/data/athletes.js` → `ath_jon.mockSessions`
+- **What it is:** 8 fake sessions covering every category
+  (aerobic, threshold, quality, sprint, power, active_rest, technique,
+  meetprep) so every filter chip on Session Notes has content.
+- **Why it's a placeholder:** So the Session Notes page isn't all empty
+  states during walkthrough. Real DB sessions always take precedence;
+  mocks only appear alongside real sessions.
+- **What to do:** Delete the `mockSessions` array once real session data
+  from Supabase is reliably flowing in.
 
 ---
 
