@@ -540,9 +540,25 @@ function ChampionshipTable({ gender, course, bestTimes }) {
 }
 
 function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
-  // Pick up to 4 primary events that we can project
-  const events = primaryEvents.slice(0, 4)
-  if (!events.length) return null
+  // Top 3 primary events get the full card treatment.
+  // Everything else is a compact row that expands inline on click.
+  const top3 = primaryEvents.slice(0, 3)
+  const otherPrimary = primaryEvents.slice(3)
+
+  // Build the full event list for the compact section:
+  // start with athlete's other primary events (they opted into), then
+  // fill in remaining events from STROKE_FAMILIES so the family can
+  // explore any event even if it's not flagged as primary.
+  const allEvents = []
+  for (const ev of otherPrimary) allEvents.push(ev)
+  for (const fam of STROKE_FAMILIES) {
+    for (const dist of fam.distances) {
+      const base = `${dist} ${fam.stroke}`
+      if (top3.includes(base)) continue
+      if (allEvents.includes(base)) continue
+      allEvents.push(base)
+    }
+  }
 
   const nextAgeBucket = age <= 8 ? '9-10'
     : age <= 10 ? '11-12'
@@ -552,6 +568,37 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
     : null
   if (!nextAgeBucket) return null
 
+  // Helper that computes everything a card/row needs for one event
+  const project = (ev) => {
+    const eventKey = `${ev} ${course}`
+    const t = bestTimes[eventKey]
+    const timeSec = parseTime(t)
+    const currentStds = eventStandards({ age, gender, course, event: ev })
+    const currentLevel = timeSec != null && currentStds ? classifyTime(timeSec, currentStds) : null
+    const proj = ageUpProjection({ currentAge: age, gender, course, event: ev, timeSec })
+    const projLevel = proj ? proj.projectedLevel : null
+    return { ev, timeSec, currentLevel, projLevel }
+  }
+
+  // Track which compact rows are expanded
+  const [expanded, setExpanded] = useState(new Set())
+  const toggle = (ev) => {
+    setExpanded(prev => {
+      const next = new Set(prev)
+      if (next.has(ev)) next.delete(ev)
+      else next.add(ev)
+      return next
+    })
+  }
+
+  // Top 3 always rendered as full cards
+  const topCards = top3.length > 0 ? top3 : []
+  // Fallback — if athlete has no primary events, promote first 3 from STROKE_FAMILIES
+  const fallbackTop = topCards.length === 0
+    ? allEvents.slice(0, 3)
+    : topCards
+  const fallbackRest = topCards.length === 0 ? allEvents.slice(3) : allEvents
+
   return (
     <div className="age-up">
       <div className="caption">Age-Up Preview</div>
@@ -559,29 +606,76 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
         Current times in the next age group
         <span className="age-pill">{nextAgeBucket}</span>
       </div>
+
+      {/* Top 3 — full cards, always visible */}
       <div className="age-up-grid">
-        {events.map(ev => {
-          const eventKey = `${ev} ${course}`
-          const t = bestTimes[eventKey]
-          const timeSec = parseTime(t)
-          const currentStds = eventStandards({ age, gender, course, event: ev })
-          const currentLevel = timeSec != null && currentStds ? classifyTime(timeSec, currentStds) : null
-          const proj = ageUpProjection({ currentAge: age, gender, course, event: ev, timeSec })
-          const projLevel = proj ? proj.projectedLevel : null
-          return (
-            <div className="age-up-item" key={ev}>
-              <div className="ev">{ev}</div>
-              <div className="time-line">
-                <span className="t mono">{timeSec != null ? formatTime(timeSec) : '—'}</span>
-              </div>
-              <div className="std-display">
-                <span className={`std ${currentLevel || 'none'}`}>{currentLevel || '—'}</span>
-                <span className="arrow">→</span>
-                <span className={`std ${projLevel || 'none'}`}>{projLevel || '—'}</span>
-              </div>
-            </div>
-          )
+        {fallbackTop.map(ev => {
+          const d = project(ev)
+          return <AgeUpCard key={ev} data={d} />
         })}
+      </div>
+
+      {/* Compact list below — expands inline on click */}
+      {fallbackRest.length > 0 && (
+        <div className="age-up-more">
+          <div className="age-up-more-label">
+            Other events · tap to expand
+          </div>
+          <div className="age-up-list">
+            {fallbackRest.map(ev => {
+              const d = project(ev)
+              const isOpen = expanded.has(ev)
+              return (
+                <div
+                  key={ev}
+                  className={`age-up-row ${isOpen ? 'open' : ''}`}
+                >
+                  <button
+                    className="age-up-row-summary"
+                    onClick={() => toggle(ev)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="ev">{ev}</span>
+                    <span className="badges">
+                      <span className={`std ${d.currentLevel || 'none'}`}>
+                        {d.currentLevel || '—'}
+                      </span>
+                      <span className="arrow">→</span>
+                      <span className={`std ${d.projLevel || 'none'}`}>
+                        {d.projLevel || '—'}
+                      </span>
+                    </span>
+                    <span className="chev">{isOpen ? '−' : '+'}</span>
+                  </button>
+                  {isOpen && (
+                    <div className="age-up-row-expand">
+                      <AgeUpCard data={d} />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Single event card used by both the top 3 and the inline expansions.
+// Keeps visual treatment identical between the two surfaces.
+function AgeUpCard({ data }) {
+  const { ev, timeSec, currentLevel, projLevel } = data
+  return (
+    <div className="age-up-item">
+      <div className="ev">{ev}</div>
+      <div className="time-line">
+        <span className="t mono">{timeSec != null ? formatTime(timeSec) : '—'}</span>
+      </div>
+      <div className="std-display">
+        <span className={`std ${currentLevel || 'none'}`}>{currentLevel || '—'}</span>
+        <span className="arrow">→</span>
+        <span className={`std ${projLevel || 'none'}`}>{projLevel || '—'}</span>
       </div>
     </div>
   )
