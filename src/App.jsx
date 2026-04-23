@@ -11,6 +11,7 @@ import FamilyProfile from './components/FamilyProfile.jsx'
 import FamilyNotes from './components/FamilyNotes.jsx'
 import FamilyMeets from './components/FamilyMeets.jsx'
 import FamilyAnalysis from './components/FamilyAnalysis.jsx'
+import FamilyResources from './components/FamilyResources.jsx'
 import './styles/apple-dark.css'
 
 export default function App() {
@@ -124,8 +125,7 @@ export default function App() {
       case 'analysis':
         setView('family-analysis'); return
       case 'resources':
-        alert(`${nextView.charAt(0).toUpperCase() + nextView.slice(1)} page coming soon.`)
-        return
+        setView('family-resources'); return
       default:
         return
     }
@@ -176,6 +176,17 @@ export default function App() {
     )
   }
 
+  // ---- v2 Family Resources view ----
+  if (view === 'family-resources') {
+    return (
+      <FamilyResources
+        athlete={selectedAthlete}
+        onBack={() => setView('family-profile')}
+        onNavigate={handleV2Navigate}
+      />
+    )
+  }
+
   return (
     <div className="app">
       <Header view={view} athlete={selectedAthlete} onHome={goHome} />
@@ -215,7 +226,7 @@ export default function App() {
       </main>
       <footer className="app-footer">
         <div>confluencesport.com · Dallas, TX</div>
-        <div className="version">v0.7.0</div>
+        <div className="version">v0.9.0</div>
       </footer>
     </div>
   )
