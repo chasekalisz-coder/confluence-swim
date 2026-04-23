@@ -20,6 +20,7 @@ import FamilyFooter from './FamilyFooter.jsx'
 import {
   pickNextCut,
   formatTime,
+  ageFromDob,
 } from '../lib/calculations.js'
 
 export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
@@ -39,16 +40,24 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
   const gender = athlete?.gender
     || (athlete?.pronouns === 'she' ? 'F' : athlete?.pronouns === 'he' ? 'M' : 'M')
 
+  // Auto-aging: use DOB to compute today's age. Same logic as FamilyProfile
+  // so the Analysis page stays in sync when an athlete crosses a birthday.
+  const effectiveAge = useMemo(() => {
+    if (!athlete) return null
+    const computed = ageFromDob({ dob: athlete.dob, fallbackAge: athlete.age })
+    return computed ?? athlete.age
+  }, [athlete?.dob, athlete?.age])
+
   // Compute the single biggest story we can tell right now
   const nextCut = useMemo(() => {
     if (!athlete) return null
     return pickNextCut({
-      age: athlete.age,
+      age: effectiveAge,
       gender,
       course: 'SCY',
       meetTimes: athlete.meetTimes || [],
     })
-  }, [athlete, gender])
+  }, [athlete, effectiveAge, gender])
 
   // Past analyses — stored on athlete object if Chase has wired them,
   // otherwise empty state
@@ -122,7 +131,12 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
             <div className="tc-meta">
               <span className="status-dot" />
               <span>
-                {recentAnalyses.filter(a => a.tool === 'analyzer').length || 0} races analyzed
+                {(() => {
+                  const races = recentAnalyses.filter(a => a.tool === 'analyzer').length
+                  if (races === 0) return 'No races analyzed yet'
+                  if (races === 1) return '1 race analyzed'
+                  return `${races} races analyzed`
+                })()}
               </span>
             </div>
             <div className="arrow">›</div>
@@ -147,9 +161,12 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
             <div className="tc-meta">
               <span className="status-dot" />
               <span>
-                {athlete.goalTimes && Object.keys(athlete.goalTimes).length > 0
-                  ? 'Goal times loaded'
-                  : 'No goal times set yet'}
+                {(() => {
+                  const paces = (athlete.analyses || []).filter(a => a.tool === 'pace').length
+                  if (paces === 0) return 'No race pace history yet'
+                  if (paces === 1) return '1 race pace calculated'
+                  return `${paces} race paces calculated`
+                })()}
               </span>
             </div>
             <div className="arrow">›</div>
@@ -164,8 +181,10 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
 
           {recentAnalyses.length === 0 ? (
             <div className="empty-state">
-              No analyses yet. Once a race is run through the Meet Analyzer
-              or a goal pace is calculated, the summary will appear here.
+              Tool runs will show up here. Each time a race goes through the
+              Meet Analyzer or a goal time through the Race Pace Calculator,
+              the inputs and the result are saved — tap any row later to re-open
+              and tweak from where you left off.
             </div>
           ) : (
             <div className="analysis-feed">
