@@ -7,6 +7,8 @@ import AthleteGrid from './components/AthleteGrid.jsx'
 import AthleteProfile from './components/AthleteProfile.jsx'
 import NewSessionChooser from './components/NewSessionChooser.jsx'
 import SessionViewer from './components/SessionViewer.jsx'
+import FamilyProfile from './components/FamilyProfile.jsx'
+import './styles/apple-dark.css'
 
 export default function App() {
   const [view, setView] = useState('home')
@@ -23,10 +25,29 @@ export default function App() {
     })
   }, [])
 
+  // Support ?v2=athleteId in the URL to open the v2 family profile directly.
+  // Example: /?v2=ath_jon  → shows the new Apple Dark profile for Jon.
+  useEffect(() => {
+    if (!athletes.length) return
+    const params = new URLSearchParams(window.location.search)
+    const v2Id = params.get('v2')
+    if (v2Id) {
+      const match = athletes.find(a => a.id === v2Id)
+      if (match) {
+        setSelectedAthlete(match)
+        setView('family-profile')
+      }
+    }
+  }, [athletes])
+
   const goHome = () => {
     setView('home')
     setSelectedAthlete(null)
     setSelectedSession(null)
+    // Clear ?v2= from the URL so reloads don't re-open the v2 view
+    if (window.location.search.includes('v2=')) {
+      window.history.replaceState({}, '', window.location.pathname)
+    }
   }
 
   const selectAthlete = (a) => {
@@ -60,27 +81,43 @@ export default function App() {
 
   const pickSessionType = (type) => {
     const athleteId = selectedAthlete?.id
-    if (type === 'training' && athleteId) {
+    if (type === 'training') {
       window.location.href = `/test-ai.html?athleteId=${encodeURIComponent(athleteId)}`
       return
     }
-    if (type === 'meetprep' && athleteId) {
+    if (type === 'meetprep') {
       window.location.href = `/meetprep.html?athleteId=${encodeURIComponent(athleteId)}`
       return
     }
-    if (type === 'technique' && athleteId) {
+    if (type === 'technique') {
       window.location.href = `/technique.html?athleteId=${encodeURIComponent(athleteId)}`
       return
     }
-    if (type === 'sprint' && athleteId) {
+    if (type === 'sprint') {
       window.location.href = `/sprint.html?athleteId=${encodeURIComponent(athleteId)}`
       return
     }
-    if (type === 'workout' && athleteId) {
+    if (type === 'workout') {
       window.location.href = `/workout.html?athleteId=${encodeURIComponent(athleteId)}`
       return
     }
     alert(`${type} sessions coming soon.`)
+  }
+
+  // ---- v2 Family Profile view has its own full-page layout ----
+  if (view === 'family-profile') {
+    return (
+      <FamilyProfile
+        athlete={selectedAthlete}
+        onBack={goHome}
+        onNavigate={(nextView) => {
+          // Navigation within v2 — for now, only 'profile' stays here
+          // and everything else is a placeholder.
+          if (nextView === 'profile') return
+          alert(`${nextView} page coming soon.`)
+        }}
+      />
+    )
   }
 
   return (
@@ -95,7 +132,7 @@ export default function App() {
             onAthleteAdded={handleAthleteAdded}
           />
         )}
-        {view === 'athlete' && selectedAthlete && (
+        {view === 'athlete' && (
           <AthleteProfile
             athlete={selectedAthlete}
             onBack={goHome}
@@ -105,14 +142,14 @@ export default function App() {
             onAthleteDeleted={handleAthleteDeleted}
           />
         )}
-        {view === 'new-session' && selectedAthlete && (
+        {view === 'new-session' && (
           <NewSessionChooser
             athlete={selectedAthlete}
             onPick={pickSessionType}
             onBack={() => setView('athlete')}
           />
         )}
-        {view === 'view-session' && selectedAthlete && selectedSession && (
+        {view === 'view-session' && (
           <SessionViewer
             session={selectedSession}
             athlete={selectedAthlete}
@@ -122,7 +159,7 @@ export default function App() {
       </main>
       <footer className="app-footer">
         <div>confluencesport.com · Dallas, TX</div>
-        <div className="version">v0.5.0</div>
+        <div className="version">v0.6.0</div>
       </footer>
     </div>
   )
