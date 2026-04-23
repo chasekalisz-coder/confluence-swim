@@ -36,9 +36,9 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
     return f + l || '??'
   }, [athlete])
 
-  // Infer gender from pronouns (same logic as profile page)
+  // Gender: admin-only source of truth (falls back to pronouns for legacy records)
   const gender = athlete?.gender
-    || (athlete?.pronouns === 'she' ? 'F' : athlete?.pronouns === 'he' ? 'M' : 'M')
+    || (athlete?.pronouns === 'she' ? 'F' : 'M')
 
   // Auto-aging: use DOB to compute today's age. Same logic as FamilyProfile
   // so the Analysis page stays in sync when an athlete crosses a birthday.
@@ -222,10 +222,15 @@ function AnalysisRow({ analysis }) {
 }
 
 // ============================================================
-// Tiny helpers so the copy doesn't sound off if the athlete is female
+// Tiny helpers so the copy doesn't sound off if the athlete is female.
+// Read from `gender` first (new admin-only source of truth),
+// fall back to legacy `pronouns` field for records not yet migrated.
 // ============================================================
 function pronounThem(athlete) {
   if (!athlete) return 'them'
+  const g = (athlete.gender || '').toUpperCase()
+  if (g === 'M') return 'him'
+  if (g === 'F') return 'her'
   const p = (athlete.pronouns || '').toLowerCase()
   if (p === 'he') return 'him'
   if (p === 'she') return 'her'
@@ -233,6 +238,9 @@ function pronounThem(athlete) {
 }
 function possessive(athlete) {
   if (!athlete) return 'their'
+  const g = (athlete.gender || '').toUpperCase()
+  if (g === 'M') return 'his'
+  if (g === 'F') return 'her'
   const p = (athlete.pronouns || '').toLowerCase()
   if (p === 'he') return 'his'
   if (p === 'she') return 'her'

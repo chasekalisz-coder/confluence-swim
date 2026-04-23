@@ -365,6 +365,16 @@ body.v2-active #root {
   border-bottom: 0.5px solid var(--v2-border);
   align-items: center;
 }
+/* Main Times & Goals with the extra TX TAGs column (8 cols total) */
+.v2 .times-table-with-tags .times-row {
+  grid-template-columns: 70px 1fr 0.9fr 0.75fr 0.75fr 1.1fr 1.25fr 1.1fr;
+  gap: 14px;
+}
+/* Championship table: Event + Best + 4 tier columns */
+.v2 .championship-table .times-row {
+  grid-template-columns: 70px 1fr 1.25fr 1.25fr 1.25fr 1.25fr;
+  gap: 14px;
+}
 .v2 .times-row.header {
   padding: 14px 8px;
   font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
@@ -375,7 +385,10 @@ body.v2-active #root {
 .v2 .times-row .goal { font-size: 15px; font-weight: 500; color: var(--v2-gold); }
 .v2 .times-row .goal.empty { color: var(--v2-text-3); font-weight: 400; }
 .v2 .times-row .delta { font-size: 13px; font-weight: 500; color: var(--v2-text-2); }
-.v2 .times-row .delta.close { color: var(--v2-green); }
+.v2 .times-row .delta.delta-green    { color: var(--v2-green);  }
+.v2 .times-row .delta.delta-yellow   { color: var(--v2-gold);   }
+.v2 .times-row .delta.delta-red      { color: var(--v2-red);    }
+.v2 .times-row .delta.delta-neutral  { color: var(--v2-text-2); }
 .v2 .stroke-family-label {
   padding: 28px 8px 12px;
   font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
@@ -1412,15 +1425,100 @@ body.v2-active #root {
   font-weight: 600;
 }
 
-/* Inline pct next to Δ to Next in the Times & Goals table */
+/* Inline pct next to Δ to Next / Δ to Goal in the Times & Goals table.
+   Inherits color from the parent .delta.delta-{green|yellow|red|neutral} */
 .v2 .times-table .delta .delta-pct {
   display: inline-block;
   margin-left: 6px;
   font-size: 10px; font-weight: 600;
-  color: var(--v2-text-3);
+  opacity: 0.75;
   font-family: inherit;
   letter-spacing: 0.04em;
 }
-.v2 .times-table .delta.close .delta-pct {
+
+/* ============================================================
+   COLOR LEGEND — renders under lede on tables that use pctColor
+   Each label inherits its color so the legend self-teaches.
+   ============================================================ */
+.v2 .color-legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 12px 0 24px;
+  flex-wrap: wrap;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.v2 .color-legend .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.v2 .color-legend .legend-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.v2 .color-legend .legend-green  { color: var(--v2-green);  }
+.v2 .color-legend .legend-yellow { color: var(--v2-gold);   }
+.v2 .color-legend .legend-red    { color: var(--v2-red);    }
+
+/* ============================================================
+   STACKED GAP CELL — cut time / delta / percent
+   Used in TX TAGs column (main table) and all columns in the
+   Championship Standards table.
+   ============================================================ */
+.v2 .tags-cell {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+}
+.v2 .stacked-gap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.2;
+}
+.v2 .stacked-gap .stacked-cut {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--v2-text-3);
+  letter-spacing: 0.02em;
+}
+.v2 .stacked-gap .stacked-delta {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.v2 .stacked-gap .stacked-pct {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+/* Color the delta + pct using unified palette; cut stays muted */
+.v2 .stacked-gap.delta-green   .stacked-delta,
+.v2 .stacked-gap.delta-green   .stacked-pct   { color: var(--v2-green); }
+.v2 .stacked-gap.delta-yellow  .stacked-delta,
+.v2 .stacked-gap.delta-yellow  .stacked-pct   { color: var(--v2-gold);  }
+.v2 .stacked-gap.delta-red     .stacked-delta,
+.v2 .stacked-gap.delta-red     .stacked-pct   { color: var(--v2-red);   }
+.v2 .stacked-gap.delta-neutral .stacked-delta,
+.v2 .stacked-gap.delta-neutral .stacked-pct   { color: var(--v2-text-2);}
+
+/* "Hit" pill — shown when athlete has made the cut */
+.v2 .hit-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(48, 209, 88, 0.12);
   color: var(--v2-green);
+  border-radius: 980px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Give the Championship Standards table some breathing room */
+.v2 .championship-table {
+  margin-top: 24px;
 }
