@@ -1065,3 +1065,155 @@ body.v2-active #root {
   transition: opacity 0.15s;
 }
 .v2 .analyzer-link:hover { opacity: 0.8; }
+
+/* ============================================================
+   ANALYSIS PAGE
+   ============================================================ */
+
+/* Hero insight banner */
+.v2 .analysis-hero {
+  background: linear-gradient(135deg, rgba(10,132,255,0.06), rgba(10,132,255,0.01));
+  border: 0.5px solid rgba(10,132,255,0.25);
+  border-radius: 24px;
+  padding: 36px 40px;
+  margin-bottom: 32px;
+}
+.v2 .analysis-hero .ah-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--v2-blue);
+  margin-bottom: 10px;
+}
+.v2 .analysis-hero .ah-title {
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.025em; line-height: 1.15;
+  margin-bottom: 12px; color: var(--v2-text);
+}
+.v2 .analysis-hero .ah-sub {
+  font-size: 14px; color: var(--v2-text-2);
+  line-height: 1.5;
+}
+.v2 .analysis-hero .ah-sub .accent {
+  color: var(--v2-gold); font-weight: 600;
+}
+
+/* Two-up tool cards */
+.v2 .tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 56px;
+}
+.v2 .tool-card {
+  position: relative;
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.v2 .tool-card:hover {
+  background: var(--v2-surface-2);
+  border-color: var(--v2-border-strong);
+  transform: translateY(-1px);
+}
+.v2 .tool-card .icon-ring {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.v2 .tool-card.pace .icon-ring { background: rgba(100,210,255,0.1); }
+.v2 .tool-card.analyzer .icon-ring { background: rgba(212,168,83,0.1); }
+.v2 .tool-card .icon-ring svg { width: 22px; height: 22px; }
+.v2 .tool-card.pace .icon-ring svg { stroke: var(--v2-teal); }
+.v2 .tool-card.analyzer .icon-ring svg { stroke: var(--v2-gold); }
+
+.v2 .tool-card .tc-name {
+  font-size: 20px; font-weight: 600;
+  letter-spacing: -0.02em; margin-bottom: 10px;
+  color: var(--v2-text);
+}
+.v2 .tool-card .tc-desc {
+  font-size: 13px; color: var(--v2-text-2);
+  line-height: 1.5; margin-bottom: 20px;
+}
+.v2 .tool-card .tc-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--v2-text-3);
+}
+.v2 .tool-card .tc-meta .status-dot {
+  width: 6px; height: 6px;
+  background: var(--v2-green);
+  border-radius: 50%;
+}
+.v2 .tool-card .arrow {
+  position: absolute;
+  top: 28px; right: 28px;
+  color: var(--v2-text-3);
+  font-size: 22px;
+  transition: color 0.15s, transform 0.15s;
+}
+.v2 .tool-card:hover .arrow {
+  color: var(--v2-text);
+  transform: translateX(3px);
+}
+
+/* Recent analyses section */
+.v2 .recent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.v2 .recent-header .view-all {
+  font-size: 12px; color: var(--v2-blue);
+  font-weight: 600; cursor: pointer;
+  background: none; border: none; font-family: inherit;
+}
+
+.v2 .analysis-feed {
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.v2 .analysis-row {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 20px;
+  align-items: center;
+  padding: 16px 22px;
+  border-bottom: 0.5px solid var(--v2-border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.v2 .analysis-row:last-child { border-bottom: none; }
+.v2 .analysis-row:hover { background: var(--v2-surface-2); }
+.v2 .analysis-row .tag {
+  width: 56px;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.05em;
+  text-align: center;
+  line-height: 1.25;
+}
+.v2 .analysis-row .tag.analyzer { background: rgba(212,168,83,0.12); color: var(--v2-gold); }
+.v2 .analysis-row .tag.pace { background: rgba(100,210,255,0.12); color: var(--v2-teal); }
+.v2 .analysis-row .an-title {
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 3px; color: var(--v2-text);
+}
+.v2 .analysis-row .an-sub {
+  font-size: 12px; color: var(--v2-text-2);
+}
+.v2 .analysis-row .an-date {
+  font-size: 12px; color: var(--v2-text-3);
+  font-family: "SF Mono", ui-monospace, monospace;
+}

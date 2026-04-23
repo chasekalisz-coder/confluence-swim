@@ -10,6 +10,7 @@ import SessionViewer from './components/SessionViewer.jsx'
 import FamilyProfile from './components/FamilyProfile.jsx'
 import FamilyNotes from './components/FamilyNotes.jsx'
 import FamilyMeets from './components/FamilyMeets.jsx'
+import FamilyAnalysis from './components/FamilyAnalysis.jsx'
 import './styles/apple-dark.css'
 
 export default function App() {
@@ -121,6 +122,7 @@ export default function App() {
       case 'meets':
         setView('family-meets'); return
       case 'analysis':
+        setView('family-analysis'); return
       case 'resources':
         alert(`${nextView.charAt(0).toUpperCase() + nextView.slice(1)} page coming soon.`)
         return
@@ -156,6 +158,17 @@ export default function App() {
   if (view === 'family-meets') {
     return (
       <FamilyMeets
+        athlete={selectedAthlete}
+        onBack={() => setView('family-profile')}
+        onNavigate={handleV2Navigate}
+      />
+    )
+  }
+
+  // ---- v2 Family Analysis view ----
+  if (view === 'family-analysis') {
+    return (
+      <FamilyAnalysis
         athlete={selectedAthlete}
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
