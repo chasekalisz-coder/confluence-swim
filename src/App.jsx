@@ -8,6 +8,7 @@ import AthleteProfile from './components/AthleteProfile.jsx'
 import NewSessionChooser from './components/NewSessionChooser.jsx'
 import SessionViewer from './components/SessionViewer.jsx'
 import FamilyProfile from './components/FamilyProfile.jsx'
+import FamilyNotes from './components/FamilyNotes.jsx'
 import './styles/apple-dark.css'
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
   const [athletes, setAthletes] = useState([])
   const [selectedAthlete, setSelectedAthlete] = useState(null)
   const [selectedSession, setSelectedSession] = useState(null)
+  const [sessionOrigin, setSessionOrigin] = useState('athlete')  // where to go 'back' from SessionViewer
   const [connectionStatus, setConnectionStatus] = useState('loading')
 
   useEffect(() => {
@@ -60,8 +62,9 @@ export default function App() {
     setView('new-session')
   }
 
-  const viewSession = (session) => {
+  const viewSession = (session, origin = 'athlete') => {
     setSelectedSession(session)
+    setSessionOrigin(origin)
     setView('view-session')
   }
 
@@ -104,18 +107,45 @@ export default function App() {
     alert(`${type} sessions coming soon.`)
   }
 
-  // ---- v2 Family Profile view has its own full-page layout ----
+  // ---- v2 navigation handler, shared across all v2 pages ----
+  // Maps the FamilyNav labels ('profile', 'notes', 'meets', 'analysis',
+  // 'resources') to the corresponding view states. Pages not yet built
+  // show a placeholder alert.
+  const handleV2Navigate = (nextView) => {
+    switch (nextView) {
+      case 'profile':
+        setView('family-profile'); return
+      case 'notes':
+        setView('family-notes'); return
+      case 'meets':
+      case 'analysis':
+      case 'resources':
+        alert(`${nextView.charAt(0).toUpperCase() + nextView.slice(1)} page coming soon.`)
+        return
+      default:
+        return
+    }
+  }
+
+  // ---- v2 Family Profile view ----
   if (view === 'family-profile') {
     return (
       <FamilyProfile
         athlete={selectedAthlete}
         onBack={goHome}
-        onNavigate={(nextView) => {
-          // Navigation within v2 — for now, only 'profile' stays here
-          // and everything else is a placeholder.
-          if (nextView === 'profile') return
-          alert(`${nextView} page coming soon.`)
-        }}
+        onNavigate={handleV2Navigate}
+      />
+    )
+  }
+
+  // ---- v2 Family Notes view ----
+  if (view === 'family-notes') {
+    return (
+      <FamilyNotes
+        athlete={selectedAthlete}
+        onBack={() => setView('family-profile')}
+        onNavigate={handleV2Navigate}
+        onViewSession={(session) => viewSession(session, 'family-notes')}
       />
     )
   }
@@ -153,13 +183,13 @@ export default function App() {
           <SessionViewer
             session={selectedSession}
             athlete={selectedAthlete}
-            onBack={() => setView('athlete')}
+            onBack={() => setView(sessionOrigin)}
           />
         )}
       </main>
       <footer className="app-footer">
         <div>confluencesport.com · Dallas, TX</div>
-        <div className="version">v0.6.0</div>
+        <div className="version">v0.7.0</div>
       </footer>
     </div>
   )
