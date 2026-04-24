@@ -15,8 +15,15 @@ export default async function handler(req, res) {
   if (athlete) {
     athleteContext += `\n\nATHLETE: ${athlete.first} ${athlete.last || ''}, Age ${athlete.age || '?'}`;
     athleteContext += `\nPRIMARY EVENTS: ${(athlete.events || []).join(', ') || 'Not specified'}`;
-    if (athlete.goalTimes && athlete.goalTimes.length > 0) {
-      athleteContext += `\nGOAL TIMES:\n${athlete.goalTimes.map(g => `  ${g.event}: ${g.time}`).join('\n')}`;
+    // Normalize goalTimes to array — accepts legacy map shape too
+    let goalTimesArr = [];
+    if (Array.isArray(athlete.goalTimes)) {
+      goalTimesArr = athlete.goalTimes;
+    } else if (athlete.goalTimes && typeof athlete.goalTimes === 'object') {
+      goalTimesArr = Object.entries(athlete.goalTimes).map(([event, time]) => ({ event, time }));
+    }
+    if (goalTimesArr.length > 0) {
+      athleteContext += `\nGOAL TIMES:\n${goalTimesArr.map(g => `  ${g.event}: ${g.time}`).join('\n')}`;
     }
     if (athlete.meetTimes && athlete.meetTimes.length > 0) {
       athleteContext += `\nCURRENT BEST TIMES:\n${athlete.meetTimes.map(t => `  ${t.event}: ${t.time}`).join('\n')}`;
