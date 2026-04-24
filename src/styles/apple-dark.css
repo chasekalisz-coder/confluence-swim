@@ -2113,3 +2113,151 @@ body.v2-active #root {
     gap: 8px;
   }
 }
+
+/* ============================================================
+   CHAMPIONSHIP STANDARDS ACCORDION
+   5 stroke families collapsible. Click header → expands event rows.
+   ============================================================ */
+.v2 .championship-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.v2 .ca-header {
+  display: grid;
+  grid-template-columns: 70px 1fr 1.2fr 1.2fr 1.2fr 1.2fr;
+  gap: 14px;
+  padding: 10px 16px 10px 36px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--v2-text-3);
+}
+.v2 .ca-family {
+  background: var(--v2-surface-2);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: background 0.15s;
+}
+.v2 .ca-family-header {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  color: var(--v2-text);
+  transition: background 0.15s;
+}
+.v2 .ca-family-header:hover {
+  background: var(--v2-surface-3);
+}
+.v2 .ca-family.open .ca-family-header {
+  background: var(--v2-surface-3);
+  border-bottom: 0.5px solid var(--v2-border);
+}
+.v2 .ca-chev {
+  color: var(--v2-gold);
+  font-size: 12px;
+  font-weight: 600;
+}
+.v2 .ca-family-name {
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--v2-text);
+}
+.v2 .ca-family-count {
+  font-size: 11px;
+  color: var(--v2-text-3);
+  font-weight: 500;
+}
+.v2 .ca-family-body {
+  padding: 6px 0 10px;
+}
+.v2 .ca-event-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 1.2fr 1.2fr 1.2fr 1.2fr;
+  gap: 14px;
+  padding: 12px 16px 12px 36px;
+  border-bottom: 0.5px solid rgba(84,84,88,0.12);
+  align-items: center;
+}
+.v2 .ca-event-row:last-child { border-bottom: none; }
+.v2 .ca-ev-name {
+  font-size: 12px; font-weight: 500; color: var(--v2-text-2);
+}
+.v2 .ca-ev-best {
+  font-size: 14px; font-weight: 600; color: var(--v2-text);
+  letter-spacing: -0.01em;
+}
+.v2 .ca-cell {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+}
+@media (max-width: 900px) {
+  .v2 .ca-header,
+  .v2 .ca-event-row {
+    grid-template-columns: 60px 1fr 1fr 1fr 1fr 1fr;
+    gap: 8px;
+    padding-left: 20px;
+    padding-right: 12px;
+  }
+}
+
+/* ============================================================
+   EVENT POWER RANKINGS — compact two-column layout
+   Replaces the full-width bar list; same info, ~50% vertical space.
+   ============================================================ */
+.v2 .rankings-compact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+}
+.v2 .rankings-compact .rc-col {
+  display: flex;
+  flex-direction: column;
+}
+.v2 .rc-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 52px 72px 48px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 4px;
+  border-bottom: 0.5px solid rgba(84,84,88,0.15);
+  font-size: 13px;
+}
+.v2 .rc-row:last-child { border-bottom: none; }
+.v2 .rc-rank {
+  font-size: 11px;
+  color: var(--v2-text-3);
+  font-weight: 500;
+}
+.v2 .rc-event {
+  color: var(--v2-text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.v2 .rc-std {
+  text-align: center;
+}
+.v2 .rc-gap {
+  color: var(--v2-text-2);
+  font-size: 12px;
+  text-align: right;
+}
+.v2 .rc-pct {
+  color: var(--v2-gold);
+  font-weight: 600;
+  text-align: right;
+  font-size: 13px;
+}
+@media (max-width: 720px) {
+  .v2 .rankings-compact { grid-template-columns: 1fr; gap: 0; }
+}

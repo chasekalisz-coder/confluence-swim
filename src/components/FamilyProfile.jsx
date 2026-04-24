@@ -494,53 +494,85 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
 // standards aren't shown a discouraging wall of red deltas.
 // Each cell shows cut time / gap / percentage using the unified color rule.
 function ChampionshipTable({ gender, course, bestTimes }) {
+  // Default state: all families collapsed. Click a family header to
+  // expand. Saves enormous vertical space — most families don't need
+  // to see 19 events at once; they open the stroke they care about.
+  const [openFamilies, setOpenFamilies] = useState(new Set())
+  const toggle = (label) => {
+    setOpenFamilies(prev => {
+      const next = new Set(prev)
+      if (next.has(label)) next.delete(label)
+      else next.add(label)
+      return next
+    })
+  }
+
   return (
-    <div className="times-table championship-table">
-      <div className="times-row header">
-        <div>Event</div>
-        <div>Best</div>
+    <div className="championship-accordion">
+      {/* Column headers row — stays visible at the top */}
+      <div className="ca-header">
+        <div className="ca-h-event">Event</div>
+        <div className="ca-h-best">Best</div>
         {CHAMPIONSHIP_TIERS.map(tier => (
-          <div key={tier}>{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
+          <div key={tier} className="ca-h-tier">{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
         ))}
       </div>
 
-      {STROKE_FAMILIES.map(fam => (
-        <div key={fam.label}>
-          <div className="stroke-family-label">{fam.label}</div>
-          {fam.distances.map(dist => {
-            const baseEvent = `${dist} ${fam.stroke}`
-            const eventKey = `${baseEvent} ${course}`
-            const best = bestTimes[eventKey]
-            const bestSec = best ? parseTime(best) : null
+      {STROKE_FAMILIES.map(fam => {
+        const isOpen = openFamilies.has(fam.label)
+        return (
+          <div key={fam.label} className={`ca-family ${isOpen ? 'open' : ''}`}>
+            <button
+              className="ca-family-header"
+              onClick={() => toggle(fam.label)}
+              aria-expanded={isOpen}
+            >
+              <span className="ca-chev">{isOpen ? '▾' : '▸'}</span>
+              <span className="ca-family-name">{fam.label}</span>
+              <span className="ca-family-count">{fam.distances.length} events</span>
+            </button>
 
-            return (
-              <div className="times-row" key={eventKey}>
-                <div className="event">{dist}</div>
-                <div className="time mono">{bestSec != null ? formatTime(bestSec) : '—'}</div>
-                {CHAMPIONSHIP_TIERS.map(tier => {
-                  const cut = championshipCut({ tier, gender, course, event: baseEvent })
-                  const gap = (bestSec != null && cut != null) ? gapToCut(bestSec, cut) : null
+            {isOpen && (
+              <div className="ca-family-body">
+                {fam.distances.map(dist => {
+                  const baseEvent = `${dist} ${fam.stroke}`
+                  const eventKey = `${baseEvent} ${course}`
+                  const best = bestTimes[eventKey]
+                  const bestSec = best ? parseTime(best) : null
+
                   return (
-                    <div key={tier} className="tags-cell">
-                      {gap?.achieved ? (
-                        <span className="hit-pill">✓ Hit</span>
-                      ) : gap ? (
-                        <div className={`stacked-gap delta-${gap.color || 'neutral'}`}>
-                          <div className="stacked-cut mono">{formatTime(cut)}</div>
-                          <div className="stacked-delta mono">−{gap.deltaSec.toFixed(2)}</div>
-                          <div className="stacked-pct">{gap.pctOff.toFixed(1)}%</div>
-                        </div>
-                      ) : (
-                        <span className="std none">—</span>
-                      )}
+                    <div className="ca-event-row" key={eventKey}>
+                      <div className="ca-ev-name">{dist}</div>
+                      <div className="ca-ev-best mono">
+                        {bestSec != null ? formatTime(bestSec) : '—'}
+                      </div>
+                      {CHAMPIONSHIP_TIERS.map(tier => {
+                        const cut = championshipCut({ tier, gender, course, event: baseEvent })
+                        const gap = (bestSec != null && cut != null) ? gapToCut(bestSec, cut) : null
+                        return (
+                          <div key={tier} className="ca-cell">
+                            {gap?.achieved ? (
+                              <span className="hit-pill">✓ Hit</span>
+                            ) : gap ? (
+                              <div className={`stacked-gap delta-${gap.color || 'neutral'}`}>
+                                <div className="stacked-cut mono">{formatTime(cut)}</div>
+                                <div className="stacked-delta mono">−{gap.deltaSec.toFixed(2)}</div>
+                                <div className="stacked-pct">{gap.pctOff.toFixed(1)}%</div>
+                              </div>
+                            ) : (
+                              <span className="std none">—</span>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   )
                 })}
               </div>
-            )
-          })}
-        </div>
-      ))}
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -621,36 +653,44 @@ function PowerRankingsList({ rankings }) {
   if (!rankings.length) {
     return <div className="empty-state">No meet times on file yet.</div>
   }
+  // Two-column layout — split the rankings in half so 15 events render as
+  // ~8 rows instead of 15. Compact rows: rank / event / std / gap / %.
+  // No progress bar — the bars were all 92-99% filled which carried zero
+  // visual information. Percentages and standard badges carry the signal.
+  const mid = Math.ceil(rankings.length / 2)
+  const left = rankings.slice(0, mid)
+  const right = rankings.slice(mid)
+
   return (
-    <div className="rankings-list">
-      <div className="ranking-row header">
-        <div>#</div>
-        <div>Event</div>
-        <div />
-        <div style={{ textAlign: 'right' }}>%</div>
-        <div style={{ textAlign: 'right' }}>Gap to Next</div>
-        <div style={{ textAlign: 'right' }}>Std</div>
+    <div className="rankings-compact">
+      <div className="rc-col">
+        {left.map((r, i) => (
+          <PowerRankRow key={r.event} rank={i + 1} r={r} />
+        ))}
       </div>
-      {rankings.map((r, i) => (
-        <div className="ranking-row" key={r.event}>
-          <div className="rank-num mono">{String(i + 1).padStart(2, '0')}</div>
-          <div className="rank-event">{r.event}</div>
-          <div className="rank-bar">
-            <div className="rank-bar-fill" style={{ width: `${r.pct}%` }} />
-          </div>
-          <div className="rank-pct">{r.pct}%</div>
-          <div className="rank-gap">
-            {r.gapToNext != null
-              ? <>−{r.gapToNext.toFixed(2)}<span className="gap-label">s</span></>
-              : '—'}
-          </div>
-          <div className="rank-std">
-            {r.currentLevel
-              ? <span className={`std ${r.currentLevel}`}>{r.currentLevel}</span>
-              : <span className="std none">—</span>}
-          </div>
-        </div>
-      ))}
+      <div className="rc-col">
+        {right.map((r, i) => (
+          <PowerRankRow key={r.event} rank={mid + i + 1} r={r} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PowerRankRow({ rank, r }) {
+  return (
+    <div className="rc-row">
+      <div className="rc-rank mono">{String(rank).padStart(2, '0')}</div>
+      <div className="rc-event">{r.event}</div>
+      <div className="rc-std">
+        {r.currentLevel
+          ? <span className={`std ${r.currentLevel}`}>{r.currentLevel}</span>
+          : <span className="std none">—</span>}
+      </div>
+      <div className="rc-gap mono">
+        {r.gapToNext != null ? `−${r.gapToNext.toFixed(2)}s` : '—'}
+      </div>
+      <div className="rc-pct mono">{r.pct}%</div>
     </div>
   )
 }
