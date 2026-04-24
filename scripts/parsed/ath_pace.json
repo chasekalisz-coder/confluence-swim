@@ -1,0 +1,512 @@
+[
+  {
+    "event": "50 Free SCY",
+    "time": "25.91",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "27.53",
+    "date": "2024-12-14",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "27.69",
+    "date": "2025-11-15",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "28.20",
+    "date": "2024-10-11",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "28.22",
+    "date": "2025-02-15",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "28.22",
+    "date": "2025-02-28",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "29.92",
+    "date": "2024-02-02",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "30.08",
+    "date": "2024-06-20",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "30.96",
+    "date": "2023-11-10",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "30.98",
+    "date": "2023-10-20",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "56.93",
+    "date": "2026-02-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:01.46",
+    "date": "2024-10-12",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:01.92",
+    "date": "2025-02-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:02.06",
+    "date": "2025-10-25",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:02.09",
+    "date": "2025-11-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:02.22",
+    "date": "2025-01-10",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:02.84",
+    "date": "2024-12-13",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:04.30",
+    "date": "2025-01-11",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:08.68",
+    "date": "2023-10-21",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:09.57",
+    "date": "2024-02-24",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:14.56",
+    "date": "2025-10-10",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:14.63",
+    "date": "2025-11-15",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:15.58",
+    "date": "2025-02-15",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:18.35",
+    "date": "2024-12-14",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:20.52",
+    "date": "2025-01-11",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:20.93",
+    "date": "2025-03-01",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:22.17",
+    "date": "2024-10-11",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:26.15",
+    "date": "2024-02-02",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:30.76",
+    "date": "2023-10-20",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:33.15",
+    "date": "2024-02-24",
+    "meet": ""
+  },
+  {
+    "event": "500 Free SCY",
+    "time": "5:44.27",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "500 Free SCY",
+    "time": "6:00.01",
+    "date": "2025-12-12",
+    "meet": ""
+  },
+  {
+    "event": "500 Free SCY",
+    "time": "6:02.31",
+    "date": "2025-11-14",
+    "meet": ""
+  },
+  {
+    "event": "500 Free SCY",
+    "time": "6:07.77",
+    "date": "2025-12-12",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "29.64",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "41.15",
+    "date": "2023-05-19",
+    "meet": ""
+  },
+  {
+    "event": "100 Fly SCY",
+    "time": "1:10.79",
+    "date": "2025-11-15",
+    "meet": ""
+  },
+  {
+    "event": "100 Fly SCY",
+    "time": "1:14.05",
+    "date": "2025-02-15",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "51.16",
+    "date": "2021-10-30",
+    "meet": "NT DM Haunted Hat Meet"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "32.39",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "37.27",
+    "date": "2025-01-11",
+    "meet": "Metro Middle School Championships"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "37.62",
+    "date": "2024-10-12",
+    "meet": "NT DM 37th BB/B/C Haunted Hat Invite"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "38.39",
+    "date": "2024-12-14",
+    "meet": "NT COPS NT COPS Reindeer Games"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "38.82",
+    "date": "2024-02-03",
+    "meet": "COR BB-B-C My Valentine Meet"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "39.59",
+    "date": "2023-10-21",
+    "meet": "2023 36th BB/B/C Haunted Hat I"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "40.23",
+    "date": "2023-11-11",
+    "meet": "12th annual LPA swim meet"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "43.71",
+    "date": "2022-12-10",
+    "meet": "2022 NT LAC Jingle Bell"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "44.86",
+    "date": "2022-10-23",
+    "meet": "2022 NT DM BB/B/C Haunted Hat Invite"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "44.96",
+    "date": "2024-06-21",
+    "meet": "NT RACE Heat Miser Open"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:11.40",
+    "date": "2026-02-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:16.28",
+    "date": "2025-11-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:20.68",
+    "date": "2025-10-10",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:21.00",
+    "date": "2024-12-13",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:22.21",
+    "date": "2024-10-11",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:24.45",
+    "date": "2025-02-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:24.58",
+    "date": "2024-02-02",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:25.62",
+    "date": "2025-03-01",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:26.37",
+    "date": "2023-10-20",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:28.20",
+    "date": "2025-01-11",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "2:41.63",
+    "date": "2026-02-14",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "2:51.75",
+    "date": "2025-11-15",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "2:52.50",
+    "date": "2025-10-25",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "3:00.86",
+    "date": "2024-06-20",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "3:05.18",
+    "date": "2024-12-14",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "3:07.48",
+    "date": "2025-02-28",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "3:09.93",
+    "date": "2023-10-21",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "3:11.77",
+    "date": "2023-11-10",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "3:12.09",
+    "date": "2024-10-12",
+    "meet": ""
+  },
+  {
+    "event": "200 Breast SCY",
+    "time": "3:12.23",
+    "date": "2023-05-19",
+    "meet": ""
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:27.27",
+    "date": "2025-12-11",
+    "meet": ""
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:27.27",
+    "date": "2022-05-21",
+    "meet": "2022 NT TFA May B/C"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:29.18",
+    "date": "2022-02-26",
+    "meet": "NT RACE Mallard Madness"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:29.50",
+    "date": "2022-12-10",
+    "meet": "2022 NT LAC Jingle Bell"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:30.48",
+    "date": "2022-10-23",
+    "meet": "2022 NT DM BB/B/C Haunted Hat Invite"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:31.61",
+    "date": "2021-12-12",
+    "meet": "2021 NT Cops Ready, Set, Snow"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:33.35",
+    "date": "2021-10-31",
+    "meet": "NT DM Haunted Hat Meet"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:35.26",
+    "date": "2021-11-14",
+    "meet": "NT ATAC Your Times Open"
+  },
+  {
+    "event": "200 IM SCY",
+    "time": "2:27.14",
+    "date": "2025-12-12",
+    "meet": ""
+  },
+  {
+    "event": "200 IM SCY",
+    "time": "2:37.25",
+    "date": "2024-12-13",
+    "meet": ""
+  },
+  {
+    "event": "200 IM SCY",
+    "time": "2:41.25",
+    "date": "2024-10-12",
+    "meet": ""
+  },
+  {
+    "event": "50 Free LCM",
+    "time": "40.81",
+    "date": "",
+    "meet": ""
+  },
+  {
+    "event": "100 Free LCM",
+    "time": "1:32.77",
+    "date": "",
+    "meet": ""
+  },
+  {
+    "event": "50 Back LCM",
+    "time": "51.88",
+    "date": "",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast LCM",
+    "time": "51.88",
+    "date": "",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast LCM",
+    "time": "1:53.42",
+    "date": "",
+    "meet": ""
+  }
+]

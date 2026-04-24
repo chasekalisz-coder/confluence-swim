@@ -1,0 +1,142 @@
+{
+  "totals": {
+    "athletes": 11,
+    "entries": 1110
+  },
+  "perAthlete": {
+    "ath_ben": {
+      "file": "ben-progression-master.md",
+      "count": 205,
+      "events": 22
+    },
+    "ath_farris": {
+      "file": "farris-progression-master.md",
+      "count": 2,
+      "events": 2
+    },
+    "ath_grace": {
+      "file": "grace-progression-master.md",
+      "count": 78,
+      "events": 13
+    },
+    "ath_hannah": {
+      "file": "hannah-progression-master.md",
+      "count": 73,
+      "events": 12
+    },
+    "ath_jon": {
+      "file": "jon-progression-master.md",
+      "count": 282,
+      "events": 33
+    },
+    "ath_kaden": {
+      "file": "kaden-progression-master.md",
+      "count": 94,
+      "events": 20
+    },
+    "ath_lana": {
+      "file": "lana-progression-master.md",
+      "count": 125,
+      "events": 22
+    },
+    "ath_liam": {
+      "file": "liam-progression-master.md",
+      "count": 19,
+      "events": 6
+    },
+    "ath_marley": {
+      "file": "marley-progression-master.md",
+      "count": 132,
+      "events": 24
+    },
+    "ath_mason": {
+      "file": "mason-progression-master.md",
+      "count": 15,
+      "events": 6
+    },
+    "ath_pace": {
+      "file": "pace-progression-master.md",
+      "count": 85,
+      "events": 17
+    }
+  },
+  "diagnostics": [
+    {
+      "file": "ben-progression-master.md",
+      "athleteId": "ath_ben",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "farris-progression-master.md",
+      "athleteId": "ath_farris",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "grace-progression-master.md",
+      "athleteId": "ath_grace",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "hannah-progression-master.md",
+      "athleteId": "ath_hannah",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "jon-progression-master.md",
+      "athleteId": "ath_jon",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "kaden-progression-master.md",
+      "athleteId": "ath_kaden",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "lana-progression-master.md",
+      "athleteId": "ath_lana",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "liam-progression-master.md",
+      "athleteId": "ath_liam",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "marley-progression-master.md",
+      "athleteId": "ath_marley",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "mason-progression-master.md",
+      "athleteId": "ath_mason",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    },
+    {
+      "file": "pace-progression-master.md",
+      "athleteId": "ath_pace",
+      "skippedRows": [],
+      "unknownEvents": [],
+      "weirdDates": []
+    }
+  ]
+}
