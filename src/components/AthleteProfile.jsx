@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { fullName, initials } from '../data/athletes.js'
 import { loadAthleteSessions, deleteSession, updateAthlete, deleteAthlete } from '../lib/db.js'
+import { CANONICAL_EVENTS, displayEventName, buildCanonicalTimesList } from '../lib/canonicalEvents.js'
 
 const ALL_EVENTS = [
   '50 Free','100 Free','200 Free','500 Free','1000 Free','1650 Free',
@@ -77,8 +78,11 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
       gender: athlete.gender || '',
       showChampionshipCuts: athlete.showChampionshipCuts ?? true,
       events: [...(athlete.events || [])],
-      meetTimes: [...(athlete.meetTimes || [])],
-      goalTimes: [...(athlete.goalTimes || [])],
+      // Canonical expansion — every athlete's edit form shows the same
+      // 35 events in the same order. Existing times are preserved; missing
+      // events become empty rows ready to fill in.
+      meetTimes: buildCanonicalTimesList(athlete.meetTimes || []),
+      goalTimes: buildCanonicalTimesList(athlete.goalTimes || []),
     })
     setEditing(true)
   }
@@ -203,31 +207,51 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
               <button className={poolFilter === 'SCY' ? 'active' : ''} onClick={() => setPoolFilter('SCY')}>SCY</button>
               <button className={poolFilter === 'LCM' ? 'active' : ''} onClick={() => setPoolFilter('LCM')}>LCM</button>
             </div>
-            {filteredTimes.map((t, i) => {
+            {filteredTimes.map((t) => {
               const globalIdx = editData.meetTimes.indexOf(t)
               return (
-                <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 100px 30px',gap:8,alignItems:'center',marginBottom:4}}>
-                  <input className="edit-input" style={{marginBottom:0}} value={t.event.replace(` ${poolFilter}`,'')} onChange={e => { const mt = [...editData.meetTimes]; mt[globalIdx] = {...t, event: e.target.value + ' ' + poolFilter}; setEditData({...editData, meetTimes: mt}) }} />
-                  <input className="edit-input" style={{marginBottom:0,fontFamily:'monospace'}} value={t.time} onChange={e => { const mt = [...editData.meetTimes]; mt[globalIdx] = {...t, time: e.target.value}; setEditData({...editData, meetTimes: mt}) }} />
-                  <button className="chip-x" onClick={() => setEditData({...editData, meetTimes: editData.meetTimes.filter((_,j) => j !== globalIdx)})}>x</button>
+                <div key={t.event} style={{display:'grid',gridTemplateColumns:'1fr 120px',gap:8,alignItems:'center',marginBottom:4}}>
+                  <div style={{fontSize:13,color:'var(--text-dim)'}}>
+                    {displayEventName(t.event)}
+                  </div>
+                  <input
+                    className="edit-input"
+                    style={{marginBottom:0,fontFamily:'monospace'}}
+                    value={t.time}
+                    placeholder="—"
+                    onChange={e => {
+                      const mt = [...editData.meetTimes]
+                      mt[globalIdx] = { ...t, time: e.target.value }
+                      setEditData({...editData, meetTimes: mt})
+                    }}
+                  />
                 </div>
               )
             })}
-            <button className="add-btn" onClick={() => setEditData({...editData, meetTimes: [...editData.meetTimes, {event: '50 Free ' + poolFilter, time: ''}]})}>+ Add time</button>
           </div>
           <div style={{marginBottom:24}}>
             <label className="edit-label">Goal Times ({poolFilter})</label>
-            {goalTimes.map((t, i) => {
+            {goalTimes.map((t) => {
               const globalIdx = (editData.goalTimes || []).indexOf(t)
               return (
-                <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 100px 30px',gap:8,alignItems:'center',marginBottom:4}}>
-                  <input className="edit-input" style={{marginBottom:0}} value={t.event.replace(` ${poolFilter}`,'')} onChange={e => { const gt = [...editData.goalTimes]; gt[globalIdx] = {...t, event: e.target.value + ' ' + poolFilter}; setEditData({...editData, goalTimes: gt}) }} />
-                  <input className="edit-input" style={{marginBottom:0,fontFamily:'monospace'}} value={t.time} onChange={e => { const gt = [...editData.goalTimes]; gt[globalIdx] = {...t, time: e.target.value}; setEditData({...editData, goalTimes: gt}) }} />
-                  <button className="chip-x" onClick={() => setEditData({...editData, goalTimes: editData.goalTimes.filter((_,j) => j !== globalIdx)})}>x</button>
+                <div key={t.event} style={{display:'grid',gridTemplateColumns:'1fr 120px',gap:8,alignItems:'center',marginBottom:4}}>
+                  <div style={{fontSize:13,color:'var(--text-dim)'}}>
+                    {displayEventName(t.event)}
+                  </div>
+                  <input
+                    className="edit-input"
+                    style={{marginBottom:0,fontFamily:'monospace'}}
+                    value={t.time}
+                    placeholder="—"
+                    onChange={e => {
+                      const gt = [...editData.goalTimes]
+                      gt[globalIdx] = { ...t, time: e.target.value }
+                      setEditData({...editData, goalTimes: gt})
+                    }}
+                  />
                 </div>
               )
             })}
-            <button className="add-btn" onClick={() => setEditData({...editData, goalTimes: [...(editData.goalTimes || []), {event: '50 Free ' + poolFilter, time: ''}]})}>+ Add goal time</button>
           </div>
           <div style={{display:'flex',gap:8,justifyContent:'space-between'}}>
             <button className="btn-danger" onClick={handleDeleteAthlete}>Delete Athlete</button>

@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { fullName, initials, primaryEvents } from '../data/athletes.js'
 import { addAthlete } from '../lib/db.js'
+import { buildCanonicalTimesList } from '../lib/canonicalEvents.js'
 
 export default function AthleteGrid({ athletes, onSelect, onViewProfile, connectionStatus, onAthleteAdded }) {
   const [adding, setAdding] = useState(false)
@@ -35,8 +36,11 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
       gender: newGender || null,
       showChampionshipCuts: true,
       events: [],
-      meetTimes: [],
-      goalTimes: [],
+      // Pre-populate with the 35 canonical events so every athlete's
+      // edit form starts with the same uniform rows. Times blank until
+      // you enter them.
+      meetTimes: buildCanonicalTimesList([]),
+      goalTimes: buildCanonicalTimesList([]),
     }
     try {
       await addAthlete(athlete)
