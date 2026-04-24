@@ -48,7 +48,7 @@ all placeholder data has been cleared.
   states during walkthrough. Real DB sessions always take precedence;
   mocks only appear alongside real sessions.
 - **What to do:** Delete the `mockSessions` array once real session data
-  from Supabase is reliably flowing in.
+  from Neon is reliably flowing in.
 
 ### 5. Resources Article Bodies
 - **File:** `src/components/FamilyResources.jsx` → `RESOURCES[*].body`

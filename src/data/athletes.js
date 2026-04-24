@@ -1,5 +1,5 @@
 // The 9 Confluence Swim athletes.
-// Seeded into Supabase on first load if the table is empty.
+// Seeded into Neon on first load if the table is empty.
 
 export const ATHLETES = [
   {
