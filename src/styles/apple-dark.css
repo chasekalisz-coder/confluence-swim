@@ -905,6 +905,16 @@ body.v2-active #root {
   font-size: 11px; color: var(--v2-text-3);
   font-weight: 600; letter-spacing: 0.04em;
 }
+.v2 .note-card .pool-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--v2-text-2);
+  padding: 2px 7px;
+  border: 1px solid var(--v2-border);
+  border-radius: 10px;
+  line-height: 1;
+}
 .v2 .note-card .cat-label {
   font-size: 10px; font-weight: 700;
   letter-spacing: 0.12em; text-transform: uppercase;
