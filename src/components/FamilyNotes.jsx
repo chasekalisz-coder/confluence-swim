@@ -16,6 +16,11 @@ import { loadAthleteSessions } from '../lib/db.js'
 
 // How each stored session.category maps to a family-facing label + color key.
 // Color keys each get a distinct hue (see CSS .cat-stripe and .cat-label styles).
+//
+// Note: 'workout' category (workout-builder outputs) is NOT mapped here —
+// those are filtered out upstream before they ever reach this component.
+// See the load effect below for the filter. Workout-builder outputs belong
+// in an admin-only library, not on the family-facing Session Notes feed.
 const CATEGORY_MAP = {
   // Training-note categories — families all see as distinct but unified under
   // "training-type" sessions when filtering. Session title never reads
@@ -31,8 +36,6 @@ const CATEGORY_MAP = {
   technique:   { label: 'Technique',    key: 'technique'  },
   meetprep:    { label: 'Meet Prep',    key: 'meetprep'   },
   meet_prep:   { label: 'Meet Prep',    key: 'meetprep'   },
-  // Fallback — when a session was saved before categories existed
-  workout:     { label: 'Workout',      key: 'workout'    },
 }
 
 // Which categories the filter chips cycle through
@@ -64,13 +67,22 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
   // If athlete has mockSessions (placeholder data for walkthrough/demo),
   // merge them in. Real DB sessions always take precedence; mocks fill
   // empty category tabs so the page isn't all empty states.
+  //
+  // Filter: "workout" category sessions are workout-builder outputs,
+  // not training notes. They have no real session data (times, zones,
+  // HR) — just the workout plan before it happened. Families should
+  // only see actual training notes with data, not these empty shells.
+  // Workout-builder outputs will get their own admin-only library.
   useEffect(() => {
     if (!athlete) return
     let active = true
     setLoading(true)
     loadAthleteSessions(athlete.id).then(s => {
       if (!active) return
-      const real = s || []
+      const real = (s || []).filter(row => {
+        const cat = (row.category || '').toLowerCase()
+        return cat !== 'workout'
+      })
       const mocks = (athlete.mockSessions || []).map(m => ({
         ...m,
         id: `mock_${m.id || Math.random().toString(36).slice(2, 8)}`,
@@ -93,8 +105,13 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
   const normalized = useMemo(() => {
     return sessions
       .map(s => {
-        const catKey = CATEGORY_MAP[s.category]?.key || 'aerobic'
-        const catLabel = CATEGORY_MAP[s.category]?.label || s.category || 'Session'
+        // Unmapped categories land as 'aerobic' (most common default)
+        // rather than leaking raw category strings like "workout" into
+        // the UI. The upstream filter already removes workout-type sessions;
+        // this is insurance against any other uncategorized sessions.
+        const mapped = CATEGORY_MAP[s.category]
+        const catKey = mapped?.key || 'aerobic'
+        const catLabel = mapped?.label || 'Session'
         const data = s.data || {}
         return {
           id: s.id,
