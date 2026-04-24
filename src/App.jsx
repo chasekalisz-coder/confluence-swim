@@ -60,6 +60,14 @@ export default function App() {
     setView('athlete')
   }
 
+  // Opens the athlete performance profile (what the athlete sees themselves).
+  // Routes to the 'family-profile' view internally — same component already
+  // used by the ?v2= URL flag.
+  const viewAthleteProfile = (a) => {
+    setSelectedAthlete(a)
+    setView('family-profile')
+  }
+
   const startNewSession = (a) => {
     setSelectedAthlete(a)
     setView('new-session')
@@ -195,6 +203,7 @@ export default function App() {
           <AthleteGrid
             athletes={athletes}
             onSelect={selectAthlete}
+            onViewProfile={viewAthleteProfile}
             connectionStatus={connectionStatus}
             onAthleteAdded={handleAthleteAdded}
           />
