@@ -234,6 +234,11 @@ export default function App() {
         )}
       </main>
       <footer className="app-footer">
+        <img
+          src="/assets/confluence-sport-white.png"
+          alt="Confluence Sport"
+          className="footer-master-logo"
+        />
         <div>confluencesport.com · Dallas, TX</div>
         <div className="version">v0.9.0</div>
       </footer>
