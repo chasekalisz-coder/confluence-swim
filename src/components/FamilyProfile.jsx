@@ -1255,15 +1255,21 @@ function BloomCircle({ label, course, athlete, age, gender }) {
       <div className="bloom-label">{label}</div>
       <svg viewBox={`0 0 ${size} ${size}`} xmlns="http://www.w3.org/2000/svg">
         <defs>
-          {/* Heavy blur — with the 80% overlap on each petal, adjacent
-              colors physically coexist in the same pixels. That's what
-              produces real color BLEND rather than fuzzy-but-separate
-              petals. stdDeviation=7 is tuned for this overlap amount. */}
+          {/* Heavy blur filter for the halo layer — creates the soft
+              atmospheric glow that bleeds between neighbors. */}
           <filter
             id={`bloom-blur-${course}`}
             x="-15%" y="-15%" width="130%" height="130%"
           >
-            <feGaussianBlur stdDeviation="7" />
+            <feGaussianBlur stdDeviation="9" />
+          </filter>
+          {/* Subtle blur for the core layer — softens petal edges without
+              dissolving them. Keeps color vibrant. */}
+          <filter
+            id={`bloom-core-blur-${course}`}
+            x="-5%" y="-5%" width="110%" height="110%"
+          >
+            <feGaussianBlur stdDeviation="1.2" />
           </filter>
         </defs>
 
@@ -1290,12 +1296,10 @@ function BloomCircle({ label, course, athlete, age, gender }) {
           <circle cx={cx} cy={cy} r={outerR} />
         </g>
 
-        {/* THE BLOOM — solid-fill overlapping petals, blurred as a group.
-            Every petal is painted solid (no transparent-tip gradient) so
-            when neighbors overlap their full colors mix, not a pale
-            fringe over a pale fringe. The blur then softens the whole
-            composite into a single continuous glow. */}
-        <g filter={`url(#bloom-blur-${course})`} opacity="0.85">
+        {/* HALO LAYER — heavily blurred, low opacity. Sits underneath
+            and provides the soft color bleed/glow between neighbors.
+            Does the "clouds" work. */}
+        <g filter={`url(#bloom-blur-${course})`} opacity="0.55">
           {spokes.map((spoke, si) => {
             const reach = reachBySpoke[si]
             if (reach < 0.03) return null
@@ -1310,7 +1314,25 @@ function BloomCircle({ label, course, athlete, age, gender }) {
           })}
         </g>
 
-        {/* Center dot — drawn AFTER the blur so the center stays crisp */}
+        {/* CORE LAYER — barely blurred, full color. Sits on top and
+            provides the visible, vibrant shape. This is what makes the
+            bloom feel alive instead of frosted-glass. */}
+        <g filter={`url(#bloom-core-blur-${course})`} opacity="0.95">
+          {spokes.map((spoke, si) => {
+            const reach = reachBySpoke[si]
+            if (reach < 0.03) return null
+            return (
+              <path
+                key={si}
+                d={wedgeShape(spoke.a0, spoke.a1, reach)}
+                fill={heatAt(reach)}
+                stroke="none"
+              />
+            )
+          })}
+        </g>
+
+        {/* Center dot — drawn AFTER everything so the center stays crisp */}
         <circle cx={cx} cy={cy} r={innerR * 0.5} fill="#0a0a0b" />
 
         {/* Distance labels at each spoke — positioned just outside outerR */}
