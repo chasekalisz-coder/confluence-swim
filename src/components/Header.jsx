@@ -19,11 +19,11 @@ export default function Header({ view, athlete, onHome }) {
     <header className="app-header">
       <div className="app-header-inner">
         <div className="brand" onClick={onHome} role="button" tabIndex={0}>
-          <div className="brand-mark">CS</div>
-          <div>
-            <div className="brand-name">Confluence Swim</div>
-            <div className="brand-sub">Private Aquatics · Dallas TX</div>
-          </div>
+          <img
+            src="/assets/confluence-swim-white.png"
+            alt="Confluence Swim"
+            className="brand-logo"
+          />
         </div>
         <div className="crumb">{crumb}</div>
       </div>
