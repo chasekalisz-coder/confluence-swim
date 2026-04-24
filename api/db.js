@@ -50,6 +50,17 @@ export default async function handler(req, res) {
         `
         await sql`CREATE INDEX IF NOT EXISTS sessions_athlete_id_idx ON sessions(athlete_id)`
         await sql`CREATE INDEX IF NOT EXISTS sessions_created_at_idx ON sessions(created_at DESC)`
+        await sql`
+          CREATE TABLE IF NOT EXISTS change_log (
+            id bigserial PRIMARY KEY,
+            entity_type text NOT NULL,
+            entity_id text NOT NULL,
+            action text NOT NULL,
+            summary text,
+            created_at timestamptz DEFAULT now()
+          )
+        `
+        await sql`CREATE INDEX IF NOT EXISTS change_log_created_at_idx ON change_log(created_at DESC)`
         return res.status(200).json({ ok: true })
       }
 
@@ -121,6 +132,21 @@ export default async function handler(req, res) {
           UPDATE athletes SET data = ${JSON.stringify(data)}::jsonb, updated_at = now()
           WHERE id = ${athleteId}
         `
+        await sql`
+          CREATE TABLE IF NOT EXISTS change_log (
+            id bigserial PRIMARY KEY,
+            entity_type text NOT NULL,
+            entity_id text NOT NULL,
+            action text NOT NULL,
+            summary text,
+            created_at timestamptz DEFAULT now()
+          )
+        `
+        const summary = `Edited ${data.name || athleteId}`
+        await sql`
+          INSERT INTO change_log (entity_type, entity_id, action, summary)
+          VALUES ('athlete', ${athleteId}, 'update', ${summary})
+        `
         return res.status(200).json({ ok: true })
       }
 
@@ -132,6 +158,21 @@ export default async function handler(req, res) {
           VALUES (${athlete.id}, ${JSON.stringify(athlete)}::jsonb)
           ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
         `
+        await sql`
+          CREATE TABLE IF NOT EXISTS change_log (
+            id bigserial PRIMARY KEY,
+            entity_type text NOT NULL,
+            entity_id text NOT NULL,
+            action text NOT NULL,
+            summary text,
+            created_at timestamptz DEFAULT now()
+          )
+        `
+        const summary = `Added ${athlete.name || athlete.id}`
+        await sql`
+          INSERT INTO change_log (entity_type, entity_id, action, summary)
+          VALUES ('athlete', ${athlete.id}, 'add', ${summary})
+        `
         return res.status(200).json({ ok: true, id: athlete.id })
       }
 
@@ -140,7 +181,43 @@ export default async function handler(req, res) {
         if (!athleteId) return res.status(400).json({ error: 'athleteId required' })
         await sql`DELETE FROM sessions WHERE athlete_id = ${athleteId}`
         await sql`DELETE FROM athletes WHERE id = ${athleteId}`
+        await sql`
+          CREATE TABLE IF NOT EXISTS change_log (
+            id bigserial PRIMARY KEY,
+            entity_type text NOT NULL,
+            entity_id text NOT NULL,
+            action text NOT NULL,
+            summary text,
+            created_at timestamptz DEFAULT now()
+          )
+        `
+        await sql`
+          INSERT INTO change_log (entity_type, entity_id, action, summary)
+          VALUES ('athlete', ${athleteId}, 'delete', ${'Deleted ' + athleteId})
+        `
         return res.status(200).json({ ok: true, deleted: athleteId })
+      }
+
+      case 'recentChanges': {
+        const { limit } = params
+        const max = Math.min(Number(limit) || 50, 200)
+        await sql`
+          CREATE TABLE IF NOT EXISTS change_log (
+            id bigserial PRIMARY KEY,
+            entity_type text NOT NULL,
+            entity_id text NOT NULL,
+            action text NOT NULL,
+            summary text,
+            created_at timestamptz DEFAULT now()
+          )
+        `
+        const rows = await sql`
+          SELECT id, entity_type, entity_id, action, summary, created_at
+          FROM change_log
+          ORDER BY created_at DESC
+          LIMIT ${max}
+        `
+        return res.status(200).json({ ok: true, changes: rows })
       }
 
       default:

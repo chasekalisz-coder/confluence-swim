@@ -22,6 +22,11 @@ None currently.
   Watch for: Jon 50 Breast LCM (fixture 44.33 → real 42.00), Marley 100 Back SCY (fixture 1:07.37 → real 1:06.87)
   Chase's decision needed: manual data entry vs scripted import
 
+- [ ] **Re-run setupSchema once after change_log deploys**
+  After Vercel deploys the change_log changes, hit `setupSchema` once to create the new table.
+  How: `curl -X POST https://confluence-swim.vercel.app/api/db -H "Content-Type: application/json" -d '{"action":"setupSchema"}'`
+  Note: each athlete CRUD also auto-creates the table if missing (belt-and-suspenders), so this is technically optional but cleaner to do explicitly.
+
 - [ ] **Step 12: Merge `v2-redesign` → `main`**
   Blocked on Step 11 completion
   Production cutover — flips confluence-swim.vercel.app to the new design + admin portal
