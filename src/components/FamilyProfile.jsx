@@ -1201,27 +1201,43 @@ function BloomCircle({ label, course, athlete, age, gender }) {
   }
 
   // -----------------------------------------------------------------
-  // PETAL SHAPE — filled wedge between a0 and a1 extending outward
+  // PETAL SHAPE — wide overlapping wedges so neighbors actually BLEND
   // -----------------------------------------------------------------
-  // Each petal is the actual angular slice (a0..a1) from innerR out to a
-  // radius based on reach. The tip is a small arc (not a point) so strong
-  // events meet their neighbors cleanly when blurred.
+  // The previous pass drew each petal within its own angular slice. When
+  // blurred, the petals got fuzzy but remained separate — dark rays
+  // showed through between neighbors because adjacent colors never
+  // shared pixels. True color bleed only happens when colors physically
+  // overlap before the blur pass.
+  //
+  // Fix: draw each petal 80% wider than its allocated slice. Adjacent
+  // petals overlap each other tangentially by ~40% on each side, so when
+  // the gaussian blur runs, every output pixel is a mix of its own
+  // petal + its neighbors' colors. The bloom reads as one continuous
+  // glow that shifts color around the wheel.
+  const OVERLAP = 0.8  // extend each petal by 80% into neighbors' slices
+
   function wedgeShape(a0, a1, reach) {
     const r = innerR + reach * (outerR - innerR)
-    const x0 = cx + innerR * Math.cos(a0)
-    const y0 = cy + innerR * Math.sin(a0)
-    const x1 = cx + r * Math.cos(a0)
-    const y1 = cy + r * Math.sin(a0)
-    const x2 = cx + r * Math.cos(a1)
-    const y2 = cy + r * Math.sin(a1)
-    const x3 = cx + innerR * Math.cos(a1)
-    const y3 = cy + innerR * Math.sin(a1)
-    // Large-arc flag 0 since each petal is <180°
+    const aMid = (a0 + a1) / 2
+    const halfWidth = (a1 - a0) / 2
+    const expandedHalf = halfWidth * (1 + OVERLAP)
+    const ea0 = aMid - expandedHalf
+    const ea1 = aMid + expandedHalf
+    const x0 = cx + innerR * Math.cos(ea0)
+    const y0 = cy + innerR * Math.sin(ea0)
+    const x1 = cx + r * Math.cos(ea0)
+    const y1 = cy + r * Math.sin(ea0)
+    const x2 = cx + r * Math.cos(ea1)
+    const y2 = cy + r * Math.sin(ea1)
+    const x3 = cx + innerR * Math.cos(ea1)
+    const y3 = cy + innerR * Math.sin(ea1)
+    // Large-arc flag 0 when expanded angle still <180°
+    const largeArc = (ea1 - ea0) > Math.PI ? 1 : 0
     return `M ${x0} ${y0}
             L ${x1} ${y1}
-            A ${r} ${r} 0 0 1 ${x2} ${y2}
+            A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}
             L ${x3} ${y3}
-            A ${innerR} ${innerR} 0 0 0 ${x0} ${y0} Z`
+            A ${innerR} ${innerR} 0 ${largeArc} 0 ${x0} ${y0} Z`
   }
 
   return (
@@ -1229,40 +1245,19 @@ function BloomCircle({ label, course, athlete, age, gender }) {
       <div className="bloom-label">{label}</div>
       <svg viewBox={`0 0 ${size} ${size}`} xmlns="http://www.w3.org/2000/svg">
         <defs>
-          {/* Moderate blur — enough to feather neighbors, not erase them.
-              stdDeviation=3 is the sweet spot after testing 0.6 (too sharp,
-              pie-chart look) and 9 (too smeared, invisible bloom). */}
+          {/* Heavy blur — with the 80% overlap on each petal, adjacent
+              colors physically coexist in the same pixels. That's what
+              produces real color BLEND rather than fuzzy-but-separate
+              petals. stdDeviation=7 is tuned for this overlap amount. */}
           <filter
             id={`bloom-blur-${course}`}
-            x="-10%" y="-10%" width="120%" height="120%"
+            x="-15%" y="-15%" width="130%" height="130%"
           >
-            <feGaussianBlur stdDeviation="3" />
+            <feGaussianBlur stdDeviation="7" />
           </filter>
-
-          {/* Each petal uses its own radial gradient: hot at core, fading
-              toward its tip. Opacity stays high in the middle so the bloom
-              actually glows. */}
-          {spokes.map((_, si) => {
-            const reach = reachBySpoke[si]
-            const color = heatAt(reach)
-            return (
-              <radialGradient
-                key={si}
-                id={`spoke-grad-${course}-${si}`}
-                cx="50%" cy="50%" r="58%"
-              >
-                <stop offset="0%"   stopColor={color} stopOpacity="1"    />
-                <stop offset="60%"  stopColor={color} stopOpacity="0.92" />
-                <stop offset="88%"  stopColor={color} stopOpacity="0.45" />
-                <stop offset="100%" stopColor={color} stopOpacity="0"    />
-              </radialGradient>
-            )
-          })}
         </defs>
 
-        {/* Family-sector separators — very faint radial lines at each 72°
-            boundary, so you can dimly see the 5 equal regions. Makes the
-            layout feel intentional without distracting. */}
+        {/* Family-sector separators — dim guide lines at each 72° boundary */}
         <g stroke="rgba(120,125,135,0.06)" strokeWidth="1">
           {strokeBoundaries.map((b, i) => {
             const a = b.startAngle
@@ -1278,15 +1273,19 @@ function BloomCircle({ label, course, athlete, age, gender }) {
           })}
         </g>
 
-        {/* Faint guide rings — anchor tier reading without imposing a grid */}
+        {/* Faint guide rings */}
         <g fill="none" stroke="rgba(120,125,135,0.07)" strokeWidth="1">
           <circle cx={cx} cy={cy} r={innerR + (outerR - innerR) * 0.55} />
           <circle cx={cx} cy={cy} r={innerR + (outerR - innerR) * 0.77} />
           <circle cx={cx} cy={cy} r={outerR} />
         </g>
 
-        {/* The bloom — blurred group for tangential feathering */}
-        <g filter={`url(#bloom-blur-${course})`}>
+        {/* THE BLOOM — solid-fill overlapping petals, blurred as a group.
+            Every petal is painted solid (no transparent-tip gradient) so
+            when neighbors overlap their full colors mix, not a pale
+            fringe over a pale fringe. The blur then softens the whole
+            composite into a single continuous glow. */}
+        <g filter={`url(#bloom-blur-${course})`} opacity="0.85">
           {spokes.map((spoke, si) => {
             const reach = reachBySpoke[si]
             if (reach < 0.03) return null
@@ -1294,14 +1293,14 @@ function BloomCircle({ label, course, athlete, age, gender }) {
               <path
                 key={si}
                 d={wedgeShape(spoke.a0, spoke.a1, reach)}
-                fill={`url(#spoke-grad-${course}-${si})`}
+                fill={heatAt(reach)}
                 stroke="none"
               />
             )
           })}
         </g>
 
-        {/* Center dot */}
+        {/* Center dot — drawn AFTER the blur so the center stays crisp */}
         <circle cx={cx} cy={cy} r={innerR * 0.5} fill="#0a0a0b" />
 
         {/* Distance labels at each spoke — positioned just outside outerR */}
