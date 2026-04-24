@@ -28,6 +28,7 @@
   --v2-red: #FF453A;
   --v2-pink: #FF6482;      /* Active Rest — soft, gentle tone */
   --v2-yellow: #FFD60A;    /* Power — high energy */
+  --v2-sage: #5EEAD4;      /* Recovery — cool restorative mint */
 }
 
 /* When v2 view is active, FamilyProfile.jsx adds .v2-active to <body>.
@@ -857,15 +858,38 @@ body.v2-active #root {
   align-self: stretch;
   min-height: 48px;
 }
-.v2 .note-card .cat-stripe.cat-aerobic    { background: var(--v2-blue);   }
-.v2 .note-card .cat-stripe.cat-threshold  { background: var(--v2-teal);   }
-.v2 .note-card .cat-stripe.cat-quality    { background: var(--v2-green);  }
-.v2 .note-card .cat-stripe.cat-sprint     { background: var(--v2-purple); }
-.v2 .note-card .cat-stripe.cat-power      { background: var(--v2-yellow); }
-.v2 .note-card .cat-stripe.cat-activerest { background: var(--v2-pink);   }
-.v2 .note-card .cat-stripe.cat-technique  { background: var(--v2-orange); }
-.v2 .note-card .cat-stripe.cat-meetprep   { background: var(--v2-gold);   }
-.v2 .note-card .cat-stripe.cat-workout    { background: var(--v2-text-2); }
+/* ============================================================
+   NOTE CARD COLOR SYSTEM
+   ============================================================
+   Two distinct layers tell the reader what they're looking at:
+
+   1. LEFT-BAR STRIPE = note TYPE (the big bucket)
+        Training   → purple   (all training sub-cats share this bar)
+        Meet Prep  → gold
+        Technique  → orange
+        Workout    → teal     (only rendered in its own tab)
+
+   2. CATEGORY LABEL TEXT = training sub-type (fine-grained)
+        Aerobic    → blue
+        Active Rest→ green
+        Threshold  → teal
+        Quality    → yellow
+        Sprint     → orange
+        Power      → pink
+        Recovery   → sage
+        Technique  → orange   (non-training, matches its own bar)
+        Meet Prep  → gold     (non-training, matches its own bar)
+
+   A training note always has a purple bar + a colored text label that
+   names the specific type of session. A scan down the list reads
+   "purple / purple / orange / purple / gold" — you can pick out
+   Technique and Meet Prep among the Training sessions instantly.
+   ============================================================ */
+
+.v2 .note-card .cat-stripe.type-training  { background: var(--v2-purple); }
+.v2 .note-card .cat-stripe.type-meetprep  { background: var(--v2-gold);   }
+.v2 .note-card .cat-stripe.type-technique { background: var(--v2-orange); }
+.v2 .note-card .cat-stripe.type-workout   { background: var(--v2-teal);   }
 
 .v2 .note-card .note-body { min-width: 0; }
 .v2 .note-card .meta {
@@ -887,13 +911,14 @@ body.v2-active #root {
 }
 .v2 .note-card .cat-label.aerobic    { color: var(--v2-blue);   }
 .v2 .note-card .cat-label.threshold  { color: var(--v2-teal);   }
-.v2 .note-card .cat-label.quality    { color: var(--v2-green);  }
-.v2 .note-card .cat-label.sprint     { color: var(--v2-purple); }
-.v2 .note-card .cat-label.power      { color: var(--v2-yellow); }
-.v2 .note-card .cat-label.activerest { color: var(--v2-pink);   }
+.v2 .note-card .cat-label.quality    { color: var(--v2-yellow); }
+.v2 .note-card .cat-label.sprint     { color: var(--v2-orange); }
+.v2 .note-card .cat-label.power      { color: var(--v2-pink);   }
+.v2 .note-card .cat-label.activerest { color: var(--v2-green);  }
+.v2 .note-card .cat-label.recovery   { color: var(--v2-sage);   }
 .v2 .note-card .cat-label.technique  { color: var(--v2-orange); }
 .v2 .note-card .cat-label.meetprep   { color: var(--v2-gold);   }
-.v2 .note-card .cat-label.workout    { color: var(--v2-text-2); }
+.v2 .note-card .cat-label.workout    { color: var(--v2-teal);   }
 
 .v2 .note-card .title {
   font-size: 16px; font-weight: 600;

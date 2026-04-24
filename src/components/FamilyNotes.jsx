@@ -32,6 +32,7 @@ const CATEGORY_MAP = {
   sprint:      { label: 'Sprint',       key: 'sprint'     },
   active_rest: { label: 'Active Rest',  key: 'activerest' },
   power:       { label: 'Power',        key: 'power'      },
+  recovery:    { label: 'Recovery',     key: 'recovery'   },
   // Standalone note types
   technique:   { label: 'Technique',    key: 'technique'  },
   meetprep:    { label: 'Meet Prep',    key: 'meetprep'   },
@@ -47,6 +48,7 @@ const FILTER_CHIPS = [
   { id: 'sprint',      label: 'Sprint' },
   { id: 'power',       label: 'Power' },
   { id: 'activerest',  label: 'Active Rest' },
+  { id: 'recovery',    label: 'Recovery' },
   { id: 'technique',   label: 'Technique' },
   { id: 'meetprep',    label: 'Meet Prep' },
 ]
@@ -102,6 +104,18 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
   }, [athlete])
 
   // Pre-process sessions: normalize category, extract preview text, sort by date desc
+  // Maps the fine-grained catKey to the four top-level note TYPES.
+  // The note TYPE drives the LEFT-BAR STRIPE color on the card, so a
+  // glance at the list tells you what kind of work the session was.
+  // Training sub-categories (aerobic, threshold, quality, sprint, power,
+  // activerest, recovery) all collapse to 'training'.
+  const resolveNoteType = (catKey) => {
+    if (catKey === 'technique') return 'technique'
+    if (catKey === 'meetprep') return 'meetprep'
+    if (catKey === 'workout') return 'workout'
+    return 'training'  // default — catches all training sub-types
+  }
+
   const normalized = useMemo(() => {
     return sessions
       .map(s => {
@@ -121,6 +135,7 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
           category: s.category,
           catKey,
           catLabel,
+          noteTypeKey: resolveNoteType(catKey),
           title: data.title || deriveTitle(s),
           preview: derivePreview(data),
         }
@@ -267,7 +282,7 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
                     className="note-card"
                     onClick={() => onViewSession && onViewSession(n.raw)}
                   >
-                    <div className={`cat-stripe cat-${n.catKey}`} />
+                    <div className={`cat-stripe type-${n.noteTypeKey}`} />
                     <div className="note-body">
                       <div className="meta">
                         <span className={`cat-label ${n.catKey}`}>{n.catLabel}</span>
