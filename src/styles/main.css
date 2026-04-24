@@ -1114,6 +1114,85 @@ html, body, #root {
   border-top: 1px solid var(--border);
 }
 
+/* ============================================================
+   MEET RESULTS (admin edit view — Step 7 read-only; Step 8 adds controls)
+   Grouped by event. Within each group: fastest time wins the BEST tag.
+   ============================================================ */
+.meet-results-event-group {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg);
+}
+.meet-results-event-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--elevated);
+  border-bottom: 1px solid var(--border);
+}
+.meet-results-event-name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+.meet-results-event-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.meet-results-rows {
+  display: flex;
+  flex-direction: column;
+}
+.meet-results-row {
+  display: grid;
+  grid-template-columns: 90px 120px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.meet-results-row:last-child { border-bottom: none; }
+.meet-results-row.is-best {
+  background: rgba(212, 168, 83, 0.06);
+}
+.meet-results-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text);
+}
+.meet-results-row.is-best .meet-results-time {
+  color: var(--gold);
+}
+.meet-results-date {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.meet-results-meet {
+  color: var(--text-muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.meet-results-best-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  padding: 2px 7px;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  line-height: 1;
+}
+
 .edit-input:focus { outline: none; border-color: var(--gold); }
 .event-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; font-size: 12px; }
 .chip-x { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 0 2px; line-height: 1; }

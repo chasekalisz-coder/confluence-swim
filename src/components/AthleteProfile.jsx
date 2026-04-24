@@ -375,11 +375,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
             </button>
             {openSections.meetResults && (
               <div className="edit-section-body">
-                <div style={{color:'var(--text-dim)',fontSize:13}}>
-                  Meet-by-meet progression data (what drives the progression chart
-                  on the athlete performance profile). Add / edit / delete coming
-                  in the next step.
-                </div>
+                <MeetResultsReadOnly progression={editData.progression} />
               </div>
             )}
           </div>
@@ -544,4 +540,118 @@ function calcAge(dob) {
   const m = now.getMonth() - d.getMonth()
   if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--
   return age
+}
+
+// ========================================================================
+// MeetResultsReadOnly
+// ------------------------------------------------------------------------
+// Step 7: read-only render of the athlete's progression data, grouped by
+// event in canonical order (SCY first, then LCM; within course Free → Fly
+// → Back → Breast → IM; within stroke shortest → longest). Within each
+// event the fastest time floats to the top; remaining entries sort by
+// date newest-first so recent results are visible without scrolling deep.
+//
+// Empty state for athletes with no progression yet — the 12 non-Jon
+// athletes today. Step 8 will swap the '(read-only)' label for an Add
+// button and per-row Edit/Delete controls, and Step 11 will bulk-load
+// Jon's 275-entry real progression through this same UI.
+// ========================================================================
+function MeetResultsReadOnly({ progression }) {
+  const entries = Array.isArray(progression) ? progression : []
+
+  if (entries.length === 0) {
+    return (
+      <div style={{color:'var(--text-dim)',fontSize:13,padding:'12px 0'}}>
+        No meet results recorded yet.
+        <div style={{fontSize:11,marginTop:6,color:'var(--text-muted)'}}>
+          Add / edit / delete controls coming in the next step.
+        </div>
+      </div>
+    )
+  }
+
+  // Group entries by event
+  const byEvent = {}
+  for (const e of entries) {
+    const ev = e.event || 'Unknown'
+    if (!byEvent[ev]) byEvent[ev] = []
+    byEvent[ev].push(e)
+  }
+
+  // Order the groups: canonical events in their defined order first,
+  // then any non-canonical events (legacy data) alphabetically at the end.
+  const canonicalPresent = CANONICAL_EVENTS.filter(ev => byEvent[ev])
+  const extras = Object.keys(byEvent).filter(ev => !CANONICAL_EVENTS.includes(ev)).sort()
+  const orderedEvents = [...canonicalPresent, ...extras]
+
+  // Within an event: fastest first, then by date newest-first for ties
+  // and remaining entries. Times are "M:SS.xx" strings — convert to
+  // seconds for comparison.
+  const timeToSec = (t) => {
+    if (!t) return Infinity
+    const s = String(t).trim()
+    if (s.includes(':')) {
+      const [m, rest] = s.split(':')
+      return (parseInt(m, 10) || 0) * 60 + (parseFloat(rest) || 0)
+    }
+    return parseFloat(s) || Infinity
+  }
+  const dateToSortable = (d) => {
+    if (!d) return ''
+    // ISO dates sort lexicographically already. "pending" / non-ISO sinks.
+    return /^\d{4}-\d{2}-\d{2}/.test(String(d)) ? String(d) : ''
+  }
+
+  const totalCount = entries.length
+  const eventCount = orderedEvents.length
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      <div style={{color:'var(--text-dim)',fontSize:12,letterSpacing:'0.04em',textTransform:'uppercase'}}>
+        {totalCount} result{totalCount === 1 ? '' : 's'} across {eventCount} event{eventCount === 1 ? '' : 's'} · read-only
+      </div>
+
+      {orderedEvents.map(ev => {
+        const list = [...byEvent[ev]].sort((a, b) => {
+          const ta = timeToSec(a.time)
+          const tb = timeToSec(b.time)
+          if (ta !== tb) return ta - tb
+          return dateToSortable(b.date).localeCompare(dateToSortable(a.date))
+        })
+        const fastest = timeToSec(list[0]?.time)
+
+        return (
+          <div key={ev} className="meet-results-event-group">
+            <div className="meet-results-event-header">
+              <span className="meet-results-event-name">{displayEventName(ev)}</span>
+              <span className="meet-results-event-count">{list.length} result{list.length === 1 ? '' : 's'}</span>
+            </div>
+            <div className="meet-results-rows">
+              {list.map((row, i) => {
+                const isBest = timeToSec(row.time) === fastest && i === 0
+                return (
+                  <div key={i} className={`meet-results-row ${isBest ? 'is-best' : ''}`}>
+                    <span className="meet-results-time">{row.time || '—'}</span>
+                    <span className="meet-results-date">{formatMeetDate(row.date)}</span>
+                    <span className="meet-results-meet">{row.meet || ''}</span>
+                    {isBest && <span className="meet-results-best-tag">BEST</span>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// "2026-02-14" → "Feb 14, 2026". Pass-through for "pending" / empty / other.
+function formatMeetDate(d) {
+  if (!d) return ''
+  const s = String(d).trim()
+  if (!/^\d{4}-\d{2}-\d{2}/.test(s)) return s  // "pending" etc.
+  const date = new Date(s + 'T12:00:00')
+  if (isNaN(date.getTime())) return s
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
