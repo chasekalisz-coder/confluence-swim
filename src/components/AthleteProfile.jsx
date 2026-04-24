@@ -383,7 +383,10 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
             </button>
             {openSections.meetResults && (
               <div className="edit-section-body">
-                <MeetResultsReadOnly progression={editData.progression} />
+                <MeetResultsEditor
+                  progression={editData.progression}
+                  onChange={(next) => setEditData({ ...editData, progression: next })}
+                />
               </div>
             )}
           </div>
@@ -551,73 +554,126 @@ function calcAge(dob) {
 }
 
 // ========================================================================
-// MeetResultsReadOnly
+// MeetResultsEditor
 // ------------------------------------------------------------------------
-// Step 7: read-only render of the athlete's progression data, grouped by
-// event in canonical order (SCY first, then LCM; within course Free → Fly
-// → Back → Breast → IM; within stroke shortest → longest). Within each
-// event the fastest time floats to the top; remaining entries sort by
-// date newest-first so recent results are visible without scrolling deep.
+// Step 8: full CRUD on the athlete's progression data. Extends the
+// Step 7 read-only layout with per-row Edit + Delete buttons and an
+// "Add result" form at the top.
 //
-// Empty state for athletes with no progression yet — the 12 non-Jon
-// athletes today. Step 8 will swap the '(read-only)' label for an Add
-// button and per-row Edit/Delete controls, and Step 11 will bulk-load
-// Jon's 275-entry real progression through this same UI.
+// Writes happen to the parent's editData.progression array through
+// onChange(). The actual DB persist rides along with the normal
+// "Save Changes" button at the bottom of the edit page — meet results
+// are part of the athlete record, not a separate save.
+//
+// Ordering rules (same as Step 7): canonical events in their defined
+// order (SCY first, then LCM; within course Free → Fly → Back →
+// Breast → IM; within stroke shortest → longest). Within an event,
+// fastest time floats to the top with BEST tag; remaining rows sort
+// newest-first by date.
 // ========================================================================
-function MeetResultsReadOnly({ progression }) {
+function MeetResultsEditor({ progression, onChange }) {
   const entries = Array.isArray(progression) ? progression : []
+  const [adding, setAdding] = useState(false)
+  const [editingIndex, setEditingIndex] = useState(null)   // index into the parent `progression` array
+  const [form, setForm] = useState({ event: '', time: '', date: '', meet: '' })
 
-  if (entries.length === 0) {
-    return (
-      <div style={{color:'var(--text-dim)',fontSize:13,padding:'12px 0'}}>
-        No meet results recorded yet.
-        <div style={{fontSize:11,marginTop:6,color:'var(--text-muted)'}}>
-          Add / edit / delete controls coming in the next step.
-        </div>
-      </div>
-    )
+  const resetForm = () => setForm({ event: '', time: '', date: '', meet: '' })
+
+  const openAdd = () => {
+    resetForm()
+    setEditingIndex(null)
+    setAdding(true)
   }
 
-  // Group entries by event
+  const openEdit = (absoluteIdx) => {
+    const e = entries[absoluteIdx]
+    setForm({
+      event: e.event || '',
+      time: e.time || '',
+      date: e.date || '',
+      meet: e.meet || '',
+    })
+    setEditingIndex(absoluteIdx)
+    setAdding(false)
+  }
+
+  const closeForm = () => {
+    setAdding(false)
+    setEditingIndex(null)
+    resetForm()
+  }
+
+  const submitForm = () => {
+    const cleaned = {
+      event: form.event.trim(),
+      time: form.time.trim(),
+      date: form.date.trim(),
+      meet: form.meet.trim(),
+    }
+    if (!cleaned.event || !cleaned.time) {
+      alert('Event and time are required.')
+      return
+    }
+    const next = [...entries]
+    if (editingIndex !== null) {
+      next[editingIndex] = cleaned
+    } else {
+      next.push(cleaned)
+    }
+    onChange(next)
+    closeForm()
+  }
+
+  const deleteEntry = (absoluteIdx) => {
+    const e = entries[absoluteIdx]
+    const label = `${e.time} — ${displayEventName(e.event || 'event')}${e.date ? ` (${e.date})` : ''}`
+    if (!window.confirm(`Delete this result?\n\n${label}`)) return
+    const next = entries.filter((_, i) => i !== absoluteIdx)
+    onChange(next)
+  }
+
+  // Group entries by event, keeping track of each entry's index in the
+  // parent `progression` array so Edit/Delete operations know what to touch.
   const byEvent = {}
-  for (const e of entries) {
+  entries.forEach((e, idx) => {
     const ev = e.event || 'Unknown'
     if (!byEvent[ev]) byEvent[ev] = []
-    byEvent[ev].push(e)
-  }
+    byEvent[ev].push({ ...e, _absoluteIdx: idx })
+  })
 
-  // Order the groups: canonical events in their defined order first,
-  // then any non-canonical events (legacy data) alphabetically at the end.
   const canonicalPresent = CANONICAL_EVENTS.filter(ev => byEvent[ev])
   const extras = Object.keys(byEvent).filter(ev => !CANONICAL_EVENTS.includes(ev)).sort()
   const orderedEvents = [...canonicalPresent, ...extras]
 
-  // Within an event: fastest first, then by date newest-first for ties
-  // and remaining entries. Times are "M:SS.xx" strings — convert to
-  // seconds for comparison.
-  const timeToSec = (t) => {
-    if (!t) return Infinity
-    const s = String(t).trim()
-    if (s.includes(':')) {
-      const [m, rest] = s.split(':')
-      return (parseInt(m, 10) || 0) * 60 + (parseFloat(rest) || 0)
-    }
-    return parseFloat(s) || Infinity
-  }
-  const dateToSortable = (d) => {
-    if (!d) return ''
-    // ISO dates sort lexicographically already. "pending" / non-ISO sinks.
-    return /^\d{4}-\d{2}-\d{2}/.test(String(d)) ? String(d) : ''
-  }
-
   const totalCount = entries.length
   const eventCount = orderedEvents.length
 
+  const isFormOpen = adding || editingIndex !== null
+
   return (
     <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      <div style={{color:'var(--text-dim)',fontSize:12,letterSpacing:'0.04em',textTransform:'uppercase'}}>
-        {totalCount} result{totalCount === 1 ? '' : 's'} across {eventCount} event{eventCount === 1 ? '' : 's'} · read-only
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+        <div style={{color:'var(--text-dim)',fontSize:12,letterSpacing:'0.04em',textTransform:'uppercase'}}>
+          {totalCount === 0
+            ? 'No meet results recorded yet'
+            : `${totalCount} result${totalCount === 1 ? '' : 's'} across ${eventCount} event${eventCount === 1 ? '' : 's'}`}
+        </div>
+        {!isFormOpen && (
+          <button type="button" className="btn btn-outline btn-small" onClick={openAdd}>
+            + Add result
+          </button>
+        )}
       </div>
+
+      {isFormOpen && (
+        <MeetResultForm
+          form={form}
+          setForm={setForm}
+          onSubmit={submitForm}
+          onCancel={closeForm}
+          mode={editingIndex !== null ? 'edit' : 'add'}
+        />
+      )}
 
       {orderedEvents.map(ev => {
         const list = [...byEvent[ev]].sort((a, b) => {
@@ -637,12 +693,27 @@ function MeetResultsReadOnly({ progression }) {
             <div className="meet-results-rows">
               {list.map((row, i) => {
                 const isBest = timeToSec(row.time) === fastest && i === 0
+                const isEditing = editingIndex === row._absoluteIdx
                 return (
-                  <div key={i} className={`meet-results-row ${isBest ? 'is-best' : ''}`}>
+                  <div key={row._absoluteIdx} className={`meet-results-row ${isBest ? 'is-best' : ''} ${isEditing ? 'is-editing' : ''}`}>
                     <span className="meet-results-time">{row.time || '—'}</span>
                     <span className="meet-results-date">{formatMeetDate(row.date)}</span>
                     <span className="meet-results-meet">{row.meet || ''}</span>
-                    {isBest && <span className="meet-results-best-tag">BEST</span>}
+                    <div className="meet-results-actions">
+                      {isBest && <span className="meet-results-best-tag">BEST</span>}
+                      <button
+                        type="button"
+                        className="meet-results-row-btn"
+                        title="Edit this result"
+                        onClick={() => openEdit(row._absoluteIdx)}
+                      >Edit</button>
+                      <button
+                        type="button"
+                        className="meet-results-row-btn meet-results-row-btn--danger"
+                        title="Delete this result"
+                        onClick={() => deleteEntry(row._absoluteIdx)}
+                      >×</button>
+                    </div>
                   </div>
                 )
               })}
@@ -652,6 +723,84 @@ function MeetResultsReadOnly({ progression }) {
       })}
     </div>
   )
+}
+
+// Shared form for add + edit. Event dropdown is canonical; Date is a
+// native date picker but also accepts 'pending' via a secondary toggle.
+function MeetResultForm({ form, setForm, onSubmit, onCancel, mode }) {
+  return (
+    <div className="meet-results-form">
+      <div className="meet-results-form-title">
+        {mode === 'edit' ? 'Edit result' : 'Add result'}
+      </div>
+      <div className="meet-results-form-grid">
+        <div>
+          <label className="edit-label">Event</label>
+          <select
+            className="edit-input"
+            value={form.event}
+            onChange={e => setForm({ ...form, event: e.target.value })}
+          >
+            <option value="">Select event...</option>
+            {CANONICAL_EVENTS.map(ev => (
+              <option key={ev} value={ev}>{displayEventName(ev)}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="edit-label">Time</label>
+          <input
+            className="edit-input"
+            value={form.time}
+            onChange={e => setForm({ ...form, time: e.target.value })}
+            placeholder="1:02.91 or 28.41"
+          />
+        </div>
+        <div>
+          <label className="edit-label">Date</label>
+          <input
+            className="edit-input"
+            type="text"
+            value={form.date}
+            onChange={e => setForm({ ...form, date: e.target.value })}
+            placeholder="2026-02-14 or pending"
+          />
+        </div>
+        <div style={{gridColumn:'1 / -1'}}>
+          <label className="edit-label">Meet name (optional)</label>
+          <input
+            className="edit-input"
+            value={form.meet}
+            onChange={e => setForm({ ...form, meet: e.target.value })}
+            placeholder="NT COPS 44th Annual Greater Southwest Classic"
+          />
+        </div>
+      </div>
+      <div className="meet-results-form-actions">
+        <button type="button" className="btn btn-outline btn-small" onClick={onCancel}>Cancel</button>
+        <button type="button" className="btn btn-primary btn-small" onClick={onSubmit}>
+          {mode === 'edit' ? 'Update' : 'Add'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Shared time/date helpers — hoisted out of the editor so the form
+// doesn't need them but they remain accessible for sorting.
+function timeToSec(t) {
+  if (!t) return Infinity
+  const s = String(t).trim()
+  if (s.includes(':')) {
+    const [m, rest] = s.split(':')
+    return (parseInt(m, 10) || 0) * 60 + (parseFloat(rest) || 0)
+  }
+  return parseFloat(s) || Infinity
+}
+
+function dateToSortable(d) {
+  if (!d) return ''
+  return /^\d{4}-\d{2}-\d{2}/.test(String(d)) ? String(d) : ''
 }
 
 // "2026-02-14" → "Feb 14, 2026". Pass-through for "pending" / empty / other.

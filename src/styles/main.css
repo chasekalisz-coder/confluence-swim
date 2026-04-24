@@ -1156,10 +1156,16 @@ html, body, #root {
   padding: 9px 14px;
   font-size: 13px;
   border-bottom: 1px solid var(--border);
+  transition: background 120ms ease;
 }
 .meet-results-row:last-child { border-bottom: none; }
 .meet-results-row.is-best {
   background: rgba(212, 168, 83, 0.06);
+}
+.meet-results-row.is-editing {
+  background: rgba(120, 120, 120, 0.08);
+  outline: 1px solid var(--gold);
+  outline-offset: -1px;
 }
 .meet-results-time {
   font-variant-numeric: tabular-nums;
@@ -1191,6 +1197,73 @@ html, body, #root {
   border: 1px solid var(--gold);
   border-radius: 10px;
   line-height: 1;
+}
+
+/* Row-level Edit + Delete buttons (Step 8) */
+.meet-results-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.meet-results-row-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1;
+}
+.meet-results-row-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.meet-results-row-btn--danger {
+  padding: 3px 8px;
+  font-size: 14px;
+  line-height: 1;
+}
+.meet-results-row-btn--danger:hover {
+  border-color: #B84545;
+  color: #B84545;
+}
+
+/* Inline add/edit form */
+.meet-results-form {
+  background: var(--elevated);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.meet-results-form-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.meet-results-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 140px 140px;
+  gap: 10px;
+}
+.meet-results-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* Small button variant for the meet results toolbar + form */
+.btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
 }
 
 .edit-input:focus { outline: none; border-color: var(--gold); }
