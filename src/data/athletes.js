@@ -27,6 +27,42 @@ export const ATHLETES = [
       { event: "400 IM LCM", time: "5:51.86" }
     ],
 
+    // Championship Goals (Aug 4 target) — Chase-set goal times per event.
+    // "Goal" column only (ceiling times not tracked here). Stored as a
+    // map keyed on "Event Course" to match what FamilyProfile expects
+    // in goalTimes[eventKey]. Any event with no goal set simply isn't
+    // present in the map.
+    goalTimes: {
+      // SCY
+      "50 Free SCY":     "25.6",
+      "100 Free SCY":    "55.8",
+      "200 Free SCY":    "1:57.2",
+      "500 Free SCY":    "5:13.4",
+      "1000 Free SCY":   "10:43.9",
+      "1650 Free SCY":   "17:42.9",
+      "100 Back SCY":    "1:02.5",
+      "200 Back SCY":    "2:12.9",
+      "100 Breast SCY":  "1:12.7",
+      "200 Breast SCY":  "2:33.2",
+      "100 Fly SCY":     "1:00.9",
+      "200 Fly SCY":     "2:11.4",
+      "200 IM SCY":      "2:11.1",
+      "400 IM SCY":      "4:42.8",
+      // LCM
+      "50 Free LCM":     "29.0",
+      "100 Free LCM":    "1:03.3",
+      "200 Free LCM":    "2:12.8",
+      "400 Free LCM":    "4:36.8",
+      "100 Back LCM":    "1:10.9",
+      "200 Back LCM":    "2:28.4",
+      "100 Breast LCM":  "1:24.8",
+      "200 Breast LCM":  "3:11.5",
+      "100 Fly LCM":     "1:11.3",
+      "200 Fly LCM":     "2:35.8",
+      "200 IM LCM":      "2:29.8",
+      "400 IM LCM":      "5:39.8",
+    },
+
     // ⚠️ PLACEHOLDER DATA — see PLACEHOLDERS.md
     // Mock upcoming meets for walkthrough. Replace with real schedule.
     upcomingMeets: [
