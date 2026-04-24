@@ -204,6 +204,27 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
             bestTimes={bestTimes}
             goalTimes={goalTimes}
           />
+
+          {/* Championship Standards sits directly under main Times & Goals —
+              same mental model (current time vs standards), just harder tiers.
+              Toggle-gated: only visible for athletes close to or pushing
+              these levels. */}
+          {athlete.showChampionshipCuts && (
+            <div className="championship-standards-block">
+              <div className="cs-heading">Championship Standards</div>
+              <p className="cs-lede">
+                The national pathway beyond USA Swimming motivationals.
+                <strong> Futures</strong> · <strong>Sectionals</strong> ·
+                <strong> Jr Nats</strong> · <strong>Nationals</strong>.
+              </p>
+              <ChampionshipTable
+                gender={gender}
+                course={course}
+                bestTimes={bestTimes}
+              />
+            </div>
+          )}
+
           <AgeUpPreview
             age={effectiveAge}
             gender={gender}
@@ -213,27 +234,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
           />
         </section>
 
-        {/* ============ CHAMPIONSHIP STANDARDS (toggle-gated) ============ */}
-        {athlete.showChampionshipCuts && (
-          <section>
-            <h2 className="section-title">Championship Standards</h2>
-            <p className="section-lede">
-              The national pathway beyond USA Swimming motivationals. <strong>Futures</strong> is
-              the first national-level meet; <strong>Sectionals</strong> is the Southern Zone
-              regional; <strong>Jr Nats</strong> and <strong>Nationals</strong> are the highest
-              domestic tiers. Each cell shows the cut, how far the best time still needs to drop,
-              and the percentage gap.
-            </p>
-            <ColorLegend />
-            <ChampionshipTable
-              gender={gender}
-              course={course}
-              bestTimes={bestTimes}
-            />
-          </section>
-        )}
-
-        {/* ============ PROGRESSION (placeholder) ============ */}
+        {/* ============ PROGRESSION ============ */}
         <section>
           <h2 className="section-title">Progression</h2>
           <p className="section-lede">

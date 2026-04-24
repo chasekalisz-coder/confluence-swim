@@ -1542,26 +1542,30 @@ body.v2-active #root {
 .v2 .stacked-gap {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   line-height: 1.2;
 }
+/* Cut time is the hero — the cell is a STANDARDS table, so show the
+   standard as the prominent information. Delta and pct are context
+   below, not the headline. */
 .v2 .stacked-gap .stacked-cut {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--v2-text-3);
-  letter-spacing: 0.02em;
-}
-.v2 .stacked-gap .stacked-delta {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  color: var(--v2-text);
   letter-spacing: -0.01em;
 }
-.v2 .stacked-gap .stacked-pct {
-  font-size: 11px;
-  font-weight: 600;
-  opacity: 0.85;
+.v2 .stacked-gap .stacked-delta {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0.9;
 }
-/* Color the delta + pct using unified palette; cut stays muted */
+.v2 .stacked-gap .stacked-pct {
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+/* Color the delta + pct using unified palette; cut stays hero/white */
 .v2 .stacked-gap.delta-green   .stacked-delta,
 .v2 .stacked-gap.delta-green   .stacked-pct   { color: var(--v2-green); }
 .v2 .stacked-gap.delta-yellow  .stacked-delta,
@@ -2033,4 +2037,32 @@ body.v2-active #root {
   .v2 .tf-grid-2 { grid-template-columns: 1fr; }
   .v2 .tf-splits-grid { grid-template-columns: repeat(2, 1fr); }
   .v2 .tool-title { font-size: 26px; }
+}
+
+/* ============================================================
+   CHAMPIONSHIP STANDARDS — lives inline under Times & Goals
+   Reads as an extension of the main table, not a separate section.
+   ============================================================ */
+.v2 .championship-standards-block {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 0.5px solid var(--v2-border);
+}
+.v2 .championship-standards-block .cs-heading {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
+  margin-bottom: 8px;
+}
+.v2 .championship-standards-block .cs-lede {
+  font-size: 12px;
+  color: var(--v2-text-2);
+  line-height: 1.55;
+  margin: 0 0 20px;
+}
+.v2 .championship-standards-block .cs-lede strong {
+  color: var(--v2-text);
+  font-weight: 600;
 }
