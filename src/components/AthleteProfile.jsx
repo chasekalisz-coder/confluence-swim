@@ -32,6 +32,7 @@ function getNoteType(session) {
   if (session.category === 'technique') return 'technique'
   if (session.category === 'meet_prep') return 'meetprep'
   if (session.category === 'workout') return 'workout'
+  if (session.category === 'sprint') return 'sprint'
   return 'training'
 }
 
@@ -42,9 +43,10 @@ const NOTE_TYPE_COLORS = {
   meetprep:  '#D4A853',   // gold
   technique: '#FF9F0A',   // orange
   workout:   '#64D2FF',   // teal
+  sprint:    '#FF6482',   // pink — Sprint Lab is its own system (Coach McEvoy)
 }
 const NOTE_TYPE_LABELS = {
-  training: 'Training', meetprep: 'Meet Prep', technique: 'Technique', workout: 'Workout',
+  training: 'Training', meetprep: 'Meet Prep', technique: 'Technique', workout: 'Workout', sprint: 'Sprint Lab',
 }
 
 // Training sub-type text colors — reveals the fine-grained session type
@@ -176,8 +178,10 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
   const goalTimes = (editing ? editData.goalTimes : (athlete.goalTimes || [])).filter(t => t.event.endsWith(poolFilter))
 
   // Session filter:
-  //   'all'       → every session EXCEPT workouts (main review view)
-  //   named type  → only that note type (training / meetprep / technique / workout)
+  //   'all'       → every session EXCEPT workouts and sprint lab
+  //                 (main training review view)
+  //   named type  → only that note type (training / meetprep / technique
+  //                 / workout / sprint)
   // NOTE: the SCY/LCM poolFilter deliberately does NOT apply here anymore.
   // Sessions span both courses and should always be visible regardless
   // of which pool the times table is showing. Each card shows its own
@@ -185,18 +189,25 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
   const filteredSessions = sessions.filter(s => {
     const nt = getNoteType(s)
     if (typeFilter === 'all') {
-      return nt !== 'workout'
+      // Sprint Lab is a parallel system (Coach McEvoy), kept out of the
+      // main review view the same way workouts are. Its own chip surfaces
+      // them when wanted.
+      return nt !== 'workout' && nt !== 'sprint'
     }
     return nt === typeFilter
   })
 
-  // Counts — 'all' excludes workouts so the number matches what 'all' shows.
+  // Counts — 'all' excludes workouts AND sprint lab, matching the filter.
   const typeCounts = {
-    all: sessions.filter(s => getNoteType(s) !== 'workout').length,
+    all: sessions.filter(s => {
+      const nt = getNoteType(s)
+      return nt !== 'workout' && nt !== 'sprint'
+    }).length,
     training:  sessions.filter(s => getNoteType(s) === 'training').length,
     meetprep:  sessions.filter(s => getNoteType(s) === 'meetprep').length,
     technique: sessions.filter(s => getNoteType(s) === 'technique').length,
     workout:   sessions.filter(s => getNoteType(s) === 'workout').length,
+    sprint:    sessions.filter(s => getNoteType(s) === 'sprint').length,
   }
 
   if (editing) {
@@ -448,7 +459,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
             <span className="muted">{filteredSessions.length} session{filteredSessions.length === 1 ? '' : 's'}</span>
           </div>
           <div className="type-filter">
-            {[{key:'all',label:'All'},{key:'training',label:'Training'},{key:'meetprep',label:'Meet Prep'},{key:'technique',label:'Technique'},{key:'workout',label:'Workout'}].map(f => (
+            {[{key:'all',label:'All'},{key:'training',label:'Training'},{key:'meetprep',label:'Meet Prep'},{key:'technique',label:'Technique'},{key:'workout',label:'Workout'},{key:'sprint',label:'Sprint Lab'}].map(f => (
               <button key={f.key} className={`type-filter-btn ${typeFilter === f.key ? 'active' : ''}`} onClick={() => setTypeFilter(f.key)}>
                 {f.label}{typeCounts[f.key] > 0 && <span className="type-count">{typeCounts[f.key]}</span>}
               </button>
@@ -466,12 +477,24 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
               {filteredSessions.map(s => {
                 const noteType = getNoteType(s)
                 const typeStripeColor = NOTE_TYPE_COLORS[noteType] || NOTE_TYPE_COLORS.training
-                // Sub-type label color — for training notes this reveals the
-                // specific sub-category (aerobic / threshold / sprint etc)
-                // while the parent stripe color remains the same purple.
-                const subCat = s.category || noteType
-                const catLabelColor = subtypeColor(subCat)
-                const catLabelText = (CATEGORY_LABELS[subCat] || subCat || 'Session').toUpperCase()
+                // For standalone note types (sprint lab, technique, meetprep,
+                // workout), the label matches the note type — ignoring the raw
+                // category so a Sprint Lab session (category='sprint',
+                // noteType='sprint') shows 'SPRINT LAB' in pink, not 'SPRINT'
+                // in orange (which is the training sub-type color).
+                // For training notes, the category IS the sub-type and
+                // reveals the fine-grained flavor (aerobic/threshold/sprint
+                // /power/active_rest/recovery/quality) with its own color.
+                const isStandalone = noteType !== 'training'
+                const labelKey = isStandalone ? noteType : (s.category || 'aerobic')
+                const catLabelColor = isStandalone
+                  ? (NOTE_TYPE_COLORS[noteType] || '#a1a1a6')
+                  : subtypeColor(labelKey)
+                const catLabelText = (
+                  isStandalone
+                    ? (NOTE_TYPE_LABELS[noteType] || 'Session')
+                    : (CATEGORY_LABELS[labelKey] || labelKey || 'Session')
+                ).toUpperCase()
                 const poolTag = (s.data?.poolType || '').toUpperCase() || null
                 return (
                   <div key={s.id} className="session-row clickable" onClick={() => onViewSession && onViewSession(s)}>
