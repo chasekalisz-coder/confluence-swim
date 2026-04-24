@@ -114,10 +114,14 @@ export const STANDARDS = {
 // Order of standards slowest → fastest
 export const LEVELS = ["B", "BB", "A", "AA", "AAA", "AAAA"]
 
-// Given an age, return the age group bucket
+// Given an age, return the age group bucket.
+//
+// USA Swimming publishes motivational standards for 5 age groups:
+//   10 & Under ("10U"), 11-12, 13-14, 15-16, 17-18.
+// Earlier versions of this file split 10 & Under into "8U" and "9-10",
+// which did not match the published standards. Consolidated to "10U".
 export function ageBucket(age) {
-  if (age <= 8) return "8U"
-  if (age <= 10) return "9-10"
+  if (age <= 10) return "10U"
   if (age <= 12) return "11-12"
   if (age <= 14) return "13-14"
   if (age <= 16) return "15-16"
