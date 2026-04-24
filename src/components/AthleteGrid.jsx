@@ -65,44 +65,22 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
 
       <div className="athlete-grid">
         {athletes.map(a => (
-          <div
-            key={a.id}
-            className="athlete-card"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              padding: 16,
-              gap: 14,
-            }}
-          >
-            {/* Top row: avatar on the left, athlete info filling the rest */}
-            <div style={{display:'flex',gap:12,alignItems:'flex-start',flex:1,minWidth:0}}>
-              <div className="athlete-avatar" style={{flexShrink:0}}>{initials(a)}</div>
-              <div style={{flex:1,minWidth:0}}>
-                <div className="athlete-name" style={{marginBottom:4}}>{fullName(a)}</div>
-                <div className="athlete-meta" style={{marginBottom:6}}>
+          <div key={a.id} className="athlete-card">
+            <div className="athlete-card-top">
+              <div className="athlete-avatar">{initials(a)}</div>
+              <div className="athlete-body">
+                <div className="athlete-name">{fullName(a)}</div>
+                <div className="athlete-meta">
                   Age {a.age}{a.dob ? ` · ${a.dob}` : ''}
                 </div>
-                <div className="athlete-events" style={{fontSize:12,lineHeight:1.4}}>
-                  {primaryEvents(a)}
-                </div>
+                <div className="athlete-events">{primaryEvents(a)}</div>
               </div>
             </div>
-
-            {/* Bottom action row — equal-width buttons, always anchored to the bottom of the card */}
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:'auto'}}>
-              <button
-                className="btn btn-outline"
-                style={{fontSize:12,padding:'8px 10px',width:'100%'}}
-                onClick={() => onViewProfile(a)}
-              >
+            <div className="athlete-card-actions">
+              <button className="btn btn-outline" onClick={() => onViewProfile(a)}>
                 View Profile
               </button>
-              <button
-                className="btn btn-primary"
-                style={{fontSize:12,padding:'8px 10px',width:'100%'}}
-                onClick={() => onSelect(a)}
-              >
+              <button className="btn btn-primary" onClick={() => onSelect(a)}>
                 Edit Profile
               </button>
             </div>
