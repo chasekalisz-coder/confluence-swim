@@ -2042,3 +2042,74 @@ body.v2-active #root {
 @media (max-width: 900px) {
   .v2 .bloom-pair { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   BLOOM LEGEND — tier ring order + heat gradient key
+   ============================================================ */
+.v2 .bloom-legend {
+  margin-top: 16px;
+  padding: 18px 22px;
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.v2 .bl-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 18px;
+  align-items: center;
+}
+.v2 .bl-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--v2-text-3);
+  text-transform: uppercase;
+}
+.v2 .bl-tiers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.v2 .bl-tier {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--v2-text-2);
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--v2-surface-2);
+  letter-spacing: 0.02em;
+}
+.v2 .bl-gradient {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.v2 .bl-grad-bar {
+  height: 10px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    rgb(42, 70, 95) 0%,
+    rgb(34, 150, 160) 25%,
+    rgb(180, 190, 60) 50%,
+    rgb(240, 150, 40) 75%,
+    rgb(220, 55, 45) 100%
+  );
+}
+.v2 .bl-grad-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--v2-text-3);
+}
+@media (max-width: 720px) {
+  .v2 .bl-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
