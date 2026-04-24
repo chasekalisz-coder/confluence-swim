@@ -89,13 +89,23 @@ Before responding to anything substantive:
    - `PROGRESS.md` (top 3 session entries — session log)
    - `TODO.md` (open tasks)
 
-3. **Respond with:**
+3. **Check what Chase did between sessions** — POST to the live API:
+   ```
+   curl -s -X POST https://confluence-swim.vercel.app/api/db \
+     -H "Content-Type: application/json" \
+     -d '{"action":"recentChanges","limit":20}'
+   ```
+   This returns the last 20 athlete changes (add / update / delete) with timestamps.
+   Anything newer than the last PROGRESS.md entry = Chase did it between chats.
+
+4. **Respond with:**
    - Current branch
    - Last commit hash on `v2-redesign`
    - Top 3 open TODOs (highest priority)
    - Date of last PROGRESS.md entry
+   - **Recent athlete changes since last session** (from step 3) — name them, don't just say "X changes"
 
-4. **Only THEN** ask Chase what he needs.
+5. **Only THEN** ask Chase what he needs.
 
 If Chase pastes the 4-line trigger, do the above. If he doesn't, do it anyway — this protocol runs every session regardless.
 

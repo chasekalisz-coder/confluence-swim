@@ -6,6 +6,37 @@ Each session block captures: what happened, decisions made, things that broke, t
 
 ---
 
+## Session 7 — 2026-04-24 (change log so Claude knows what Chase did between chats)
+
+### What happened
+- Chase flagged real problem: he can save / edit / delete athlete profiles fine on his end, but Claude has no idea any of it happened between chats
+- Audited `api/db.js` — `updateAthlete`, `addAthlete`, `deleteAthlete` all return `{ ok: true }` without verifying the write or logging anything queryable
+- Built a `change_log` table in Neon: every athlete create / update / delete writes a row with timestamp + summary
+- Added new `recentChanges` action to query the log (defaults to last 50, max 200)
+- Updated `CLAUDE.md` startup protocol — every new chat now hits `recentChanges` after reading the 4 context files, so the response includes "what Chase did between sessions"
+
+### Decisions
+- Stored at the API layer, not the client — works regardless of which surface (admin UI, scripted import, future tooling) does the write
+- Each CRUD case also runs `CREATE TABLE IF NOT EXISTS change_log` defensively so it works even before someone re-runs `setupSchema`
+- Summary string is human-readable (`Edited Jon Pomper`, `Added Mason Liao`, `Deleted ath_test`) so Claude can show it to Chase verbatim
+- Kept `change_log` separate from any kind of audit / undo system — this is for Claude's awareness, not for rolling back changes
+
+### Files changed
+- `api/db.js` — added `change_log` table to `setupSchema`, wired logging into 3 athlete CRUD actions, added `recentChanges` query action
+- `CLAUDE.md` — startup protocol now includes the recentChanges curl
+- `TODO.md` — added "re-run setupSchema once" reminder under P1
+
+### Things to check next session
+- After Vercel deploys, confirm `recentChanges` returns rows for any athlete edits Chase has done since this commit
+- Future Claude in next chat: hit `recentChanges` and confirm it returns at least the rows from this session's smoke test (if Chase tests it)
+
+### Open loops at end of session
+- Step 11 (bulk-load progression into Neon) — still pending, not started
+- Step 12 (merge v2-redesign → main) — still blocked on Step 11
+- Stale project handoff at `/mnt/project/CONFLUENCE_HANDOFF__1_.md` — still needs replacement by Chase
+
+---
+
 ## Session 6 — 2026-04-24 (evening, persistent context system setup)
 
 ### What happened
