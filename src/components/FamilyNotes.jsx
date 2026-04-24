@@ -37,20 +37,19 @@ const CATEGORY_MAP = {
   technique:   { label: 'Technique',    key: 'technique'  },
   meetprep:    { label: 'Meet Prep',    key: 'meetprep'   },
   meet_prep:   { label: 'Meet Prep',    key: 'meetprep'   },
+  workout:     { label: 'Workout',      key: 'workout'    },
 }
 
-// Which categories the filter chips cycle through
+// Filter chips — 'all' now means "all actual sessions" (training + meet
+// prep + technique). Workout is a separate tab so workout notes don't
+// clutter the primary session review view. Training sub-categories are
+// grouped under 'Training' headers visually.
 const FILTER_CHIPS = [
   { id: 'all',         label: 'All' },
-  { id: 'aerobic',     label: 'Aerobic' },
-  { id: 'threshold',   label: 'Threshold' },
-  { id: 'quality',     label: 'Quality' },
-  { id: 'sprint',      label: 'Sprint' },
-  { id: 'power',       label: 'Power' },
-  { id: 'activerest',  label: 'Active Rest' },
-  { id: 'recovery',    label: 'Recovery' },
-  { id: 'technique',   label: 'Technique' },
+  { id: 'training',    label: 'Training' },
   { id: 'meetprep',    label: 'Meet Prep' },
+  { id: 'technique',   label: 'Technique' },
+  { id: 'workout',     label: 'Workout' },
 ]
 
 export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession }) {
@@ -81,10 +80,10 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
     setLoading(true)
     loadAthleteSessions(athlete.id).then(s => {
       if (!active) return
-      const real = (s || []).filter(row => {
-        const cat = (row.category || '').toLowerCase()
-        return cat !== 'workout'
-      })
+      // Include workouts in the raw list — they're hidden from the 'all'
+      // filter view but surfaced when the Workout chip is explicitly
+      // selected. Mocks get the same treatment as real sessions.
+      const real = (s || [])
       const mocks = (athlete.mockSessions || []).map(m => ({
         ...m,
         id: `mock_${m.id || Math.random().toString(36).slice(2, 8)}`,
@@ -136,6 +135,10 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
           catKey,
           catLabel,
           noteTypeKey: resolveNoteType(catKey),
+          // SCY / LCM tag — stored in session data.poolType at save time.
+          // Falls back to raw poolType field on the root session object in
+          // case older data used a different shape.
+          poolType: (data.poolType || s.poolType || '').toUpperCase() || null,
           title: data.title || deriveTitle(s),
           preview: derivePreview(data),
         }
@@ -143,20 +146,33 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
       .sort((a, b) => (b.dateObj?.getTime() || 0) - (a.dateObj?.getTime() || 0))
   }, [sessions])
 
-  // Category counts — show next to each chip
+  // Chip counts — each chip shows how many sessions it would surface.
+  // 'all' counts everything EXCEPT workouts. Each noteTypeKey gets its own
+  // count. (catKey counts aren't needed since sub-types don't have chips.)
   const counts = useMemo(() => {
-    const c = { all: normalized.length }
+    const c = { all: 0, training: 0, meetprep: 0, technique: 0, workout: 0 }
     for (const n of normalized) {
-      c[n.catKey] = (c[n.catKey] || 0) + 1
+      const k = n.noteTypeKey
+      c[k] = (c[k] || 0) + 1
+      if (k !== 'workout') c.all += 1
     }
     return c
   }, [normalized])
 
-  // Filtered list
+  // Filtered list — filter semantics:
+  //   'all'       → everything EXCEPT workouts (main session review)
+  //   'training'  → only sessions whose noteTypeKey is 'training'
+  //   'meetprep'  → only meet-prep notes
+  //   'technique' → only technique notes
+  //   'workout'   → ONLY workout notes (its own dedicated tab)
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
     return normalized.filter(n => {
-      if (activeFilter !== 'all' && n.catKey !== activeFilter) return false
+      if (activeFilter === 'all') {
+        if (n.noteTypeKey === 'workout') return false
+      } else if (n.noteTypeKey !== activeFilter) {
+        return false
+      }
       if (q) {
         const hay = (n.title + ' ' + n.preview + ' ' + n.catLabel).toLowerCase()
         if (!hay.includes(q)) return false
@@ -288,6 +304,12 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
                         <span className={`cat-label ${n.catKey}`}>{n.catLabel}</span>
                         <span className="dot" />
                         <span className="date">{formatDate(n.dateObj)}</span>
+                        {n.poolType && (
+                          <>
+                            <span className="dot" />
+                            <span className="pool-tag">{n.poolType}</span>
+                          </>
+                        )}
                       </div>
                       <div className="title">{n.title}</div>
                       {n.preview && <div className="preview">{n.preview}</div>}
