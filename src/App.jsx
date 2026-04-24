@@ -30,29 +30,10 @@ export default function App() {
     })
   }, [])
 
-  // Support ?v2=athleteId in the URL to open the v2 family profile directly.
-  // Example: /?v2=ath_jon  → shows the new Apple Dark profile for Jon.
-  useEffect(() => {
-    if (!athletes.length) return
-    const params = new URLSearchParams(window.location.search)
-    const v2Id = params.get('v2')
-    if (v2Id) {
-      const match = athletes.find(a => a.id === v2Id)
-      if (match) {
-        setSelectedAthlete(match)
-        setView('family-profile')
-      }
-    }
-  }, [athletes])
-
   const goHome = () => {
     setView('home')
     setSelectedAthlete(null)
     setSelectedSession(null)
-    // Clear ?v2= from the URL so reloads don't re-open the v2 view
-    if (window.location.search.includes('v2=')) {
-      window.history.replaceState({}, '', window.location.pathname)
-    }
   }
 
   const selectAthlete = (a) => {
@@ -61,8 +42,8 @@ export default function App() {
   }
 
   // Opens the athlete performance profile (what the athlete sees themselves).
-  // Routes to the 'family-profile' view internally — same component already
-  // used by the ?v2= URL flag.
+  // Routes to the 'family-profile' view — same component now used by the
+  // View Profile button on the athlete cards.
   const viewAthleteProfile = (a) => {
     setSelectedAthlete(a)
     setView('family-profile')
