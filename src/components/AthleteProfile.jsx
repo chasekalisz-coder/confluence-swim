@@ -58,7 +58,6 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
     meetTimes: false,
     goalTimes: false,
     meetResults: false,
-    sessionNotes: false,
   })
   const toggleSection = (key) => setOpenSections(s => ({ ...s, [key]: !s[key] }))
 
@@ -321,29 +320,6 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
                   Meet-by-meet progression data (what drives the progression chart
                   on the athlete performance profile). Add / edit / delete coming
                   in the next step.
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ========== SESSION NOTES — collapsed placeholder ========== */}
-          <div className="edit-section">
-            <button
-              type="button"
-              className="edit-section-header"
-              onClick={() => toggleSection('sessionNotes')}
-              aria-expanded={openSections.sessionNotes}
-            >
-              <span className="edit-section-title">Session Notes</span>
-              <span className="edit-section-chev">{openSections.sessionNotes ? '▾' : '▸'}</span>
-            </button>
-            {openSections.sessionNotes && (
-              <div className="edit-section-body">
-                <div style={{color:'var(--text-dim)',fontSize:13}}>
-                  Session notes are managed from the athlete's main profile page
-                  (click Save to return, then click this athlete's name on the
-                  grid). Inline management within the edit page is planned but
-                  not yet implemented.
                 </div>
               </div>
             )}
