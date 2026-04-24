@@ -35,11 +35,50 @@ function getNoteType(session) {
   return 'training'
 }
 
+// TYPE stripe colors — matches FamilyNotes / apple-dark.css. Each note
+// TYPE (big bucket) gets a distinct colored stripe on the card edge.
 const NOTE_TYPE_COLORS = {
-  training: '#0B1E38', meetprep: '#B8921A', technique: '#2dd4bf', workout: '#8b5cf6',
+  training:  '#BF5AF2',   // purple — all training sub-types share this bar
+  meetprep:  '#D4A853',   // gold
+  technique: '#FF9F0A',   // orange
+  workout:   '#64D2FF',   // teal
 }
 const NOTE_TYPE_LABELS = {
-  training: 'Training', meetprep: 'Meet Prep', technique: 'Technique', workout: 'Workout', sprint: 'Sprint Lab',
+  training: 'Training', meetprep: 'Meet Prep', technique: 'Technique', workout: 'Workout',
+}
+
+// Training sub-type text colors — reveals the fine-grained session type
+// while the parent stripe stays purple. Aligned with apple-dark.css.
+const SUBTYPE_COLORS = {
+  aerobic:     '#0A84FF',  // blue
+  threshold:   '#64D2FF',  // teal
+  quality:     '#FFD60A',  // yellow
+  sprint:      '#FF9F0A',  // orange
+  power:       '#FF6482',  // pink
+  active_rest: '#30D158',  // green
+  recovery:    '#5EEAD4',  // sage
+  technique:   '#FF9F0A',  // orange (standalone, matches its type stripe)
+  meetprep:    '#D4A853',  // gold
+  meet_prep:   '#D4A853',
+  workout:     '#64D2FF',  // teal
+}
+function subtypeColor(category) {
+  return SUBTYPE_COLORS[category] || '#a1a1a6'
+}
+
+// Display labels for the category (training sub-type or note type label)
+const CATEGORY_LABELS = {
+  aerobic:     'Aerobic',
+  threshold:   'Threshold',
+  quality:     'Quality',
+  sprint:      'Sprint',
+  power:       'Power',
+  active_rest: 'Active Rest',
+  recovery:    'Recovery',
+  technique:   'Technique',
+  meetprep:    'Meet Prep',
+  meet_prep:   'Meet Prep',
+  workout:     'Workout',
 }
 
 export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSession, onAthleteUpdated, onAthleteDeleted }) {
@@ -136,19 +175,28 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
   const filteredTimes = (editing ? editData.meetTimes : athlete.meetTimes).filter(t => t.event.endsWith(poolFilter))
   const goalTimes = (editing ? editData.goalTimes : (athlete.goalTimes || [])).filter(t => t.event.endsWith(poolFilter))
 
+  // Session filter:
+  //   'all'       → every session EXCEPT workouts (main review view)
+  //   named type  → only that note type (training / meetprep / technique / workout)
+  // NOTE: the SCY/LCM poolFilter deliberately does NOT apply here anymore.
+  // Sessions span both courses and should always be visible regardless
+  // of which pool the times table is showing. Each card shows its own
+  // SCY/LCM tag so you can still see the pool per session.
   const filteredSessions = sessions.filter(s => {
-    const sessionPool = s.data?.poolType
-    if (sessionPool && sessionPool !== poolFilter) return false
-    if (typeFilter !== 'all') { if (getNoteType(s) !== typeFilter) return false }
-    return true
+    const nt = getNoteType(s)
+    if (typeFilter === 'all') {
+      return nt !== 'workout'
+    }
+    return nt === typeFilter
   })
-  const poolSessions = sessions.filter(s => { const p = s.data?.poolType; return !p || p === poolFilter })
+
+  // Counts — 'all' excludes workouts so the number matches what 'all' shows.
   const typeCounts = {
-    all: poolSessions.length,
-    training: poolSessions.filter(s => getNoteType(s) === 'training').length,
-    meetprep: poolSessions.filter(s => getNoteType(s) === 'meetprep').length,
-    technique: poolSessions.filter(s => getNoteType(s) === 'technique').length,
-    workout: poolSessions.filter(s => getNoteType(s) === 'workout').length,
+    all: sessions.filter(s => getNoteType(s) !== 'workout').length,
+    training:  sessions.filter(s => getNoteType(s) === 'training').length,
+    meetprep:  sessions.filter(s => getNoteType(s) === 'meetprep').length,
+    technique: sessions.filter(s => getNoteType(s) === 'technique').length,
+    workout:   sessions.filter(s => getNoteType(s) === 'workout').length,
   }
 
   if (editing) {
@@ -400,7 +448,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
             <span className="muted">{filteredSessions.length} session{filteredSessions.length === 1 ? '' : 's'}</span>
           </div>
           <div className="type-filter">
-            {[{key:'all',label:'All'},{key:'training',label:'Training'},{key:'meetprep',label:'Meet Prep'},{key:'technique',label:'Technique'},{key:'workout',label:'Workout'},{key:'sprint',label:'Sprint Lab'}].map(f => (
+            {[{key:'all',label:'All'},{key:'training',label:'Training'},{key:'meetprep',label:'Meet Prep'},{key:'technique',label:'Technique'},{key:'workout',label:'Workout'}].map(f => (
               <button key={f.key} className={`type-filter-btn ${typeFilter === f.key ? 'active' : ''}`} onClick={() => setTypeFilter(f.key)}>
                 {f.label}{typeCounts[f.key] > 0 && <span className="type-count">{typeCounts[f.key]}</span>}
               </button>
@@ -410,28 +458,37 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
             <p className="muted">Loading...</p>
           ) : filteredSessions.length === 0 ? (
             <div className="empty-history">
-              <p className="muted">No {typeFilter === 'all' ? poolFilter : NOTE_TYPE_LABELS[typeFilter]} sessions recorded yet.</p>
+              <p className="muted">No {typeFilter === 'all' ? '' : NOTE_TYPE_LABELS[typeFilter] + ' '}sessions recorded yet.</p>
               <p className="muted small">Click + New Session above to generate the first one.</p>
             </div>
           ) : (
             <div className="session-list">
               {filteredSessions.map(s => {
                 const noteType = getNoteType(s)
-                const stroke = labelStroke(s.data?.stroke)
-                const category = labelCategory(s.category)
-                const accentColor = NOTE_TYPE_COLORS[noteType] || NOTE_TYPE_COLORS.training
-                let subtitle = ''
-                if (noteType === 'technique') { subtitle = stroke || 'Technique' }
-                else if (noteType === 'meetprep') { subtitle = 'Meet Prep' }
-                else { subtitle = stroke ? `${category} · ${stroke}` : category }
+                const typeStripeColor = NOTE_TYPE_COLORS[noteType] || NOTE_TYPE_COLORS.training
+                // Sub-type label color — for training notes this reveals the
+                // specific sub-category (aerobic / threshold / sprint etc)
+                // while the parent stripe color remains the same purple.
+                const subCat = s.category || noteType
+                const catLabelColor = subtypeColor(subCat)
+                const catLabelText = (CATEGORY_LABELS[subCat] || subCat || 'Session').toUpperCase()
+                const poolTag = (s.data?.poolType || '').toUpperCase() || null
                 return (
                   <div key={s.id} className="session-row clickable" onClick={() => onViewSession && onViewSession(s)}>
-                    <div className="session-type-accent" style={{background: accentColor}} />
+                    <div className="session-type-accent" style={{background: typeStripeColor}} />
                     <div className="session-info">
-                      <div className="session-date">{s.date}</div>
-                      <div className="session-cat">{subtitle}</div>
+                      <div className="session-meta-row">
+                        <span className="session-cat-label" style={{color: catLabelColor}}>{catLabelText}</span>
+                        <span className="session-meta-dot" />
+                        <span className="session-date">{s.date}</span>
+                        {poolTag && (
+                          <>
+                            <span className="session-meta-dot" />
+                            <span className="session-pool-tag">{poolTag}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="session-type-badge" style={{color: accentColor}}>{NOTE_TYPE_LABELS[noteType] || 'Training'}</div>
                     <button className="session-delete" title="Delete session" onClick={(e) => handleDelete(s.id, e)}>×</button>
                     <div className="session-arrow">→</div>
                   </div>
