@@ -173,7 +173,7 @@ html, body, #root {
 /* ===== Athlete grid ===== */
 .athlete-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
 }
 
@@ -183,19 +183,41 @@ html, body, #root {
   border-radius: var(--radius);
   padding: 20px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 16px;
-  cursor: pointer;
   text-align: left;
   font: inherit;
   transition: all 0.15s ease;
   box-shadow: var(--shadow-sm);
+  min-height: 180px;
 }
 
 .athlete-card:hover {
   border-color: var(--gold);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+.athlete-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.athlete-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.athlete-card-actions > button {
+  width: 100%;
+  padding: 9px 10px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .athlete-avatar {
