@@ -51,6 +51,17 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
   const [editData, setEditData] = useState(null)
   const [saving, setSaving] = useState(false)
 
+  // Track which collapsible sections are open on the edit page. Basics is
+  // always open (no entry in this object = open/default). Everything else
+  // starts collapsed so the edit page is scannable when first opened.
+  const [openSections, setOpenSections] = useState({
+    meetTimes: false,
+    goalTimes: false,
+    meetResults: false,
+    sessionNotes: false,
+  })
+  const toggleSection = (key) => setOpenSections(s => ({ ...s, [key]: !s[key] }))
+
   useEffect(() => {
     let active = true
     setLoadingSessions(true)
@@ -146,114 +157,200 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
       <div className="page">
         <button className="back-link" onClick={() => setEditing(false)}>← Cancel editing</button>
         <h1 style={{fontFamily:'var(--font-serif)',marginBottom:24}}>Edit Athlete</h1>
-        <div style={{maxWidth:600}}>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
-            <div><label className="edit-label">First Name</label><input className="edit-input" value={editData.first} onChange={e => setEditData({...editData, first: e.target.value})} /></div>
-            <div><label className="edit-label">Last Name</label><input className="edit-input" value={editData.last} onChange={e => setEditData({...editData, last: e.target.value})} /></div>
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'100px 1fr',gap:12,marginBottom:16}}>
-            <div><label className="edit-label">Age</label><input className="edit-input" type="number" value={editData.age} onChange={e => setEditData({...editData, age: e.target.value})} placeholder="12" /></div>
-            <div><label className="edit-label">Birthday (e.g., June 4)</label><input className="edit-input" value={editData.dob} onChange={e => setEditData({...editData, dob: e.target.value})} placeholder="June 4" /></div>
+        <div style={{maxWidth:720}}>
+
+          {/* ========== BASICS — always open ========== */}
+          <div className="edit-section">
+            <div className="edit-section-header edit-section-header--static">
+              <span className="edit-section-title">Basics</span>
+            </div>
+            <div className="edit-section-body">
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:16}}>
+                <div><label className="edit-label">First Name</label><input className="edit-input" value={editData.first} onChange={e => setEditData({...editData, first: e.target.value})} /></div>
+                <div><label className="edit-label">Last Name</label><input className="edit-input" value={editData.last} onChange={e => setEditData({...editData, last: e.target.value})} /></div>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'100px 1fr',gap:12,marginBottom:16}}>
+                <div><label className="edit-label">Age</label><input className="edit-input" type="number" value={editData.age} onChange={e => setEditData({...editData, age: e.target.value})} placeholder="12" /></div>
+                <div><label className="edit-label">Birthday (e.g., June 4)</label><input className="edit-input" value={editData.dob} onChange={e => setEditData({...editData, dob: e.target.value})} placeholder="June 4" /></div>
+              </div>
+
+              {/* Gender — drives USA Swimming time-standard lookups. */}
+              <div style={{marginBottom:16}}>
+                <label className="edit-label">Gender</label>
+                <select
+                  className="edit-input"
+                  value={editData.gender}
+                  onChange={e => setEditData({...editData, gender: e.target.value})}
+                >
+                  <option value="">— Select —</option>
+                  <option value="M">Male</option>
+                  <option value="F">Female</option>
+                </select>
+              </div>
+
+              {/* Championship toggle. */}
+              <div style={{marginBottom:16}}>
+                <label
+                  className="edit-label"
+                  style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}
+                >
+                  <input
+                    type="checkbox"
+                    checked={editData.showChampionshipCuts ?? true}
+                    onChange={e => setEditData({...editData, showChampionshipCuts: e.target.checked})}
+                    style={{width:18,height:18,cursor:'pointer'}}
+                  />
+                  Show championship standards on this athlete's profile
+                </label>
+              </div>
+
+              {/* Primary Events */}
+              <div style={{marginBottom:0}}>
+                <label className="edit-label">Primary Events</label>
+                <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:8}}>
+                  {editData.events.map((ev, i) => (
+                    <span key={i} className="event-chip">{ev} <button className="chip-x" onClick={() => setEditData({...editData, events: editData.events.filter((_,j) => j !== i)})}>x</button></span>
+                  ))}
+                </div>
+                <select className="edit-input" value="" onChange={e => { if (e.target.value && !editData.events.includes(e.target.value)) setEditData({...editData, events: [...editData.events, e.target.value]}); e.target.value = '' }}>
+                  <option value="">+ Add event...</option>
+                  {ALL_EVENTS.filter(ev => !editData.events.includes(ev)).map(ev => <option key={ev} value={ev}>{ev}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
 
-          {/* Gender — drives USA Swimming time-standard lookups (Male vs Female
-              tables). Optional at save time, but required for championship cut
-              comparisons to be accurate. */}
-          <div style={{marginBottom:16}}>
-            <label className="edit-label">Gender</label>
-            <select
-              className="edit-input"
-              value={editData.gender}
-              onChange={e => setEditData({...editData, gender: e.target.value})}
+          {/* ========== MEET TIMES — collapsed by default ========== */}
+          <div className="edit-section">
+            <button
+              type="button"
+              className="edit-section-header"
+              onClick={() => toggleSection('meetTimes')}
+              aria-expanded={openSections.meetTimes}
             >
-              <option value="">— Select —</option>
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-            </select>
+              <span className="edit-section-title">Meet Times</span>
+              <span className="edit-section-chev">{openSections.meetTimes ? '▾' : '▸'}</span>
+            </button>
+            {openSections.meetTimes && (
+              <div className="edit-section-body">
+                <div className="pool-toggle" style={{marginBottom:12}}>
+                  <button className={poolFilter === 'SCY' ? 'active' : ''} onClick={() => setPoolFilter('SCY')}>SCY</button>
+                  <button className={poolFilter === 'LCM' ? 'active' : ''} onClick={() => setPoolFilter('LCM')}>LCM</button>
+                </div>
+                {filteredTimes.map((t) => {
+                  const globalIdx = editData.meetTimes.indexOf(t)
+                  return (
+                    <div key={t.event} style={{display:'grid',gridTemplateColumns:'1fr 120px',gap:8,alignItems:'center',marginBottom:4}}>
+                      <div style={{fontSize:13,color:'var(--text-dim)'}}>
+                        {displayEventName(t.event)}
+                      </div>
+                      <input
+                        className="edit-input"
+                        style={{marginBottom:0,fontFamily:'monospace'}}
+                        value={t.time}
+                        placeholder="—"
+                        onChange={e => {
+                          const mt = [...editData.meetTimes]
+                          mt[globalIdx] = { ...t, time: e.target.value }
+                          setEditData({...editData, meetTimes: mt})
+                        }}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Championship toggle — controls whether the athlete's performance
-              profile surfaces Futures/Sectionals/Jr Nats/Nats cuts. Useful to
-              hide for younger kids where those tiers aren't relevant yet. */}
-          <div style={{marginBottom:16}}>
-            <label
-              className="edit-label"
-              style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}
+          {/* ========== GOAL TIMES — collapsed by default ========== */}
+          <div className="edit-section">
+            <button
+              type="button"
+              className="edit-section-header"
+              onClick={() => toggleSection('goalTimes')}
+              aria-expanded={openSections.goalTimes}
             >
-              <input
-                type="checkbox"
-                checked={editData.showChampionshipCuts ?? true}
-                onChange={e => setEditData({...editData, showChampionshipCuts: e.target.checked})}
-                style={{width:18,height:18,cursor:'pointer'}}
-              />
-              Show championship standards on this athlete's profile
-            </label>
-          </div>
-          <div style={{marginBottom:16}}>
-            <label className="edit-label">Primary Events</label>
-            <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:8}}>
-              {editData.events.map((ev, i) => (
-                <span key={i} className="event-chip">{ev} <button className="chip-x" onClick={() => setEditData({...editData, events: editData.events.filter((_,j) => j !== i)})}>x</button></span>
-              ))}
-            </div>
-            <select className="edit-input" value="" onChange={e => { if (e.target.value && !editData.events.includes(e.target.value)) setEditData({...editData, events: [...editData.events, e.target.value]}); e.target.value = '' }}>
-              <option value="">+ Add event...</option>
-              {ALL_EVENTS.filter(ev => !editData.events.includes(ev)).map(ev => <option key={ev} value={ev}>{ev}</option>)}
-            </select>
-          </div>
-          <div style={{marginBottom:16}}>
-            <label className="edit-label">Best Times ({poolFilter})</label>
-            <div className="pool-toggle" style={{marginBottom:8}}>
-              <button className={poolFilter === 'SCY' ? 'active' : ''} onClick={() => setPoolFilter('SCY')}>SCY</button>
-              <button className={poolFilter === 'LCM' ? 'active' : ''} onClick={() => setPoolFilter('LCM')}>LCM</button>
-            </div>
-            {filteredTimes.map((t) => {
-              const globalIdx = editData.meetTimes.indexOf(t)
-              return (
-                <div key={t.event} style={{display:'grid',gridTemplateColumns:'1fr 120px',gap:8,alignItems:'center',marginBottom:4}}>
-                  <div style={{fontSize:13,color:'var(--text-dim)'}}>
-                    {displayEventName(t.event)}
-                  </div>
-                  <input
-                    className="edit-input"
-                    style={{marginBottom:0,fontFamily:'monospace'}}
-                    value={t.time}
-                    placeholder="—"
-                    onChange={e => {
-                      const mt = [...editData.meetTimes]
-                      mt[globalIdx] = { ...t, time: e.target.value }
-                      setEditData({...editData, meetTimes: mt})
-                    }}
-                  />
+              <span className="edit-section-title">Goal Times</span>
+              <span className="edit-section-chev">{openSections.goalTimes ? '▾' : '▸'}</span>
+            </button>
+            {openSections.goalTimes && (
+              <div className="edit-section-body">
+                <div className="pool-toggle" style={{marginBottom:12}}>
+                  <button className={poolFilter === 'SCY' ? 'active' : ''} onClick={() => setPoolFilter('SCY')}>SCY</button>
+                  <button className={poolFilter === 'LCM' ? 'active' : ''} onClick={() => setPoolFilter('LCM')}>LCM</button>
                 </div>
-              )
-            })}
+                {goalTimes.map((t) => {
+                  const globalIdx = (editData.goalTimes || []).indexOf(t)
+                  return (
+                    <div key={t.event} style={{display:'grid',gridTemplateColumns:'1fr 120px',gap:8,alignItems:'center',marginBottom:4}}>
+                      <div style={{fontSize:13,color:'var(--text-dim)'}}>
+                        {displayEventName(t.event)}
+                      </div>
+                      <input
+                        className="edit-input"
+                        style={{marginBottom:0,fontFamily:'monospace'}}
+                        value={t.time}
+                        placeholder="—"
+                        onChange={e => {
+                          const gt = [...editData.goalTimes]
+                          gt[globalIdx] = { ...t, time: e.target.value }
+                          setEditData({...editData, goalTimes: gt})
+                        }}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
-          <div style={{marginBottom:24}}>
-            <label className="edit-label">Goal Times ({poolFilter})</label>
-            {goalTimes.map((t) => {
-              const globalIdx = (editData.goalTimes || []).indexOf(t)
-              return (
-                <div key={t.event} style={{display:'grid',gridTemplateColumns:'1fr 120px',gap:8,alignItems:'center',marginBottom:4}}>
-                  <div style={{fontSize:13,color:'var(--text-dim)'}}>
-                    {displayEventName(t.event)}
-                  </div>
-                  <input
-                    className="edit-input"
-                    style={{marginBottom:0,fontFamily:'monospace'}}
-                    value={t.time}
-                    placeholder="—"
-                    onChange={e => {
-                      const gt = [...editData.goalTimes]
-                      gt[globalIdx] = { ...t, time: e.target.value }
-                      setEditData({...editData, goalTimes: gt})
-                    }}
-                  />
+
+          {/* ========== MEET RESULTS — collapsed placeholder (Step 7+) ========== */}
+          <div className="edit-section">
+            <button
+              type="button"
+              className="edit-section-header"
+              onClick={() => toggleSection('meetResults')}
+              aria-expanded={openSections.meetResults}
+            >
+              <span className="edit-section-title">Meet Results</span>
+              <span className="edit-section-chev">{openSections.meetResults ? '▾' : '▸'}</span>
+            </button>
+            {openSections.meetResults && (
+              <div className="edit-section-body">
+                <div style={{color:'var(--text-dim)',fontSize:13}}>
+                  Meet-by-meet progression data (what drives the progression chart
+                  on the athlete performance profile). Add / edit / delete coming
+                  in the next step.
                 </div>
-              )
-            })}
+              </div>
+            )}
           </div>
-          <div style={{display:'flex',gap:8,justifyContent:'space-between'}}>
+
+          {/* ========== SESSION NOTES — collapsed placeholder ========== */}
+          <div className="edit-section">
+            <button
+              type="button"
+              className="edit-section-header"
+              onClick={() => toggleSection('sessionNotes')}
+              aria-expanded={openSections.sessionNotes}
+            >
+              <span className="edit-section-title">Session Notes</span>
+              <span className="edit-section-chev">{openSections.sessionNotes ? '▾' : '▸'}</span>
+            </button>
+            {openSections.sessionNotes && (
+              <div className="edit-section-body">
+                <div style={{color:'var(--text-dim)',fontSize:13}}>
+                  Session notes are managed from the athlete's main profile page
+                  (click Save to return, then click this athlete's name on the
+                  grid). Inline management within the edit page is planned but
+                  not yet implemented.
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ========== Bottom action bar ========== */}
+          <div style={{display:'flex',gap:8,justifyContent:'space-between',marginTop:24}}>
             <button className="btn-danger" onClick={handleDeleteAthlete}>Delete Athlete</button>
             <div style={{display:'flex',gap:8}}>
               <button className="btn btn-outline" onClick={() => setEditing(false)}>Cancel</button>
