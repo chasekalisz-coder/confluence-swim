@@ -516,10 +516,45 @@ html, body, #root {
 
 .session-info { flex: 1; min-width: 0; }
 
+.session-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.session-cat-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.session-meta-dot {
+  width: 2px;
+  height: 2px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .session-date {
   font-weight: 600;
-  font-size: 14px;
-  color: var(--text);
+  font-size: 13px;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+.session-pool-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  padding: 2px 7px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .session-cat {
