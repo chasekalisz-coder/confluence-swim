@@ -28,40 +28,40 @@ export const ATHLETES = [
     ],
 
     // Championship Goals (Aug 4 target) — Chase-set goal times per event.
-    // "Goal" column only (ceiling times not tracked here). Stored as a
-    // map keyed on "Event Course" to match what FamilyProfile expects
-    // in goalTimes[eventKey]. Any event with no goal set simply isn't
-    // present in the map.
-    goalTimes: {
+    // "Goal" column only (ceiling times not tracked here). Stored as array
+    // of {event, time} to match the admin edit UI format and the shape
+    // athlete-context.js consumes for AI prompts. FamilyProfile normalizes
+    // to a map internally for lookups.
+    goalTimes: [
       // SCY
-      "50 Free SCY":     "25.6",
-      "100 Free SCY":    "55.8",
-      "200 Free SCY":    "1:57.2",
-      "500 Free SCY":    "5:13.4",
-      "1000 Free SCY":   "10:43.9",
-      "1650 Free SCY":   "17:42.9",
-      "100 Back SCY":    "1:02.5",
-      "200 Back SCY":    "2:12.9",
-      "100 Breast SCY":  "1:12.7",
-      "200 Breast SCY":  "2:33.2",
-      "100 Fly SCY":     "1:00.9",
-      "200 Fly SCY":     "2:11.4",
-      "200 IM SCY":      "2:11.1",
-      "400 IM SCY":      "4:42.8",
+      { event: "50 Free SCY",     time: "25.6" },
+      { event: "100 Free SCY",    time: "55.8" },
+      { event: "200 Free SCY",    time: "1:57.2" },
+      { event: "500 Free SCY",    time: "5:13.4" },
+      { event: "1000 Free SCY",   time: "10:43.9" },
+      { event: "1650 Free SCY",   time: "17:42.9" },
+      { event: "100 Back SCY",    time: "1:02.5" },
+      { event: "200 Back SCY",    time: "2:12.9" },
+      { event: "100 Breast SCY",  time: "1:12.7" },
+      { event: "200 Breast SCY",  time: "2:33.2" },
+      { event: "100 Fly SCY",     time: "1:00.9" },
+      { event: "200 Fly SCY",     time: "2:11.4" },
+      { event: "200 IM SCY",      time: "2:11.1" },
+      { event: "400 IM SCY",      time: "4:42.8" },
       // LCM
-      "50 Free LCM":     "29.0",
-      "100 Free LCM":    "1:03.3",
-      "200 Free LCM":    "2:12.8",
-      "400 Free LCM":    "4:36.8",
-      "100 Back LCM":    "1:10.9",
-      "200 Back LCM":    "2:28.4",
-      "100 Breast LCM":  "1:24.8",
-      "200 Breast LCM":  "3:11.5",
-      "100 Fly LCM":     "1:11.3",
-      "200 Fly LCM":     "2:35.8",
-      "200 IM LCM":      "2:29.8",
-      "400 IM LCM":      "5:39.8",
-    },
+      { event: "50 Free LCM",     time: "29.0" },
+      { event: "100 Free LCM",    time: "1:03.3" },
+      { event: "200 Free LCM",    time: "2:12.8" },
+      { event: "400 Free LCM",    time: "4:36.8" },
+      { event: "100 Back LCM",    time: "1:10.9" },
+      { event: "200 Back LCM",    time: "2:28.4" },
+      { event: "100 Breast LCM",  time: "1:24.8" },
+      { event: "200 Breast LCM",  time: "3:11.5" },
+      { event: "100 Fly LCM",     time: "1:11.3" },
+      { event: "200 Fly LCM",     time: "2:35.8" },
+      { event: "200 IM LCM",      time: "2:29.8" },
+      { event: "400 IM LCM",      time: "5:39.8" },
+    ],
 
     // ⚠️ PLACEHOLDER DATA — see PLACEHOLDERS.md
     // Mock upcoming meets for walkthrough. Replace with real schedule.
@@ -296,16 +296,39 @@ export const ATHLETES = [
     id: "ath_kaden", first: "Kaden", last: "Sun", age: 10, dob: "April 4",
     gender: "M", pronouns: "he",
     events: ["50 Free", "100 Free", "50 Fly", "100 IM", "200 IM", "50 Breast", "100 Breast"],
+    // Best times — updated April 2026 from Chase's Kaden_Goal_Time spreadsheet.
     meetTimes: [
-      { event: "50 Free SCY", time: "30.91" }, { event: "100 Free SCY", time: "1:07.76" },
-      { event: "200 Free SCY", time: "2:34.49" }, { event: "50 Back SCY", time: "38.48" },
-      { event: "100 Back SCY", time: "1:24.18" }, { event: "50 Breast SCY", time: "37.60" },
-      { event: "100 Breast SCY", time: "1:25.31" }, { event: "50 Fly SCY", time: "39.38" },
-      { event: "100 IM SCY", time: "1:13.76" }, { event: "200 IM SCY", time: "2:41.38" },
-      { event: "50 Free LCM", time: "36.44" }, { event: "100 Free LCM", time: "1:20.18" },
-      { event: "200 Free LCM", time: "2:54.25" }, { event: "50 Back LCM", time: "59.18" },
-      { event: "50 Breast LCM", time: "46.16" }, { event: "100 Breast LCM", time: "1:46.25" },
-      { event: "50 Fly LCM", time: "1:02.01" }
+      // SCY
+      { event: "50 Free SCY", time: "30.48" }, { event: "100 Free SCY", time: "1:06.85" },
+      { event: "200 Free SCY", time: "2:34.49" }, { event: "500 Free SCY", time: "6:24.30" },
+      { event: "50 Back SCY", time: "35.67" }, { event: "100 Back SCY", time: "1:15.18" },
+      { event: "50 Breast SCY", time: "37.60" }, { event: "100 Breast SCY", time: "1:24.34" },
+      { event: "50 Fly SCY", time: "37.86" }, { event: "100 IM SCY", time: "1:13.76" },
+      { event: "200 IM SCY", time: "2:40.08" },
+      // LCM
+      { event: "50 Free LCM", time: "35.52" }, { event: "100 Free LCM", time: "1:16.74" },
+      { event: "200 Free LCM", time: "2:40.63" }, { event: "50 Back LCM", time: "59.18" },
+      { event: "100 Back LCM", time: "1:29.04" }, { event: "50 Breast LCM", time: "42.01" },
+      { event: "100 Breast LCM", time: "1:34.21" }, { event: "50 Fly LCM", time: "1:02.01" },
+      { event: "200 IM LCM", time: "3:04.14" }
+    ],
+    // Goal times — Chase-set from the April 2026 goal-time spreadsheet.
+    // Stored as array of {event, time} to match the admin edit UI format
+    // and the shape athlete-context.js consumes for AI prompts.
+    goalTimes: [
+      // SCY
+      { event: "50 Free SCY", time: "27.01" }, { event: "100 Free SCY", time: "59.20" },
+      { event: "200 Free SCY", time: "2:07.00" }, { event: "500 Free SCY", time: "5:46.91" },
+      { event: "50 Back SCY", time: "30.67" }, { event: "100 Back SCY", time: "1:05.00" },
+      { event: "50 Breast SCY", time: "34.01" }, { event: "100 Breast SCY", time: "1:15.00" },
+      { event: "50 Fly SCY", time: "28.29" }, { event: "100 IM SCY", time: "1:07.45" },
+      { event: "200 IM SCY", time: "2:25.56" },
+      // LCM
+      { event: "50 Free LCM", time: "30.17" }, { event: "100 Free LCM", time: "1:04.85" },
+      { event: "200 Free LCM", time: "2:20.68" }, { event: "50 Back LCM", time: "35.27" },
+      { event: "100 Back LCM", time: "1:16.08" }, { event: "50 Breast LCM", time: "39.50" },
+      { event: "100 Breast LCM", time: "1:24.60" }, { event: "50 Fly LCM", time: "31.32" },
+      { event: "200 IM LCM", time: "2:40.60" }
     ]
   },
   {

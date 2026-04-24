@@ -32,8 +32,22 @@ export async function buildAthleteContext({ athleteId, poolType }) {
     .map((t) => normalizeTimeEntry(t))
     .filter((t) => t.poolType === poolType);
 
-  // Goal times — separate field, filter by poolType
-  const goalTimes = (athleteData.goalTimes || [])
+  // Goal times — separate field, filter by poolType.
+  // Accepts two shapes for backward compatibility:
+  //   1. Array of { event, time } (admin edit UI format)
+  //   2. Map of { "Event Course": "time" } (legacy family-profile format)
+  // Normalize to array-of-entries before filtering.
+  const goalTimesRaw = athleteData.goalTimes;
+  let goalTimesArray = [];
+  if (Array.isArray(goalTimesRaw)) {
+    goalTimesArray = goalTimesRaw;
+  } else if (goalTimesRaw && typeof goalTimesRaw === 'object') {
+    goalTimesArray = Object.entries(goalTimesRaw).map(([event, time]) => ({
+      event,
+      time,
+    }));
+  }
+  const goalTimes = goalTimesArray
     .map((t) => normalizeTimeEntry(t))
     .filter((t) => t.poolType === poolType);
 

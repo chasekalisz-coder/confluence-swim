@@ -118,8 +118,22 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
     meetTimes: athlete.meetTimes || [],
   }), [effectiveAge, gender, course, athlete.meetTimes])
 
-  // Goal times: athlete.goalTimes is a map { "50 Free SCY": "25.49", ... }
-  const goalTimes = athlete.goalTimes || {}
+  // Goal times: accept two shapes for backward compatibility.
+  //   • Map format: { "50 Free SCY": "25.49", ... } — used by seed data
+  //   • Array format: [{ event: "50 Free SCY", time: "25.49" }, ...] — used by admin edit UI
+  // Normalize to map shape for the downstream lookup (goalTimes[eventKey]).
+  const goalTimes = useMemo(() => {
+    const raw = athlete.goalTimes
+    if (!raw) return {}
+    if (Array.isArray(raw)) {
+      const out = {}
+      for (const g of raw) {
+        if (g?.event && g?.time) out[g.event] = g.time
+      }
+      return out
+    }
+    return raw
+  }, [athlete.goalTimes])
 
   // Meet-times lookup: { "50 Free SCY": "26.22", ... }
   const bestTimes = useMemo(() => {
