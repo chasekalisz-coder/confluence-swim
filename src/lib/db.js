@@ -53,13 +53,19 @@ export async function loadAthletes() {
     const byId = Object.fromEntries(rows.map(r => [r.id, r.data]))
     // Merge local + DB. Local is source of truth for schema/structure and
     // the new v2 fields (showChampionshipCuts, mockSessions, upcomingMeets,
-    // pastMeets, progression, gender). DB wins for user-editable fields
-    // (meetTimes, goalTimes, events, age, dob) that the admin may have
+    // pastMeets, gender). DB wins for user-editable fields (meetTimes,
+    // goalTimes, events, age, dob, progression) that the admin may have
     // updated since the seed. This prevents stale DB records from dropping
     // fields the local data file has added.
+    //
+    // progression: DB wins when present (even empty [] counts as "DB has
+    // authoritative data for this athlete"). Fixture fallback only fires
+    // if the DB record has no progression key at all — covers athletes
+    // seeded before the progression column was user-writable.
     const ordered = ATHLETES.map(a => {
       const dbRec = byId[a.id]
       if (!dbRec) return a
+      const dbHasProgression = Array.isArray(dbRec.progression)
       return {
         ...a,           // local wins for new fields
         ...dbRec,       // DB overrides where both exist
@@ -68,7 +74,9 @@ export async function loadAthletes() {
         mockSessions:        a.mockSessions        ?? dbRec.mockSessions,
         upcomingMeets:       a.upcomingMeets       ?? dbRec.upcomingMeets,
         pastMeets:           a.pastMeets           ?? dbRec.pastMeets,
-        progression:         a.progression         ?? dbRec.progression,
+        // progression: DB wins if it has an entry (even empty []); fixture
+        // fallback only for un-migrated athletes.
+        progression:         dbHasProgression ? dbRec.progression : a.progression,
         gender:              a.gender              ?? dbRec.gender,
       }
     })
@@ -108,18 +116,24 @@ export async function updateAthlete(athleteId, data) {
   // placeholder/demo data into the DB. The merge layer in loadAthletes()
   // re-applies these from local on next read, so they don't need to be
   // round-tripped through storage.
+  //
+  // NOTE: `progression` used to be on this list because it was demo-only
+  // fixture data. As of Step 6 (meet results UI prep), progression is
+  // user-editable through the admin meet results form and must persist
+  // to the DB. Merge layer in loadAthletes() now treats DB as source of
+  // truth for progression and falls back to fixture only when the DB
+  // has no progression for that athlete.
   const {
     mockSessions,
     upcomingMeets,
     pastMeets,
-    progression,
     ...cleanData
   } = data
 
   const result = await callDb('updateAthlete', { athleteId, data: cleanData })
 
   // Verification round-trip: read the athlete back from DB and compare
-  // a representative field to prove the save actually persisted. Gives
+  // representative counts to prove the save actually persisted. Gives
   // Chase a loud, explicit failure if something went sideways.
   try {
     const { athletes: rows } = await callDb('listAthletes')
@@ -127,14 +141,30 @@ export async function updateAthlete(athleteId, data) {
     if (!saved) {
       throw new Error(`Save appeared to succeed but athlete ${athleteId} not found on readback.`)
     }
-    // Spot-check meetTimes count — the field most commonly edited
-    const sentCount  = (cleanData.meetTimes || []).length
-    const readCount  = (saved.data?.meetTimes || []).length
-    if (sentCount !== readCount) {
-      console.error(`[updateAthlete] count mismatch — sent ${sentCount}, DB has ${readCount}`, { sent: cleanData.meetTimes, got: saved.data?.meetTimes })
-      throw new Error(`Save failed to persist: sent ${sentCount} times, DB has ${readCount}.`)
+    // Spot-check counts on the three user-editable list fields. Mismatch
+    // on any one is a persistence failure.
+    const sentTimes   = (cleanData.meetTimes   || []).length
+    const readTimes   = (saved.data?.meetTimes   || []).length
+    const sentGoals   = (cleanData.goalTimes   || []).length
+    const readGoals   = (saved.data?.goalTimes   || []).length
+    const sentProg    = Array.isArray(cleanData.progression) ? cleanData.progression.length : null
+    const readProg    = Array.isArray(saved.data?.progression) ? saved.data.progression.length : null
+
+    if (sentTimes !== readTimes) {
+      console.error(`[updateAthlete] meetTimes count mismatch — sent ${sentTimes}, DB has ${readTimes}`, { sent: cleanData.meetTimes, got: saved.data?.meetTimes })
+      throw new Error(`Save failed to persist: sent ${sentTimes} meetTimes, DB has ${readTimes}.`)
     }
-    console.log(`[updateAthlete ${athleteId}] verified — ${sentCount} times, ${(cleanData.goalTimes || []).length} goals persisted`)
+    if (sentGoals !== readGoals) {
+      console.error(`[updateAthlete] goalTimes count mismatch — sent ${sentGoals}, DB has ${readGoals}`, { sent: cleanData.goalTimes, got: saved.data?.goalTimes })
+      throw new Error(`Save failed to persist: sent ${sentGoals} goalTimes, DB has ${readGoals}.`)
+    }
+    // Only verify progression if the caller actually sent it. Edits from
+    // a page that doesn't touch progression won't include the field.
+    if (sentProg !== null && sentProg !== readProg) {
+      console.error(`[updateAthlete] progression count mismatch — sent ${sentProg}, DB has ${readProg}`, { sent: cleanData.progression, got: saved.data?.progression })
+      throw new Error(`Save failed to persist: sent ${sentProg} progression entries, DB has ${readProg}.`)
+    }
+    console.log(`[updateAthlete ${athleteId}] verified — ${sentTimes} times, ${sentGoals} goals${sentProg !== null ? `, ${sentProg} progression entries` : ''} persisted`)
   } catch (verifyErr) {
     // Throw — so the caller's .catch(err => alert(...)) fires.
     throw verifyErr
