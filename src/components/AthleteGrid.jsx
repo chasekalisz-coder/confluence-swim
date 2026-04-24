@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { fullName, initials, primaryEvents } from '../data/athletes.js'
 import { addAthlete } from '../lib/db.js'
 
-export default function AthleteGrid({ athletes, onSelect, connectionStatus, onAthleteAdded }) {
+export default function AthleteGrid({ athletes, onSelect, onViewProfile, connectionStatus, onAthleteAdded }) {
   const [adding, setAdding] = useState(false)
   const [newFirst, setNewFirst] = useState('')
   const [newLast, setNewLast] = useState('')
@@ -65,14 +65,32 @@ export default function AthleteGrid({ athletes, onSelect, connectionStatus, onAt
 
       <div className="athlete-grid">
         {athletes.map(a => (
-          <button key={a.id} className="athlete-card" onClick={() => onSelect(a)}>
-            <div className="athlete-avatar">{initials(a)}</div>
-            <div className="athlete-body">
-              <div className="athlete-name">{fullName(a)}</div>
-              <div className="athlete-meta">Age {a.age}{a.dob ? ` · ${a.dob}` : ''}</div>
-              <div className="athlete-events">{primaryEvents(a)}</div>
+          <div key={a.id} className="athlete-card">
+            <div className="athlete-card-body" style={{display:'flex',gap:12,alignItems:'center',marginBottom:12}}>
+              <div className="athlete-avatar">{initials(a)}</div>
+              <div className="athlete-body" style={{flex:1,minWidth:0}}>
+                <div className="athlete-name">{fullName(a)}</div>
+                <div className="athlete-meta">Age {a.age}{a.dob ? ` · ${a.dob}` : ''}</div>
+                <div className="athlete-events">{primaryEvents(a)}</div>
+              </div>
             </div>
-          </button>
+            <div className="athlete-card-actions" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+              <button
+                className="btn btn-outline"
+                style={{fontSize:12,padding:'8px 10px'}}
+                onClick={() => onViewProfile(a)}
+              >
+                View Profile
+              </button>
+              <button
+                className="btn btn-primary"
+                style={{fontSize:12,padding:'8px 10px'}}
+                onClick={() => onSelect(a)}
+              >
+                Edit Profile
+              </button>
+            </div>
+          </div>
         ))}
       </div>
 
