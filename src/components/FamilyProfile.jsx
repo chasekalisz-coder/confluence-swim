@@ -901,9 +901,43 @@ const BLOOM_STROKE_ORDER = [
 
 function SpecialtyBloom({ athlete, age, gender }) {
   return (
-    <div className="bloom-pair">
-      <BloomCircle label="SCY" course="SCY" athlete={athlete} age={age} gender={gender} />
-      <BloomCircle label="LCM" course="LCM" athlete={athlete} age={age} gender={gender} />
+    <div>
+      <div className="bloom-pair">
+        <BloomCircle label="SCY" course="SCY" athlete={athlete} age={age} gender={gender} />
+        <BloomCircle label="LCM" course="LCM" athlete={athlete} age={age} gender={gender} />
+      </div>
+      <BloomLegend />
+    </div>
+  )
+}
+
+// Legend explains what the rings and the heat colors mean so the visual
+// doesn't require guessing. Two parts:
+//   1. Tier ring order — center → edge (B → Nationals)
+//   2. Heat gradient — far off → close → achieved
+function BloomLegend() {
+  const tierLabels = ['B','BB','A','AA','AAA','AAAA','Futures','Sectionals','Jr Nats','Nats']
+  return (
+    <div className="bloom-legend">
+      <div className="bl-row">
+        <div className="bl-label">RINGS · center → edge</div>
+        <div className="bl-tiers">
+          {tierLabels.map((t, i) => (
+            <span key={i} className="bl-tier">{t}</span>
+          ))}
+        </div>
+      </div>
+      <div className="bl-row">
+        <div className="bl-label">HEAT · far → close → achieved</div>
+        <div className="bl-gradient">
+          <div className="bl-grad-bar" />
+          <div className="bl-grad-labels">
+            <span>far off</span>
+            <span>approaching</span>
+            <span>achieved</span>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -939,33 +973,40 @@ function BloomCircle({ label, course, athlete, age, gender }) {
     return timeStr ? parseTime(timeStr) : null
   })
 
-  // For each spoke × tier, compute proximity 0..1.
-  // 1 = achieved (time meets or beats cut). 0 = far off. Proximity
-  // scales between the PREVIOUS tier cut (or infinity if no prev) and
-  // this tier's cut. So a time halfway between AA and AAA registers
-  // as 0.5 on the AAA ring.
-  function proximity(bestSec, cutSec, prevCutSec) {
-    if (bestSec == null || cutSec == null) return 0
-    if (bestSec <= cutSec) return 1
-    // If no prev cut, scale against a generous floor (say cut * 1.25)
-    const floor = prevCutSec ?? cutSec * 1.25
-    if (bestSec >= floor) return 0
-    return (floor - bestSec) / (floor - cutSec)
-  }
-
   // Get cut time for a tier on an event
   function cutFor(tier, event) {
-    // Age-group standards (B through AAAA)
     if (['B','BB','A','AA','AAA','AAAA'].includes(tier)) {
       const stds = eventStandards({ age, gender, course, event })
       return stds?.[tier] ?? null
     }
-    // Championship tiers (Futures, Sectionals, Jr Nats, Nationals)
     const tierMap = { FUTURES: 'FUTURES', SECTIONALS: 'SECTIONALS', JR_NATS: 'JR_NATS', NATIONALS: 'NATIONALS' }
     return championshipCut({ tier: tierMap[tier], gender, course, event })
   }
 
-  // Build the grid: [spokeIdx][tierIdx] = proximity 0..1
+  // Proximity per ring — each ring independently scales 0..1 based on how
+  // close the athlete's time is to THAT specific tier. Previous bug had
+  // achieved tiers all returning max (1.0) which made the inner rings a
+  // solid red mass on strong athletes. Now achieved tiers get 1.0 but the
+  // rings ABOVE that tier scale against THEIR OWN neighbors, so the shape
+  // of the bloom reflects genuine spread across tiers.
+  //
+  // For each ring:
+  //   bestSec <= cutSec         → 1.0 (achieved — this tier earned)
+  //   bestSec near cutSec       → 0.7-0.9 (close)
+  //   bestSec moderate gap      → 0.3-0.6 (making progress)
+  //   bestSec way off           → 0.0-0.1 (cold)
+  //
+  // Scale reference: use this tier's cut and the next-slower tier's cut
+  // (or this cut × 1.15 as a floor if no prev tier exists). Inside that
+  // band, the time maps linearly.
+  function proximity(bestSec, cutSec, prevCutSec) {
+    if (bestSec == null || cutSec == null) return 0
+    if (bestSec <= cutSec) return 1
+    const floor = prevCutSec ?? cutSec * 1.15
+    if (bestSec >= floor) return 0
+    return (floor - bestSec) / (floor - cutSec)
+  }
+
   const grid = spokes.map((spoke, si) => {
     const bestSec = bestBySpoke[si]
     return BLOOM_TIERS.map((tier, ti) => {
@@ -976,37 +1017,28 @@ function BloomCircle({ label, course, athlete, age, gender }) {
     })
   })
 
-  // SVG layout
-  const size = 380
+  // SVG layout — larger size, more room for labels
+  const size = 440
   const cx = size / 2
   const cy = size / 2
-  const innerR = 26  // small hole at center for athlete initial
+  // No center bubble — spokes start from a small dark point at the center.
+  const innerR = 8
   const outerR = 170
   const ringCount = BLOOM_TIERS.length
   const ringWidth = (outerR - innerR) / ringCount
   const anglePerSpoke = (Math.PI * 2) / spokeCount
-  // Rotate so the first spoke starts at the top
   const startAngle = -Math.PI / 2 - anglePerSpoke / 2
 
-  // Heat palette — cool blue-green through gold to hot red
-  // Sampled from a traditional heat map gradient.
-  // Index 0 (coldest/untested) — subtle dark cyan
-  // Index 1 — cyan
-  // Index 2 — green
-  // Index 3 — yellow
-  // Index 4 — orange
-  // Index 5 (hottest) — deep red
+  // Heat palette — smooth gradient from dark cool to hot red
   function heatColor(p) {
-    // p is 0..1. Clamp.
     p = Math.max(0, Math.min(1, p))
-    if (p === 0) return 'rgba(40,50,70,0.35)'
-    // Interpolate across stops
+    if (p < 0.02) return 'rgba(30,40,55,0.45)'
     const stops = [
-      { p: 0.00, c: [42, 70, 95]   },   // dark cool
-      { p: 0.25, c: [34, 150, 160] },   // teal
-      { p: 0.50, c: [180, 190, 60] },   // yellow-green
-      { p: 0.75, c: [240, 150, 40] },   // orange
-      { p: 1.00, c: [220, 55, 45]  },   // deep red
+      { p: 0.00, c: [42, 70, 95]   },
+      { p: 0.25, c: [34, 150, 160] },
+      { p: 0.50, c: [180, 190, 60] },
+      { p: 0.75, c: [240, 150, 40] },
+      { p: 1.00, c: [220, 55, 45]  },
     ]
     for (let i = 0; i < stops.length - 1; i++) {
       const a = stops[i], b = stops[i+1]
@@ -1021,7 +1053,6 @@ function BloomCircle({ label, course, athlete, age, gender }) {
     return 'rgb(220,55,45)'
   }
 
-  // Build wedge path for a single cell
   function wedgePath(spokeIdx, ringIdx) {
     const a0 = startAngle + spokeIdx * anglePerSpoke
     const a1 = a0 + anglePerSpoke
@@ -1031,24 +1062,22 @@ function BloomCircle({ label, course, athlete, age, gender }) {
     const x1 = cx + r1 * Math.cos(a0), y1 = cy + r1 * Math.sin(a0)
     const x2 = cx + r1 * Math.cos(a1), y2 = cy + r1 * Math.sin(a1)
     const x3 = cx + r0 * Math.cos(a1), y3 = cy + r0 * Math.sin(a1)
-    const largeArc = 0
-    return `M ${x0} ${y0} L ${x1} ${y1} A ${r1} ${r1} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${r0} ${r0} 0 ${largeArc} 0 ${x0} ${y0} Z`
+    return `M ${x0} ${y0} L ${x1} ${y1} A ${r1} ${r1} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${r0} ${r0} 0 0 0 ${x0} ${y0} Z`
   }
-
-  const initial = (athlete.first || '').charAt(0).toUpperCase() || '?'
 
   return (
     <div className="bloom-circle">
       <div className="bloom-label">{label}</div>
       <svg viewBox={`0 0 ${size} ${size}`} xmlns="http://www.w3.org/2000/svg">
         <defs>
+          {/* Much gentler blur — just enough to soften cell edges so they
+              feather into each other. Before it was 1.8 which smeared the
+              whole thing into a splat. */}
           <filter id={`bloom-blur-${course}`} x="-5%" y="-5%" width="110%" height="110%">
-            <feGaussianBlur stdDeviation="1.8" />
+            <feGaussianBlur stdDeviation="0.6" />
           </filter>
         </defs>
 
-        {/* All cells, rendered with a slight blur filter so they blend into each other
-            instead of showing hard edges between spokes and rings. */}
         <g filter={`url(#bloom-blur-${course})`}>
           {spokes.map((spoke, si) => (
             BLOOM_TIERS.map((tier, ti) => (
@@ -1062,24 +1091,15 @@ function BloomCircle({ label, course, athlete, age, gender }) {
           ))}
         </g>
 
-        {/* Center initial */}
-        <circle cx={cx} cy={cy} r={innerR} fill="#0a0a0b" stroke="rgba(212,168,83,0.4)" strokeWidth="0.5" />
-        <text
-          x={cx} y={cy}
-          textAnchor="middle" dominantBaseline="central"
-          fill="#D4A853" fontSize="18" fontWeight="700"
-          fontFamily="-apple-system, sans-serif"
-        >
-          {initial}
-        </text>
+        {/* Small dark dot at center where the spokes converge */}
+        <circle cx={cx} cy={cy} r={innerR} fill="#0a0a0b" stroke="rgba(212,168,83,0.2)" strokeWidth="0.5" />
 
-        {/* Stroke family labels around outside */}
-        <g fontFamily="-apple-system, sans-serif" fontSize="9" fontWeight="700" fill="#D4A853" letterSpacing="0.1em">
+        {/* Stroke family labels — positioned further out with more clearance */}
+        <g fontFamily="-apple-system, sans-serif" fontSize="10" fontWeight="700" fill="#D4A853" letterSpacing="0.12em">
           {strokeBoundaries.map(b => {
-            // Label at midpoint of family arc, slightly outside the outer ring
             const midIdx = (b.startIdx + b.endIdx) / 2
             const a = startAngle + (midIdx + 0.5) * anglePerSpoke
-            const r = outerR + 14
+            const r = outerR + 34
             const x = cx + r * Math.cos(a)
             const y = cy + r * Math.sin(a)
             return (
@@ -1094,11 +1114,11 @@ function BloomCircle({ label, course, athlete, age, gender }) {
           })}
         </g>
 
-        {/* Distance labels at each spoke tip */}
-        <g fontFamily="SF Mono, ui-monospace, monospace" fontSize="8" fill="rgba(161,161,166,0.6)">
+        {/* Distance labels at each spoke tip — smaller, tucked closer to the rings */}
+        <g fontFamily="SF Mono, ui-monospace, monospace" fontSize="9" fontWeight="500" fill="rgba(180,180,185,0.65)">
           {spokes.map((spoke, si) => {
             const a = startAngle + (si + 0.5) * anglePerSpoke
-            const r = outerR + 3
+            const r = outerR + 12
             const x = cx + r * Math.cos(a)
             const y = cy + r * Math.sin(a)
             return (
