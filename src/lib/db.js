@@ -3,13 +3,32 @@
 import { ATHLETES } from '../data/athletes.js'
 
 async function callDb(action, params = {}) {
-  const res = await fetch('/api/db', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, ...params })
-  })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+  let res, data
+  try {
+    res = await fetch('/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...params })
+    })
+  } catch (netErr) {
+    console.error(`[callDb ${action}] network error:`, netErr)
+    throw new Error(`Network error: ${netErr.message}`)
+  }
+
+  const rawText = await res.text()
+  try {
+    data = rawText ? JSON.parse(rawText) : {}
+  } catch (parseErr) {
+    console.error(`[callDb ${action}] response not JSON:`, rawText.slice(0, 200))
+    throw new Error(`Bad response (HTTP ${res.status}): ${rawText.slice(0, 120)}`)
+  }
+
+  if (!res.ok) {
+    console.error(`[callDb ${action}] HTTP ${res.status}:`, data)
+    throw new Error(data.error || `HTTP ${res.status} from /api/db`)
+  }
+
+  console.log(`[callDb ${action}] ok`, data)
   return data
 }
 
@@ -85,7 +104,43 @@ export async function deleteSession(sessionId) {
 }
 
 export async function updateAthlete(athleteId, data) {
-  return callDb('updateAthlete', { athleteId, data })
+  // Strip fields that live in local src/data/athletes.js — never write
+  // placeholder/demo data into the DB. The merge layer in loadAthletes()
+  // re-applies these from local on next read, so they don't need to be
+  // round-tripped through storage.
+  const {
+    mockSessions,
+    upcomingMeets,
+    pastMeets,
+    progression,
+    ...cleanData
+  } = data
+
+  const result = await callDb('updateAthlete', { athleteId, data: cleanData })
+
+  // Verification round-trip: read the athlete back from DB and compare
+  // a representative field to prove the save actually persisted. Gives
+  // Chase a loud, explicit failure if something went sideways.
+  try {
+    const { athletes: rows } = await callDb('listAthletes')
+    const saved = (rows || []).find(r => r.id === athleteId)
+    if (!saved) {
+      throw new Error(`Save appeared to succeed but athlete ${athleteId} not found on readback.`)
+    }
+    // Spot-check meetTimes count — the field most commonly edited
+    const sentCount  = (cleanData.meetTimes || []).length
+    const readCount  = (saved.data?.meetTimes || []).length
+    if (sentCount !== readCount) {
+      console.error(`[updateAthlete] count mismatch — sent ${sentCount}, DB has ${readCount}`, { sent: cleanData.meetTimes, got: saved.data?.meetTimes })
+      throw new Error(`Save failed to persist: sent ${sentCount} times, DB has ${readCount}.`)
+    }
+    console.log(`[updateAthlete ${athleteId}] verified — ${sentCount} times, ${(cleanData.goalTimes || []).length} goals persisted`)
+  } catch (verifyErr) {
+    // Throw — so the caller's .catch(err => alert(...)) fires.
+    throw verifyErr
+  }
+
+  return result
 }
 
 export async function addAthlete(athlete) {

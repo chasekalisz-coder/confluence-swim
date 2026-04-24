@@ -86,10 +86,15 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
     try {
       const age = editData.age ? parseInt(editData.age) : athlete.age
       const updated = { ...athlete, first: editData.first, last: editData.last, dob: editData.dob, age, events: editData.events, meetTimes: editData.meetTimes, goalTimes: editData.goalTimes }
+      console.log(`[saveEdit] writing ${updated.meetTimes.length} times + ${(updated.goalTimes || []).length} goals for ${athlete.id}`)
       await updateAthlete(athlete.id, updated)
       setEditing(false)
       if (onAthleteUpdated) onAthleteUpdated(updated)
-    } catch (err) { alert('Save failed: ' + err.message) }
+      console.log(`[saveEdit] ${athlete.id} saved + verified`)
+    } catch (err) {
+      console.error('[saveEdit] failed:', err)
+      alert('Save failed: ' + err.message + '\n\nOpen DevTools → Console for full details.')
+    }
     setSaving(false)
   }
 
