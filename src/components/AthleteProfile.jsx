@@ -134,6 +134,10 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
       // events become empty rows ready to fill in.
       meetTimes: buildCanonicalTimesList(athlete.meetTimes || []),
       goalTimes: buildCanonicalTimesList(athlete.goalTimes || []),
+      // Progression (meet results). Read-only in Step 7, editable in
+      // Step 8. Not canonical-expanded — each entry is a real recorded
+      // swim, not a placeholder slot.
+      progression: Array.isArray(athlete.progression) ? [...athlete.progression] : [],
     })
     setEditing(true)
   }
@@ -153,8 +157,12 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
         events: editData.events,
         meetTimes: editData.meetTimes,
         goalTimes: editData.goalTimes,
+        // Progression is a first-class field now (Step 6 — it persists
+        // to the DB). Send it explicitly so nothing accidentally falls
+        // back on the stale ...athlete spread during edit sessions.
+        progression: editData.progression || [],
       }
-      console.log(`[saveEdit] writing ${updated.meetTimes.length} times + ${(updated.goalTimes || []).length} goals for ${athlete.id}`)
+      console.log(`[saveEdit] writing ${updated.meetTimes.length} times + ${(updated.goalTimes || []).length} goals + ${updated.progression.length} progression entries for ${athlete.id}`)
       await updateAthlete(athlete.id, updated)
       setEditing(false)
       if (onAthleteUpdated) onAthleteUpdated(updated)
