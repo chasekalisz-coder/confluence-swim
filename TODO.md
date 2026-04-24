@@ -15,17 +15,16 @@ None currently.
 
 ## P1 — NEXT UP
 
-- [ ] **Step 11: Bulk-load progression data into Neon**
-  Source: `docs/progression/*.md` (11 athlete master docs now in repo)
-  Method: use the Meet Results CRUD UI on `v2-redesign` (`AthleteProfile.jsx` → `MeetResultsEditor`)
-  Scope: add every historical swim from the progression docs into each athlete's DB record
-  Watch for: Jon 50 Breast LCM (fixture 44.33 → real 42.00), Marley 100 Back SCY (fixture 1:07.37 → real 1:06.87)
-  Chase's decision needed: manual data entry vs scripted import
-
-- [ ] **Re-run setupSchema once after change_log deploys**
-  After Vercel deploys the change_log changes, hit `setupSchema` once to create the new table.
-  How: `curl -X POST https://confluence-swim.vercel.app/api/db -H "Content-Type: application/json" -d '{"action":"setupSchema"}'`
-  Note: each athlete CRUD also auto-creates the table if missing (belt-and-suspenders), so this is technically optional but cleaner to do explicitly.
+- [~] **Step 11: Bulk-load progression data into Neon** — IN PROGRESS, scripted
+  Parser written, all 11 docs parsed cleanly to `scripts/parsed/*.json` (1110 entries, zero diagnostics).
+  Push script ready at `scripts/push-progression.mjs` with safety rails (one athlete per call, MERGE by default, requires `CONFIRM=yes`, reads back to verify).
+  Wrapper at `scripts/push-all-progression.mjs` runs all 11 in smallest-first order.
+  **Next action — Chase to run from his machine** (Claude's bash_tool can't reach vercel.app):
+    1. `node scripts/push-progression.mjs --athlete=ath_farris --dry`  (verify)
+    2. `CONFIRM=yes node scripts/push-progression.mjs --athlete=ath_farris`  (canary)
+    3. Spot-check Farris on the live site
+    4. `CONFIRM=yes node scripts/push-all-progression.mjs`  (everyone else)
+  See `scripts/README.md` for full instructions.
 
 - [ ] **Step 12: Merge `v2-redesign` → `main`**
   Blocked on Step 11 completion

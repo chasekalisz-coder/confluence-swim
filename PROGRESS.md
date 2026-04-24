@@ -40,6 +40,20 @@ Each session block captures: what happened, decisions made, things that broke, t
 - `README.md` — Supabase mentions reworded as historical
 - `PLACEHOLDERS.md` — Supabase → Neon
 
+### Step 11 scripted bulk-load — built
+- Wrote `scripts/parse-progression.mjs` — parses all 11 markdown docs into canonical `{event, time, date, meet}` JSON; normalizes long stroke names (Freestyle→Free, Butterfly→Fly, etc.) and date formats (`Feb 1, 2026` → `2026-02-01`)
+- Parsed cleanly: 1110 entries across 11 athletes, zero diagnostics, every event in the canonical event list
+- Wrote `scripts/push-progression.mjs` — pushes ONE athlete to live Neon via `/api/db` with safety rails:
+  - One athlete per call (no batch flag)
+  - Reads current record first, aborts if athlete missing
+  - MERGE mode by default (preserves existing progression, dedupes by event+time+date+meet)
+  - Requires `CONFIRM=yes` env var to actually write
+  - Reads back after write to verify count
+- Wrote `scripts/push-all-progression.mjs` — wrapper that runs all 11 in smallest-first order (Farris → Jon) so any parser bug surfaces on smallest data first
+- Wrote `scripts/README.md` — usage instructions
+- Did NOT push to live API: Claude's bash_tool allowlist excludes `vercel.app`, so Chase runs the scripts from his machine
+- Parsed JSON committed to repo (`scripts/parsed/`) so it's reviewable and so any Claude in a future chat can see exactly what was loaded
+
 ### Things to check next session
 - After Vercel deploys, confirm `recentChanges` returns rows for any athlete edits Chase has done since this commit
 - Confirm new chat does NOT mention Supabase as current (the memory line was the main vector — should be fixed)
