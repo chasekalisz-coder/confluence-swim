@@ -225,8 +225,9 @@ export function ageUpProjection({ currentAge, gender, course = "SCY", event, tim
 }
 
 function ageBucketForAge(age) {
-  if (age <= 8) return "8U"
-  if (age <= 10) return "9-10"
+  // Matches ageBucket() in standards.js — USA Swimming uses 5 age groups
+  // (10 & Under, 11-12, 13-14, 15-16, 17-18) with no split below age 11.
+  if (age <= 10) return "10U"
   if (age <= 12) return "11-12"
   if (age <= 14) return "13-14"
   if (age <= 16) return "15-16"
