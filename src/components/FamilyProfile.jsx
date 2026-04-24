@@ -545,23 +545,20 @@ function ChampionshipTable({ gender, course, bestTimes }) {
 }
 
 function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
-  // Top 3 primary events get the full card treatment.
-  // Everything else is a compact row that expands inline on click.
-  const top3 = primaryEvents.slice(0, 3)
-  const otherPrimary = primaryEvents.slice(3)
-
-  // Build the full event list for the compact section:
-  // start with athlete's other primary events (they opted into), then
-  // fill in remaining events from STROKE_FAMILIES so the family can
-  // explore any event even if it's not flagged as primary.
+  // Unified grid — every event gets the same treatment. No accordion,
+  // no "primary events get a different layout" split. Dense 6-per-row
+  // so the family can scan every event at once without scrolling.
+  // Order: athlete's flagged primary events first (they matter most),
+  // then remaining SCY/LCM events from STROKE_FAMILIES in their
+  // natural stroke-family order.
   const allEvents = []
-  for (const ev of otherPrimary) allEvents.push(ev)
+  for (const ev of primaryEvents) {
+    if (!allEvents.includes(ev)) allEvents.push(ev)
+  }
   for (const fam of STROKE_FAMILIES) {
     for (const dist of fam.distances) {
       const base = `${dist} ${fam.stroke}`
-      if (top3.includes(base)) continue
-      if (allEvents.includes(base)) continue
-      allEvents.push(base)
+      if (!allEvents.includes(base)) allEvents.push(base)
     }
   }
 
@@ -573,7 +570,7 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
     : null
   if (!nextAgeBucket) return null
 
-  // Helper that computes everything a card/row needs for one event
+  // Helper — compute card data for one event
   const project = (ev) => {
     const eventKey = `${ev} ${course}`
     const t = bestTimes[eventKey]
@@ -585,25 +582,6 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
     return { ev, timeSec, currentLevel, projLevel }
   }
 
-  // Track which compact rows are expanded
-  const [expanded, setExpanded] = useState(new Set())
-  const toggle = (ev) => {
-    setExpanded(prev => {
-      const next = new Set(prev)
-      if (next.has(ev)) next.delete(ev)
-      else next.add(ev)
-      return next
-    })
-  }
-
-  // Top 3 always rendered as full cards
-  const topCards = top3.length > 0 ? top3 : []
-  // Fallback — if athlete has no primary events, promote first 3 from STROKE_FAMILIES
-  const fallbackTop = topCards.length === 0
-    ? allEvents.slice(0, 3)
-    : topCards
-  const fallbackRest = topCards.length === 0 ? allEvents.slice(3) : allEvents
-
   return (
     <div className="age-up">
       <div className="caption">Age-Up Preview</div>
@@ -612,57 +590,12 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
         <span className="age-pill">{nextAgeBucket}</span>
       </div>
 
-      {/* Top 3 — full cards, always visible */}
+      {/* Unified grid — 6 cards per row, every event the same treatment */}
       <div className="age-up-grid">
-        {fallbackTop.map(ev => {
-          const d = project(ev)
-          return <AgeUpCard key={ev} data={d} />
-        })}
+        {allEvents.map(ev => (
+          <AgeUpCard key={ev} data={project(ev)} />
+        ))}
       </div>
-
-      {/* Compact list below — expands inline on click */}
-      {fallbackRest.length > 0 && (
-        <div className="age-up-more">
-          <div className="age-up-more-label">
-            Other events · tap to expand
-          </div>
-          <div className="age-up-list">
-            {fallbackRest.map(ev => {
-              const d = project(ev)
-              const isOpen = expanded.has(ev)
-              return (
-                <div
-                  key={ev}
-                  className={`age-up-row ${isOpen ? 'open' : ''}`}
-                >
-                  <button
-                    className="age-up-row-summary"
-                    onClick={() => toggle(ev)}
-                    aria-expanded={isOpen}
-                  >
-                    <span className="ev">{ev}</span>
-                    <span className="badges">
-                      <span className={`std ${d.currentLevel || 'none'}`}>
-                        {d.currentLevel || '—'}
-                      </span>
-                      <span className="arrow">→</span>
-                      <span className={`std ${d.projLevel || 'none'}`}>
-                        {d.projLevel || '—'}
-                      </span>
-                    </span>
-                    <span className="chev">{isOpen ? '−' : '+'}</span>
-                  </button>
-                  {isOpen && (
-                    <div className="age-up-row-expand">
-                      <AgeUpCard data={d} />
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
