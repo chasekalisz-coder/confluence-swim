@@ -42,6 +42,7 @@ import {
 import {
   CHAMPIONSHIP_TIERS,
   CHAMPIONSHIP_TIER_LABELS,
+  TAGS_ELIGIBLE_BUCKETS,
   championshipCut,
   txTagsCut,
 } from '../lib/championship-standards.js'
@@ -213,11 +214,23 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
             <div className="championship-standards-block">
               <div className="cs-heading">Championship Standards</div>
               <p className="cs-lede">
-                The national pathway beyond USA Swimming motivationals.
-                <strong> Futures</strong> · <strong>Sectionals</strong> ·
-                <strong> Jr Nats</strong> · <strong>Nationals</strong>.
+                {effectiveAge <= 14 ? (
+                  <>
+                    The pathway beyond USA Swimming motivationals.
+                    <strong> TAGS</strong> · <strong>Sectionals</strong> ·
+                    <strong> Futures</strong> · <strong>Jr Nats</strong> ·
+                    <strong> Nationals</strong>.
+                  </>
+                ) : (
+                  <>
+                    The national pathway beyond USA Swimming motivationals.
+                    <strong> Sectionals</strong> · <strong>Futures</strong> ·
+                    <strong> Jr Nats</strong> · <strong>Nationals</strong>.
+                  </>
+                )}
               </p>
               <ChampionshipTable
+                age={effectiveAge}
                 gender={gender}
                 course={course}
                 bestTimes={bestTimes}
@@ -493,7 +506,7 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
 // Toggle-gated by athlete.showChampionshipCuts so swimmers far from these
 // standards aren't shown a discouraging wall of red deltas.
 // Each cell shows cut time / gap / percentage using the unified color rule.
-function ChampionshipTable({ gender, course, bestTimes }) {
+function ChampionshipTable({ age, gender, course, bestTimes }) {
   // Default state: all families collapsed. Click a family header to
   // expand. Saves enormous vertical space — most families don't need
   // to see 19 events at once; they open the stroke they care about.
@@ -507,13 +520,22 @@ function ChampionshipTable({ gender, course, bestTimes }) {
     })
   }
 
+  // Age-bucket for TAGS lookup. TAGS is a 14 & Under meet so any athlete
+  // in the 15-16 or 17-18 brackets gets the TAGS column filtered out
+  // entirely (not just rendered as "—" cells).
+  const bucket = ageBucket(age)
+  const tiers = CHAMPIONSHIP_TIERS.filter(t => {
+    if (t === 'TAGS' && !TAGS_ELIGIBLE_BUCKETS.has(bucket)) return false
+    return true
+  })
+
   return (
     <div className="championship-accordion">
       {/* Column headers row — stays visible at the top */}
-      <div className="ca-header">
+      <div className="ca-header" style={{ gridTemplateColumns: `70px 1fr ${'1.2fr '.repeat(tiers.length).trim()}` }}>
         <div className="ca-h-event">Event</div>
         <div className="ca-h-best">Best</div>
-        {CHAMPIONSHIP_TIERS.map(tier => (
+        {tiers.map(tier => (
           <div key={tier} className="ca-h-tier">{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
         ))}
       </div>
@@ -541,13 +563,23 @@ function ChampionshipTable({ gender, course, bestTimes }) {
                   const bestSec = best ? parseTime(best) : null
 
                   return (
-                    <div className="ca-event-row" key={eventKey}>
+                    <div
+                      className="ca-event-row"
+                      key={eventKey}
+                      style={{ gridTemplateColumns: `70px 1fr ${'1.2fr '.repeat(tiers.length).trim()}` }}
+                    >
                       <div className="ca-ev-name">{dist}</div>
                       <div className="ca-ev-best mono">
                         {bestSec != null ? formatTime(bestSec) : '—'}
                       </div>
-                      {CHAMPIONSHIP_TIERS.map(tier => {
-                        const cut = championshipCut({ tier, gender, course, event: baseEvent })
+                      {tiers.map(tier => {
+                        const cut = championshipCut({
+                          tier,
+                          gender,
+                          course,
+                          event: baseEvent,
+                          ageBucket: bucket,
+                        })
                         const gap = (bestSec != null && cut != null) ? gapToCut(bestSec, cut) : null
                         return (
                           <div key={tier} className="ca-cell">
@@ -1013,14 +1045,23 @@ function BloomCircle({ label, course, athlete, age, gender }) {
     return timeStr ? parseTime(timeStr) : null
   })
 
-  // Get cut time for a tier on an event
+  // Get cut time for a tier on an event. Note: the bloom only renders the
+  // universal ladder (B → AAAA → Futures → Sectionals → Jr Nats → Nats) —
+  // TAGS is intentionally not a bloom ring because it's a 14-and-under-only
+  // meet that doesn't fit the universal swimmer progression.
   function cutFor(tier, event) {
     if (['B','BB','A','AA','AAA','AAAA'].includes(tier)) {
       const stds = eventStandards({ age, gender, course, event })
       return stds?.[tier] ?? null
     }
     const tierMap = { FUTURES: 'FUTURES', SECTIONALS: 'SECTIONALS', JR_NATS: 'JR_NATS', NATIONALS: 'NATIONALS' }
-    return championshipCut({ tier: tierMap[tier], gender, course, event })
+    return championshipCut({
+      tier: tierMap[tier],
+      gender,
+      course,
+      event,
+      ageBucket: ageBucket(age),
+    })
   }
 
   // Proximity per ring — each ring independently scales 0..1 based on how

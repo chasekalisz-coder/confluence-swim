@@ -589,19 +589,44 @@ export const TX_TAGS = {
 
 // Gate to show this data alongside USA Swimming standards
 // (admin toggles per-athlete via athlete.showChampionshipCuts).
-export const CHAMPIONSHIP_TIERS = ['FUTURES', 'SECTIONALS', 'JR_NATS', 'NATIONALS']
+//
+// Order matters — this is the column order in the Championship Standards
+// accordion. Order is weakest → strongest tier so families read the ladder
+// left-to-right as aspiration grows.
+//
+// TAGS is ONLY shown for athletes aged 14 and under. The table renderer
+// checks the athlete's age bucket and hides the TAGS column for 15+.
+export const CHAMPIONSHIP_TIERS = ['TAGS', 'SECTIONALS', 'FUTURES', 'JR_NATS', 'NATIONALS']
 export const CHAMPIONSHIP_TIER_LABELS = {
-  FUTURES: 'Futures',
+  TAGS: 'TAGS',
   SECTIONALS: 'Sectionals',
+  FUTURES: 'Futures',
   JR_NATS: 'Jr Nats',
   NATIONALS: 'Nationals',
 }
 
+// The age buckets TAGS applies to. 15-16 and 17-18 swimmers age out of
+// TAGS — they race the senior championship pathway instead.
+export const TAGS_ELIGIBLE_BUCKETS = new Set(['10U', '11-12', '13-14'])
+
 /**
  * Look up a championship cut time for a specific tier + gender + course + event.
+ *
+ * For FUTURES / SECTIONALS / JR_NATS / NATIONALS: single cut per event,
+ * no age group.
+ *
+ * For TAGS: age-group-specific cuts (10U, 11-12, 13-14 only). Requires
+ * `ageBucket` parameter. Returns null if athlete is 15+ (not eligible).
+ *
  * Returns seconds (number) or null if not found.
  */
-export function championshipCut({ tier, gender, course, event }) {
+export function championshipCut({ tier, gender, course, event, ageBucket }) {
+  // TAGS has its own age-bucketed table
+  if (tier === 'TAGS') {
+    if (!ageBucket || !TAGS_ELIGIBLE_BUCKETS.has(ageBucket)) return null
+    return TX_TAGS[gender]?.[ageBucket]?.[course]?.[event] ?? null
+  }
+  // Senior tiers use the flat structure
   const tierTable = CHAMPIONSHIP_STANDARDS[tier]
   if (!tierTable) return null
   const g = tierTable[gender]
