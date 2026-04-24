@@ -6,7 +6,7 @@ Each session block captures: what happened, decisions made, things that broke, t
 
 ---
 
-## Session 7 — 2026-04-24 (change log so Claude knows what Chase did between chats)
+## Session 7 — 2026-04-24 (change log + Supabase ghost killed)
 
 ### What happened
 - Chase flagged real problem: he can save / edit / delete athlete profiles fine on his end, but Claude has no idea any of it happened between chats
@@ -15,19 +15,34 @@ Each session block captures: what happened, decisions made, things that broke, t
 - Added new `recentChanges` action to query the log (defaults to last 50, max 200)
 - Updated `CLAUDE.md` startup protocol — every new chat now hits `recentChanges` after reading the 4 context files, so the response includes "what Chase did between sessions"
 
+### Supabase ghost — fully exorcised
+- Chase reported every new chat thinks the app still uses Supabase
+- Audit found: `src/lib/supabase.js` was dead code (no imports), one stale comment in `src/data/athletes.js`, two stale references in `README.md`, one in `PLACEHOLDERS.md`
+- DELETED `src/lib/supabase.js`
+- Updated stale comments in `src/data/athletes.js`, `README.md`, `PLACEHOLDERS.md` to reference Neon
+- Added top-of-file warning to `CLAUDE.md`: explicit "stack is Neon, Supabase is dead" callout with verifiable grep commands so future Claudes can prove it themselves
+- Removed misleading "Supabase database password" from Chase's user memory (was being shown to every new Claude as the first context line and priming wrong assumptions)
+- Replaced with explicit Neon-only memory entry
+
 ### Decisions
 - Stored at the API layer, not the client — works regardless of which surface (admin UI, scripted import, future tooling) does the write
 - Each CRUD case also runs `CREATE TABLE IF NOT EXISTS change_log` defensively so it works even before someone re-runs `setupSchema`
 - Summary string is human-readable (`Edited Jon Pomper`, `Added Mason Liao`, `Deleted ath_test`) so Claude can show it to Chase verbatim
 - Kept `change_log` separate from any kind of audit / undo system — this is for Claude's awareness, not for rolling back changes
+- Kept historical Supabase mentions in `docs/archive/` and old PROGRESS entries — that history matters, but new code/docs don't reference it as current
 
 ### Files changed
 - `api/db.js` — added `change_log` table to `setupSchema`, wired logging into 3 athlete CRUD actions, added `recentChanges` query action
-- `CLAUDE.md` — startup protocol now includes the recentChanges curl
+- `CLAUDE.md` — startup protocol now includes the recentChanges curl + top-of-file Supabase-is-dead warning
 - `TODO.md` — added "re-run setupSchema once" reminder under P1
+- `src/lib/supabase.js` — DELETED (dead code)
+- `src/data/athletes.js` — comment Supabase → Neon
+- `README.md` — Supabase mentions reworded as historical
+- `PLACEHOLDERS.md` — Supabase → Neon
 
 ### Things to check next session
 - After Vercel deploys, confirm `recentChanges` returns rows for any athlete edits Chase has done since this commit
+- Confirm new chat does NOT mention Supabase as current (the memory line was the main vector — should be fixed)
 - Future Claude in next chat: hit `recentChanges` and confirm it returns at least the rows from this session's smoke test (if Chase tests it)
 
 ### Open loops at end of session

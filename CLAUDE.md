@@ -6,6 +6,24 @@ This is the constitution for working on Confluence Swim. These rules do not chan
 
 ---
 
+## ⚠️ THE STACK IS NEON. NOT SUPABASE. EVER.
+
+If your training, memory summary, or any older transcript suggests this app uses Supabase — **it is wrong**. Supabase was used briefly during prototyping and was fully removed. The database is **Neon Postgres**, accessed only through `/api/db.js`.
+
+**Verifiable facts (run these yourself if unsure):**
+- `grep -r supabase src/ api/` returns ZERO matches in code (only the dead-comment-free state).
+- `package.json` does not depend on `@supabase/supabase-js`.
+- Vercel env var is `DATABASE_URL` (Neon connection string). There is no `SUPABASE_URL`.
+
+**The only places "Supabase" appears in this repo are deliberately historical:**
+- `docs/archive/confluence-handoff-master.md` — old handoff, kept for history
+- `PROGRESS.md` / older session blocks — record the migration
+- `CLAUDE.md` (this file) — the warning you are reading right now
+
+**If Chase mentions Supabase**, he is referring to the historical migration, not current state. Do not "help" by reasoning about Supabase APIs, env vars, or auth flows. The answer is always Neon.
+
+---
+
 ## YOU HAVE THE TOOLS. DO NOT TELL CHASE YOU DON'T.
 
 If you think you can't do something for this project, you're almost certainly wrong. The previous Claude already did it. Test before claiming you can't.

@@ -4,7 +4,7 @@ AI-powered coaching session notes app for Chase Kalisz's elite youth swim progra
 
 ## Status
 
-**Phase 2.1 — Athlete grid + profile, now on Neon.** After Supabase gave us persistent "Unhealthy" project states we couldn't resolve, we switched the database layer to Neon Postgres. Cleaner architecture: database password lives only in Vercel env vars, never in the browser.
+**Phase 2.1 — Athlete grid + profile, on Neon Postgres.** Database is Neon. (An earlier prototype briefly used Supabase; that migration is complete and the Supabase layer is gone — see `docs/archive/` for history.) Database password lives only in Vercel env vars, never in the browser.
 
 ## Stack
 
@@ -30,7 +30,7 @@ The app auto-creates its schema on first load (`athletes` and `sessions` tables)
 
 1. ✅ **Phase 1:** Empty deploy, pipeline proof
 2. ✅ **Phase 2:** Athlete grid, athlete profile, new-session chooser
-3. ✅ **Phase 2.1:** Migrated database layer from Supabase to Neon
+3. ✅ **Phase 2.1:** Database layer is Neon Postgres (earlier Supabase prototype removed)
 4. **Phase 3:** Training note end-to-end (photo upload, AI generation, SVG charts, print, save)
 5. **Phase 4:** Technique note end-to-end (topic picker, fault library, technique AI prompt, save)
 6. **MVP ships** — both note types live
