@@ -253,15 +253,16 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
           <PowerRankingsList rankings={rankings} />
         </section>
 
-        {/* ============ SPECIALTY — two visual options to pick from ============ */}
+        {/* ============ SPECIALTY — radial heat bloom ============ */}
         <section>
-          <h2 className="section-title">Specialty</h2>
+          <h2 className="section-title">Range</h2>
           <p className="section-lede">
-            Where does {athlete.first} score best across strokes? Each axis is a
-            0-100 score averaged from the standards earned across events in that
-            stroke family.
+            The whole swimmer in one look. Each spoke is an event, grouped by stroke.
+            Each ring is a time standard — from B at the center out to Nationals at
+            the edge. Cells brighten as {athlete.first} climbs toward each cut. SCY
+            on the left, LCM on the right.
           </p>
-          <SpecialtyViz rankings={rankings} athlete={athlete} />
+          <SpecialtyBloom athlete={athlete} age={effectiveAge} gender={gender} />
         </section>
 
         {/* ============ TRAINING (placeholder) ============ */}
@@ -548,13 +549,10 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
   // Unified grid — every event gets the same treatment. No accordion,
   // no "primary events get a different layout" split. Dense 6-per-row
   // so the family can scan every event at once without scrolling.
-  // Order: athlete's flagged primary events first (they matter most),
-  // then remaining SCY/LCM events from STROKE_FAMILIES in their
-  // natural stroke-family order.
+  // Order: strictly by stroke family (Free / Fly / Back / Breast / IM),
+  // short distance to long within each family. Primary events are NOT
+  // reordered to the front — keeps the grid readable and predictable.
   const allEvents = []
-  for (const ev of primaryEvents) {
-    if (!allEvents.includes(ev)) allEvents.push(ev)
-  }
   for (const fam of STROKE_FAMILIES) {
     for (const dist of fam.distances) {
       const base = `${dist} ${fam.stroke}`
@@ -864,223 +862,252 @@ function ProgressionChart({ data, athleteName }) {
 }
 
 // ============================================================
-// SpecialtyViz
+// SpecialtyBloom — radial heat map
 // ============================================================
-// Two alternative visualizations, rendered side-by-side so Chase
-// can pick the one he prefers on the live site. When the winner is
-// chosen the other will be removed.
+// The whole swimmer in one visual. Two circles side-by-side (SCY / LCM).
 //
-// Both render the same 6-axis score data (Free/Back/Breast/Fly/IM/Distance).
+// Spokes = events, grouped by stroke family in order:
+//   Free / Fly / Back / Breast / IM
 //
-// Option A — Horizontal Bar Chart
-//   Each stroke family on its own row with a bar showing 0-100 score.
-//   Cleanest, most data-dense, zero "radar rip-off" feel.
+// Rings = time-standard tiers from center outward:
+//   B → BB → A → AA → AAA → AAAA → Futures → Sectionals → Jr Nats → Nats
+//   (Pro Swim Series + Olympic Trials will slot in when their data lands)
 //
-// Option B — Radial Bloom
-//   Each stroke family is a petal emanating from center. Petal length =
-//   score. Keeps the "shape at a glance" feel without a hexagon.
+// Each cell's fill = how close this athlete is to that tier for that event.
+// Rendered as a heat gradient from cool (far off) through warm (approaching)
+// to hot (achieved). Cells blend into neighbors — no hard dividing lines —
+// so the whole bloom reads as one organic shape.
+//
+// The SHAPE is the story. A pure sprinter lights up the 50/100 spokes
+// across all strokes. A distance swimmer lights up the Free spokes at
+// 500/1000/1650. An IMer has a lit band across the IM spokes. Weak
+// events stay cool. Untested events are cold.
 // ============================================================
-function SpecialtyViz({ rankings, athlete }) {
-  // Compute a "specialty value" per stroke family from this athlete's rankings.
-  // 0 = no data, 100 = all events at top standard.
-  // NOTE: underlying scoring math is placeholder — see PLACEHOLDERS.md for the
-  // Phase 3 plan to tune weights by standard tier.
-  const strokeAvg = (strokeKey) => {
-    const matching = rankings.filter(r => {
-      const parsed = parseEventName(r.event)
-      return parsed && parsed.stroke === strokeKey
-    })
-    if (!matching.length) return 0
-    return matching.reduce((a, r) => a + r.pct, 0) / matching.length
-  }
-  const distanceAvg = () => {
-    const longEvents = rankings.filter(r => {
-      const p = parseEventName(r.event)
-      return p && p.distance >= 400
-    })
-    if (!longEvents.length) return 0
-    return longEvents.reduce((a, r) => a + r.pct, 0) / longEvents.length
-  }
 
-  const values = {
-    Free:     strokeAvg('Free'),
-    Back:     strokeAvg('Back'),
-    Breast:   strokeAvg('Breast'),
-    Fly:      strokeAvg('Fly'),
-    IM:       strokeAvg('IM'),
-    Distance: distanceAvg(),
-  }
+const BLOOM_TIERS = [
+  'B', 'BB', 'A', 'AA', 'AAA', 'AAAA',
+  'FUTURES', 'SECTIONALS', 'JR_NATS', 'NATIONALS'
+]
 
-  // Describe the shape briefly
-  const entries = Object.entries(values).filter(([,v]) => v > 0)
-  let title = "Not enough data yet"
-  let sub = "Enter meet times across more events to see the specialty shape."
-  if (entries.length >= 3) {
-    const top = [...entries].sort((a,b) => b[1]-a[1])
-    title = `Strong in ${top[0][0]} & ${top[1][0]}`
-    sub = `The highest current scores come from ${top[0][0]} and ${top[1][0]} events.`
-  }
+// Event order on spokes — stroke-grouped per Chase's spec:
+// Free / Fly / Back / Breast / IM
+const BLOOM_STROKE_ORDER = [
+  { label: 'FREE',   stroke: 'Free',   distances: { SCY: [50,100,200,500,1000,1650], LCM: [50,100,200,400,800,1500] } },
+  { label: 'FLY',    stroke: 'Fly',    distances: { SCY: [50,100,200],               LCM: [50,100,200]              } },
+  { label: 'BACK',   stroke: 'Back',   distances: { SCY: [50,100,200],               LCM: [50,100,200]              } },
+  { label: 'BREAST', stroke: 'Breast', distances: { SCY: [50,100,200],               LCM: [50,100,200]              } },
+  { label: 'IM',     stroke: 'IM',     distances: { SCY: [100,200,400],              LCM: [200,400]                 } },
+]
 
+function SpecialtyBloom({ athlete, age, gender }) {
   return (
-    <div className="specialty-viz">
-      <div className="specialty-head">
-        <div className="title">{title}</div>
-        <div className="sub">{sub}</div>
-      </div>
-
-      <div className="specialty-options">
-        <div className="viz-option">
-          <div className="viz-option-label">OPTION A — Bar Chart</div>
-          <SpecialtyBars values={values} />
-        </div>
-        <div className="viz-option">
-          <div className="viz-option-label">OPTION B — Radial Bloom</div>
-          <SpecialtyBloom values={values} athlete={athlete} />
-        </div>
-      </div>
+    <div className="bloom-pair">
+      <BloomCircle label="SCY" course="SCY" athlete={athlete} age={age} gender={gender} />
+      <BloomCircle label="LCM" course="LCM" athlete={athlete} age={age} gender={gender} />
     </div>
   )
 }
 
-// ============================================================
-// Option A — Horizontal bar chart
-// ============================================================
-function SpecialtyBars({ values }) {
-  const axes = ['Free', 'Back', 'Breast', 'Fly', 'IM', 'Distance']
-  const max = Math.max(100, ...Object.values(values))
+function BloomCircle({ label, course, athlete, age, gender }) {
+  // Build the list of events for this course, flat array in spoke order
+  const spokes = []
+  const strokeBoundaries = []  // for drawing family labels around the outside
+  let idx = 0
+  for (const fam of BLOOM_STROKE_ORDER) {
+    const distances = fam.distances[course] || []
+    const familyStart = idx
+    for (const dist of distances) {
+      spokes.push({ event: `${dist} ${fam.stroke}`, label: `${dist}`, family: fam.label })
+      idx++
+    }
+    if (distances.length > 0) {
+      strokeBoundaries.push({
+        family: fam.label,
+        startIdx: familyStart,
+        endIdx: idx - 1,
+      })
+    }
+  }
+
+  const spokeCount = spokes.length
+  if (spokeCount === 0) return null
+
+  // Best times for this athlete + course
+  const bestBySpoke = spokes.map(s => {
+    const key = `${s.event} ${course}`
+    const timeStr = (athlete.meetTimes || []).find(t => t.event === key)?.time
+    return timeStr ? parseTime(timeStr) : null
+  })
+
+  // For each spoke × tier, compute proximity 0..1.
+  // 1 = achieved (time meets or beats cut). 0 = far off. Proximity
+  // scales between the PREVIOUS tier cut (or infinity if no prev) and
+  // this tier's cut. So a time halfway between AA and AAA registers
+  // as 0.5 on the AAA ring.
+  function proximity(bestSec, cutSec, prevCutSec) {
+    if (bestSec == null || cutSec == null) return 0
+    if (bestSec <= cutSec) return 1
+    // If no prev cut, scale against a generous floor (say cut * 1.25)
+    const floor = prevCutSec ?? cutSec * 1.25
+    if (bestSec >= floor) return 0
+    return (floor - bestSec) / (floor - cutSec)
+  }
+
+  // Get cut time for a tier on an event
+  function cutFor(tier, event) {
+    // Age-group standards (B through AAAA)
+    if (['B','BB','A','AA','AAA','AAAA'].includes(tier)) {
+      const stds = eventStandards({ age, gender, course, event })
+      return stds?.[tier] ?? null
+    }
+    // Championship tiers (Futures, Sectionals, Jr Nats, Nationals)
+    const tierMap = { FUTURES: 'FUTURES', SECTIONALS: 'SECTIONALS', JR_NATS: 'JR_NATS', NATIONALS: 'NATIONALS' }
+    return championshipCut({ tier: tierMap[tier], gender, course, event })
+  }
+
+  // Build the grid: [spokeIdx][tierIdx] = proximity 0..1
+  const grid = spokes.map((spoke, si) => {
+    const bestSec = bestBySpoke[si]
+    return BLOOM_TIERS.map((tier, ti) => {
+      const cutSec = cutFor(tier, spoke.event)
+      const prevTier = ti > 0 ? BLOOM_TIERS[ti - 1] : null
+      const prevCutSec = prevTier ? cutFor(prevTier, spoke.event) : null
+      return proximity(bestSec, cutSec, prevCutSec)
+    })
+  })
+
+  // SVG layout
+  const size = 380
+  const cx = size / 2
+  const cy = size / 2
+  const innerR = 26  // small hole at center for athlete initial
+  const outerR = 170
+  const ringCount = BLOOM_TIERS.length
+  const ringWidth = (outerR - innerR) / ringCount
+  const anglePerSpoke = (Math.PI * 2) / spokeCount
+  // Rotate so the first spoke starts at the top
+  const startAngle = -Math.PI / 2 - anglePerSpoke / 2
+
+  // Heat palette — cool blue-green through gold to hot red
+  // Sampled from a traditional heat map gradient.
+  // Index 0 (coldest/untested) — subtle dark cyan
+  // Index 1 — cyan
+  // Index 2 — green
+  // Index 3 — yellow
+  // Index 4 — orange
+  // Index 5 (hottest) — deep red
+  function heatColor(p) {
+    // p is 0..1. Clamp.
+    p = Math.max(0, Math.min(1, p))
+    if (p === 0) return 'rgba(40,50,70,0.35)'
+    // Interpolate across stops
+    const stops = [
+      { p: 0.00, c: [42, 70, 95]   },   // dark cool
+      { p: 0.25, c: [34, 150, 160] },   // teal
+      { p: 0.50, c: [180, 190, 60] },   // yellow-green
+      { p: 0.75, c: [240, 150, 40] },   // orange
+      { p: 1.00, c: [220, 55, 45]  },   // deep red
+    ]
+    for (let i = 0; i < stops.length - 1; i++) {
+      const a = stops[i], b = stops[i+1]
+      if (p >= a.p && p <= b.p) {
+        const t = (p - a.p) / (b.p - a.p)
+        const r = Math.round(a.c[0] + t * (b.c[0] - a.c[0]))
+        const g = Math.round(a.c[1] + t * (b.c[1] - a.c[1]))
+        const bl = Math.round(a.c[2] + t * (b.c[2] - a.c[2]))
+        return `rgb(${r},${g},${bl})`
+      }
+    }
+    return 'rgb(220,55,45)'
+  }
+
+  // Build wedge path for a single cell
+  function wedgePath(spokeIdx, ringIdx) {
+    const a0 = startAngle + spokeIdx * anglePerSpoke
+    const a1 = a0 + anglePerSpoke
+    const r0 = innerR + ringIdx * ringWidth
+    const r1 = r0 + ringWidth
+    const x0 = cx + r0 * Math.cos(a0), y0 = cy + r0 * Math.sin(a0)
+    const x1 = cx + r1 * Math.cos(a0), y1 = cy + r1 * Math.sin(a0)
+    const x2 = cx + r1 * Math.cos(a1), y2 = cy + r1 * Math.sin(a1)
+    const x3 = cx + r0 * Math.cos(a1), y3 = cy + r0 * Math.sin(a1)
+    const largeArc = 0
+    return `M ${x0} ${y0} L ${x1} ${y1} A ${r1} ${r1} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${r0} ${r0} 0 ${largeArc} 0 ${x0} ${y0} Z`
+  }
+
+  const initial = (athlete.first || '').charAt(0).toUpperCase() || '?'
+
   return (
-    <div className="specialty-bars">
-      {axes.map(axis => {
-        const v = values[axis] || 0
-        const pct = Math.min(100, (v / max) * 100)
-        return (
-          <div key={axis} className="bar-row">
-            <div className="bar-axis-label">{axis.toUpperCase()}</div>
-            <div className="bar-channel">
-              <div className="bar-fill-specialty" style={{ width: `${pct}%` }} />
-              <div className="bar-ticks">
-                <span style={{ left: '25%' }} />
-                <span style={{ left: '50%' }} />
-                <span style={{ left: '75%' }} />
-              </div>
-            </div>
-            <div className="bar-score mono">{Math.round(v)}</div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-// ============================================================
-// Option B — Radial bloom. Each axis is a petal; petal length = score.
-// No connecting polygon (that's what makes a radar chart look
-// like SwimCloud). Each petal is independent.
-// ============================================================
-function SpecialtyBloom({ values, athlete }) {
-  const axes = ['Free', 'Back', 'Breast', 'Fly', 'IM', 'Distance']
-  const cx = 180, cy = 180, maxR = 130, innerR = 18
-
-  const firstInitial = (athlete?.first || '').charAt(0).toUpperCase() || '?'
-
-  return (
-    <div className="specialty-bloom-wrap">
-      <svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+    <div className="bloom-circle">
+      <div className="bloom-label">{label}</div>
+      <svg viewBox={`0 0 ${size} ${size}`} xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="petalGradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%"  stopColor="#D4A853" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#8a6d2f" stopOpacity="0.4" />
-          </linearGradient>
+          <filter id={`bloom-blur-${course}`} x="-5%" y="-5%" width="110%" height="110%">
+            <feGaussianBlur stdDeviation="1.8" />
+          </filter>
         </defs>
 
-        {/* Subtle reference rings — no polygon shape */}
-        <g fill="none" stroke="rgba(84,84,88,0.2)" strokeWidth="0.5">
-          <circle cx={cx} cy={cy} r={maxR}      strokeDasharray="2 4" />
-          <circle cx={cx} cy={cy} r={maxR*0.66} strokeDasharray="2 4" />
-          <circle cx={cx} cy={cy} r={maxR*0.33} strokeDasharray="2 4" />
+        {/* All cells, rendered with a slight blur filter so they blend into each other
+            instead of showing hard edges between spokes and rings. */}
+        <g filter={`url(#bloom-blur-${course})`}>
+          {spokes.map((spoke, si) => (
+            BLOOM_TIERS.map((tier, ti) => (
+              <path
+                key={`${si}-${ti}`}
+                d={wedgePath(si, ti)}
+                fill={heatColor(grid[si][ti])}
+                stroke="none"
+              />
+            ))
+          ))}
         </g>
 
-        {/* Each axis is an independent petal — tapered bar shape */}
-        {axes.map((axis, i) => {
-          const angle = (-90 + i * 60) * Math.PI / 180
-          const v = values[axis] || 0
-          const petalR = innerR + (v / 100) * (maxR - innerR)
-
-          // Petal is a narrow tapered wedge: wider at center, pointed at tip
-          const petalWidth = 18 // radians equivalent... actually use pixel offset at base
-          const perpAngle = angle + Math.PI / 2
-          const dx = Math.cos(perpAngle) * 10
-          const dy = Math.sin(perpAngle) * 10
-
-          const baseX = cx + innerR * Math.cos(angle)
-          const baseY = cy + innerR * Math.sin(angle)
-          const tipX  = cx + petalR * Math.cos(angle)
-          const tipY  = cy + petalR * Math.sin(angle)
-
-          const p1 = `${baseX + dx},${baseY + dy}`
-          const p2 = `${baseX - dx},${baseY - dy}`
-          const tip = `${tipX},${tipY}`
-
-          return (
-            <polygon
-              key={axis}
-              points={`${p1} ${tip} ${p2}`}
-              fill="url(#petalGradient)"
-              stroke="#D4A853"
-              strokeWidth="0.5"
-              opacity={v > 0 ? 1 : 0.2}
-            />
-          )
-        })}
-
-        {/* Center bubble with athlete initial */}
-        <circle cx={cx} cy={cy} r={innerR} fill="#111" stroke="#D4A853" strokeWidth="1" />
+        {/* Center initial */}
+        <circle cx={cx} cy={cy} r={innerR} fill="#0a0a0b" stroke="rgba(212,168,83,0.4)" strokeWidth="0.5" />
         <text
           x={cx} y={cy}
           textAnchor="middle" dominantBaseline="central"
-          fill="#D4A853" fontSize="14" fontWeight="700"
+          fill="#D4A853" fontSize="18" fontWeight="700"
           fontFamily="-apple-system, sans-serif"
         >
-          {firstInitial}
+          {initial}
         </text>
 
-        {/* Axis labels */}
-        <g fill="#a1a1a6" fontSize="10" fontWeight="600" fontFamily="-apple-system, sans-serif">
-          {axes.map((axis, i) => {
-            const angle = (-90 + i * 60) * Math.PI / 180
-            const lblR = maxR + 20
-            const x = cx + lblR * Math.cos(angle)
-            const y = cy + lblR * Math.sin(angle)
+        {/* Stroke family labels around outside */}
+        <g fontFamily="-apple-system, sans-serif" fontSize="9" fontWeight="700" fill="#D4A853" letterSpacing="0.1em">
+          {strokeBoundaries.map(b => {
+            // Label at midpoint of family arc, slightly outside the outer ring
+            const midIdx = (b.startIdx + b.endIdx) / 2
+            const a = startAngle + (midIdx + 0.5) * anglePerSpoke
+            const r = outerR + 14
+            const x = cx + r * Math.cos(a)
+            const y = cy + r * Math.sin(a)
             return (
               <text
-                key={axis}
+                key={b.family}
                 x={x} y={y}
-                textAnchor={x < cx - 5 ? 'end' : x > cx + 5 ? 'start' : 'middle'}
-                dominantBaseline="middle"
+                textAnchor="middle" dominantBaseline="middle"
               >
-                {axis.toUpperCase()}
+                {b.family}
               </text>
             )
           })}
         </g>
 
-        {/* Score value at each petal tip */}
-        <g fill="#D4A853" fontSize="9" fontWeight="700" fontFamily="-apple-system, sans-serif">
-          {axes.map((axis, i) => {
-            const v = values[axis] || 0
-            if (v === 0) return null
-            const angle = (-90 + i * 60) * Math.PI / 180
-            const petalR = innerR + (v / 100) * (maxR - innerR)
-            const scoreR = petalR + 8
-            const x = cx + scoreR * Math.cos(angle)
-            const y = cy + scoreR * Math.sin(angle)
+        {/* Distance labels at each spoke tip */}
+        <g fontFamily="SF Mono, ui-monospace, monospace" fontSize="8" fill="rgba(161,161,166,0.6)">
+          {spokes.map((spoke, si) => {
+            const a = startAngle + (si + 0.5) * anglePerSpoke
+            const r = outerR + 3
+            const x = cx + r * Math.cos(a)
+            const y = cy + r * Math.sin(a)
             return (
               <text
-                key={axis}
+                key={si}
                 x={x} y={y}
                 textAnchor="middle" dominantBaseline="middle"
               >
-                {Math.round(v)}
+                {spoke.label}
               </text>
             )
           })}
