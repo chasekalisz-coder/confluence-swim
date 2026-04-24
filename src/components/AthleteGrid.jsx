@@ -11,6 +11,7 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
   const [newLast, setNewLast] = useState('')
   const [newAge, setNewAge] = useState('')
   const [newDob, setNewDob] = useState('')
+  const [newGender, setNewGender] = useState('')
   const [saving, setSaving] = useState(false)
 
   const dot = {
@@ -31,6 +32,8 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
       last: newLast.trim(),
       age: newAge ? parseInt(newAge) : null,
       dob: newDob.trim() || null,
+      gender: newGender || null,
+      showChampionshipCuts: true,
       events: [],
       meetTimes: [],
       goalTimes: [],
@@ -43,6 +46,7 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
       setNewLast('')
       setNewAge('')
       setNewDob('')
+      setNewGender('')
     } catch (err) { alert('Failed to add: ' + err.message) }
     setSaving(false)
   }
@@ -108,7 +112,7 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
       </div>
 
       {adding ? (
-        <div style={{maxWidth:400,marginTop:16,padding:20,background:'#fff',border:'1px solid var(--border)',borderRadius:8}}>
+        <div style={{maxWidth:400,marginTop:16,padding:20,background:'var(--elevated)',border:'1px solid var(--border)',borderRadius:8}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
             <input className="edit-input" placeholder="First name" value={newFirst} onChange={e => setNewFirst(e.target.value)} style={{marginBottom:0}} />
             <input className="edit-input" placeholder="Last name" value={newLast} onChange={e => setNewLast(e.target.value)} style={{marginBottom:0}} />
@@ -116,6 +120,18 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
           <div style={{display:'grid',gridTemplateColumns:'80px 1fr',gap:8,marginBottom:8}}>
             <input className="edit-input" type="number" placeholder="Age" value={newAge} onChange={e => setNewAge(e.target.value)} style={{marginBottom:0}} />
             <input className="edit-input" placeholder="Birthday (e.g., June 4)" value={newDob} onChange={e => setNewDob(e.target.value)} style={{marginBottom:0}} />
+          </div>
+          <div style={{marginBottom:12}}>
+            <select
+              className="edit-input"
+              value={newGender}
+              onChange={e => setNewGender(e.target.value)}
+              style={{marginBottom:0}}
+            >
+              <option value="">— Gender —</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+            </select>
           </div>
           <div style={{display:'flex',gap:8}}>
             <button className="btn btn-outline" onClick={() => setAdding(false)}>Cancel</button>

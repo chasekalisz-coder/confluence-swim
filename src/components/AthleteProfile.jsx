@@ -74,6 +74,8 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
       last: athlete.last || '',
       age: athlete.age != null ? String(athlete.age) : '',
       dob: athlete.dob || '',
+      gender: athlete.gender || '',
+      showChampionshipCuts: athlete.showChampionshipCuts ?? true,
       events: [...(athlete.events || [])],
       meetTimes: [...(athlete.meetTimes || [])],
       goalTimes: [...(athlete.goalTimes || [])],
@@ -85,7 +87,18 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
     setSaving(true)
     try {
       const age = editData.age ? parseInt(editData.age) : athlete.age
-      const updated = { ...athlete, first: editData.first, last: editData.last, dob: editData.dob, age, events: editData.events, meetTimes: editData.meetTimes, goalTimes: editData.goalTimes }
+      const updated = {
+        ...athlete,
+        first: editData.first,
+        last: editData.last,
+        dob: editData.dob,
+        age,
+        gender: editData.gender || null,
+        showChampionshipCuts: editData.showChampionshipCuts,
+        events: editData.events,
+        meetTimes: editData.meetTimes,
+        goalTimes: editData.goalTimes,
+      }
       console.log(`[saveEdit] writing ${updated.meetTimes.length} times + ${(updated.goalTimes || []).length} goals for ${athlete.id}`)
       await updateAthlete(athlete.id, updated)
       setEditing(false)
@@ -137,6 +150,40 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
           <div style={{display:'grid',gridTemplateColumns:'100px 1fr',gap:12,marginBottom:16}}>
             <div><label className="edit-label">Age</label><input className="edit-input" type="number" value={editData.age} onChange={e => setEditData({...editData, age: e.target.value})} placeholder="12" /></div>
             <div><label className="edit-label">Birthday (e.g., June 4)</label><input className="edit-input" value={editData.dob} onChange={e => setEditData({...editData, dob: e.target.value})} placeholder="June 4" /></div>
+          </div>
+
+          {/* Gender — drives USA Swimming time-standard lookups (Male vs Female
+              tables). Optional at save time, but required for championship cut
+              comparisons to be accurate. */}
+          <div style={{marginBottom:16}}>
+            <label className="edit-label">Gender</label>
+            <select
+              className="edit-input"
+              value={editData.gender}
+              onChange={e => setEditData({...editData, gender: e.target.value})}
+            >
+              <option value="">— Select —</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+            </select>
+          </div>
+
+          {/* Championship toggle — controls whether the athlete's performance
+              profile surfaces Futures/Sectionals/Jr Nats/Nats cuts. Useful to
+              hide for younger kids where those tiers aren't relevant yet. */}
+          <div style={{marginBottom:16}}>
+            <label
+              className="edit-label"
+              style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}
+            >
+              <input
+                type="checkbox"
+                checked={editData.showChampionshipCuts ?? true}
+                onChange={e => setEditData({...editData, showChampionshipCuts: e.target.checked})}
+                style={{width:18,height:18,cursor:'pointer'}}
+              />
+              Show championship standards on this athlete's profile
+            </label>
           </div>
           <div style={{marginBottom:16}}>
             <label className="edit-label">Primary Events</label>
