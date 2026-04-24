@@ -1201,43 +1201,53 @@ function BloomCircle({ label, course, athlete, age, gender }) {
   }
 
   // -----------------------------------------------------------------
-  // PETAL SHAPE — wide overlapping wedges so neighbors actually BLEND
+  // PETAL SHAPE — bell-curve silhouettes, no straight radial edges
   // -----------------------------------------------------------------
-  // The previous pass drew each petal within its own angular slice. When
-  // blurred, the petals got fuzzy but remained separate — dark rays
-  // showed through between neighbors because adjacent colors never
-  // shared pixels. True color bleed only happens when colors physically
-  // overlap before the blur pass.
+  // Hard edges on wedges produce visible spoke-lines radiating from the
+  // center even after blur. The solution: draw each petal as a bell
+  // shape — narrow at the base, widest at mid-radius, narrow at the tip.
+  // Adjacent petals curve into each other instead of sharing flat sides.
   //
-  // Fix: draw each petal 80% wider than its allocated slice. Adjacent
-  // petals overlap each other tangentially by ~40% on each side, so when
-  // the gaussian blur runs, every output pixel is a mix of its own
-  // petal + its neighbors' colors. The bloom reads as one continuous
-  // glow that shifts color around the wheel.
-  const OVERLAP = 0.8  // extend each petal by 80% into neighbors' slices
-
+  // Each petal is sampled as a series of points along its radius:
+  // at each step, the petal's half-width follows a bell curve
+  // (sine-shaped) so the silhouette is organic, not pie-sliced.
   function wedgeShape(a0, a1, reach) {
-    const r = innerR + reach * (outerR - innerR)
+    const rMax = innerR + reach * (outerR - innerR)
     const aMid = (a0 + a1) / 2
-    const halfWidth = (a1 - a0) / 2
-    const expandedHalf = halfWidth * (1 + OVERLAP)
-    const ea0 = aMid - expandedHalf
-    const ea1 = aMid + expandedHalf
-    const x0 = cx + innerR * Math.cos(ea0)
-    const y0 = cy + innerR * Math.sin(ea0)
-    const x1 = cx + r * Math.cos(ea0)
-    const y1 = cy + r * Math.sin(ea0)
-    const x2 = cx + r * Math.cos(ea1)
-    const y2 = cy + r * Math.sin(ea1)
-    const x3 = cx + innerR * Math.cos(ea1)
-    const y3 = cy + innerR * Math.sin(ea1)
-    // Large-arc flag 0 when expanded angle still <180°
-    const largeArc = (ea1 - ea0) > Math.PI ? 1 : 0
-    return `M ${x0} ${y0}
-            L ${x1} ${y1}
-            A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}
-            L ${x3} ${y3}
-            A ${innerR} ${innerR} 0 ${largeArc} 0 ${x0} ${y0} Z`
+    const halfSlice = (a1 - a0) / 2
+    // Max petal half-width (angular) — expanded so adjacent petals overlap
+    const maxHalfWidth = halfSlice * 1.8
+
+    // Sample the petal outline — N points along the LEFT edge going out,
+    // then N points along the RIGHT edge coming back. Half-width at each
+    // radial position follows a sine bell: narrow at base + tip, wide
+    // at mid.
+    const STEPS = 18
+    const leftPts = []
+    const rightPts = []
+    for (let i = 0; i <= STEPS; i++) {
+      const t = i / STEPS                     // 0 at base, 1 at tip
+      const r = innerR + t * (rMax - innerR)  // current radius
+      // sin(πt) bell curve: 0 at t=0, peak at t=0.5, 0 at t=1
+      const bell = Math.sin(t * Math.PI)
+      const halfW = maxHalfWidth * bell
+      const aLeft = aMid - halfW
+      const aRight = aMid + halfW
+      leftPts.push([cx + r * Math.cos(aLeft), cy + r * Math.sin(aLeft)])
+      rightPts.push([cx + r * Math.cos(aRight), cy + r * Math.sin(aRight)])
+    }
+    // Build path: start at base-left, go out along left edge to tip,
+    // come back along right edge.
+    const parts = []
+    parts.push(`M ${leftPts[0][0]} ${leftPts[0][1]}`)
+    for (let i = 1; i <= STEPS; i++) {
+      parts.push(`L ${leftPts[i][0]} ${leftPts[i][1]}`)
+    }
+    for (let i = STEPS; i >= 0; i--) {
+      parts.push(`L ${rightPts[i][0]} ${rightPts[i][1]}`)
+    }
+    parts.push('Z')
+    return parts.join(' ')
   }
 
   return (
