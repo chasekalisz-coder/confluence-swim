@@ -1,38 +1,32 @@
 // ============================================================
 // championship-standards.js
 // ============================================================
-// Higher-level domestic standards beyond USA Swimming motivational times.
+// Domestic championship qualifying cuts beyond USA Swimming motivational
+// times. All data is real 2026 cuts pulled from official sources.
 //
-// Four national-level standards (no age groups — single cut per event):
-//   FUTURES     — first national-level meet (stepping stone below Jr Nats)
-//   SECTIONALS  — Speedo Sectionals regional meet (Southern Zone for TX)
-//   JR_NATS     — USA Swimming Junior Nationals (Futures Championships level)
-//   NATIONALS   — USA Swimming Nationals / US Open
+// Four senior-pathway tiers (single cut per event, no age group):
+//   FUTURES     — 2026 TYR Futures Championships (18 & Under cuts)
+//   SECTIONALS  — 2026 Speedo Sectionals (national maximum standard)
+//   JR_NATS     — 2026 Speedo Junior Nationals (qualifying, not bonus)
+//   NATIONALS   — 2026 Toyota National Championships (18 & Under cuts)
 //
-// One Texas-specific standard WITH age groups:
-//   TX_TAGS     — Texas Age Group State Championships, cuts by age group
+// One age-bucketed Texas tier:
+//   TX_TAGS     — 2026 Texas Age Group Swimming Championships.
+//                 14 & Under only (10U / 11-12 / 13-14 buckets).
+//                 15+ athletes age out and race the senior pathway.
 //
-// ⚠️ ALL TIMES BELOW ARE PLACEHOLDERS.
-// See PLACEHOLDERS.md — Chase to supply real cut times from:
-//   - Speedo Sectionals Southern Zone time standards
-//   - USA Swimming Futures qualification standards
-//   - USA Swimming Jr National Championships standards
-//   - USA Swimming National Championships / US Open standards
-//   - Texas Swimming TAGs meet standards (by age group)
+// Sources: official USA Swimming 2026 PDFs + Texas Swimming Association
+// 2026 TAGS standards (10/7/2025). Transcribed to CHAMPIONSHIP_STAGING.md
+// for verification, then into this file.
 //
 // Structure:
-//   CHAMPIONSHIP_STANDARDS.FUTURES.M.SCY = { "50 Free": 21.99, ... }
-//   TX_TAGS.M["11-12"].SCY = { "50 Free": 25.99, ... }
+//   CHAMPIONSHIP_STANDARDS.FUTURES.M.SCY["50 Free"] = 21.29
+//   TX_TAGS.M["11-12"].SCY["50 Free"] = 25.99
 // ============================================================
-
-// Placeholder values. DO NOT USE IN PRODUCTION without real data.
-const PLACEHOLDER = true
 
 /**
  * National-level championship cuts — single cut per event, no age group.
- * Boys (M) SCY numbers are rough ballparks loosely patterned after the
- * real standards' relative difficulty. Girls (F) ratios are adjusted.
- * Every value is a PLACEHOLDER.
+ * All values are from 2026 USA Swimming published qualifying standards.
  */
 export const CHAMPIONSHIP_STANDARDS = {
 

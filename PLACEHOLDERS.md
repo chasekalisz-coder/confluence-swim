@@ -7,49 +7,9 @@ all placeholder data has been cleared.
 
 ---
 
-## 🔴 HIGH PRIORITY — Affects Displayed Numbers
-
-### 1. USA Swimming Motivational Time Standards — STARTER VALUES ONLY
-- **File:** `src/lib/standards.js`
-- **What it is:** Starter dataset covering 11-12 and 13-14 boys & girls SCY.
-- **Why it's a placeholder:** Values were drafted against the rough shape of the
-  real standards, not the official USA Swimming numbers.
-- **What to do:** Replace every age group / course / event with the real
-  USA Swimming standards (current age-group time standards document).
-- **Needed:** All age groups (8-under, 9-10, 11-12, 13-14, 15-16, 17-18),
-  both courses (SCY + LCM), both genders.
-- **Affects:** Profile page → Chasing Next, Times & Goals, Age-Up Preview,
-  Event Power Rankings, Specialty Radar. Analysis page → Latest Insight.
-
-### 2. Championship Standards (Futures / Sectionals / Jr Nats / Nationals)
-- **File:** `src/lib/championship-standards.js`
-- **What it is:** Four tiers of national-level domestic standards.
-- **Why it's a placeholder:** Values were synthesized from general knowledge of
-  relative difficulty, not the real published cuts.
-- **What to do:** Replace with actual cuts from:
-  - Speedo Sectionals Southern Zone standards
-  - USA Swimming Futures qualification standards
-  - USA Swimming Junior Nationals standards
-  - USA Swimming National Championships / US Open standards
-- **Needed:** All 4 tiers × M/F × SCY/LCM × all events.
-- **Affects:** Profile page → Championship Standards table (only visible when
-  `athlete.showChampionshipCuts === true`).
-
-### 3. TX TAGs Standards
-- **File:** `src/lib/championship-standards.js` (constant `TX_TAGS`)
-- **What it is:** Texas Age Group State Championship cuts by age group.
-- **Why it's a placeholder:** Values are rough ballparks of age-group TX TAGs cuts.
-- **What to do:** Replace with actual TX TAGs cuts for the current
-  meet cycle.
-- **Needed:** All age buckets (11-12, 13-14, 15-16, 17-18) × M/F × SCY/LCM
-  × all events.
-- **Affects:** Profile page → TX TAGs column in main Times & Goals table.
-
----
-
 ## 🟡 MEDIUM PRIORITY — Affects Display But Not Numbers
 
-### 4. Jon's Mock Upcoming Meets
+### 1. Jon's Mock Upcoming Meets
 - **File:** `src/data/athletes.js` → `ath_jon.upcomingMeets`
 - **What it is:** 3 fake upcoming meets (North Texas Sectionals May 2026,
   Speedo Summer Invitational June 2026, TAGs Long Course July 2026) with
@@ -59,7 +19,7 @@ all placeholder data has been cleared.
 - **What to do:** Replace with real schedule. Delete the entire
   `upcomingMeets` array if Jon has none scheduled.
 
-### 5. Jon's Mock Past Meets
+### 2. Jon's Mock Past Meets
 - **File:** `src/data/athletes.js` → `ath_jon.pastMeets`
 - **What it is:** 4 fake past meets from Oct 2025 through March 2026
   with fabricated results (times, deltas, standards, places, PB flags).
@@ -68,7 +28,7 @@ all placeholder data has been cleared.
 - **What to do:** Replace with real meet history. Delete the
   `pastMeets` array if pulling from a different source.
 
-### 6. Jon's Mock Progression Data
+### 3. Jon's Mock Progression Data
 - **File:** `src/data/athletes.js` → `ath_jon.progression`
 - **What it is:** 21 fake meet-result tuples (3 events × 7 dates each)
   showing fabricated steady improvement over 16 months.
@@ -79,7 +39,7 @@ all placeholder data has been cleared.
   `pastMeets` once real past meets are in — the mock array is a
   stopgap until that pipeline is built.
 
-### 7. Jon's Mock Session Notes
+### 4. Jon's Mock Session Notes
 - **File:** `src/data/athletes.js` → `ath_jon.mockSessions`
 - **What it is:** 8 fake sessions covering every category
   (aerobic, threshold, quality, sprint, power, active_rest, technique,
@@ -90,7 +50,7 @@ all placeholder data has been cleared.
 - **What to do:** Delete the `mockSessions` array once real session data
   from Supabase is reliably flowing in.
 
-### 8. Resources Article Bodies
+### 5. Resources Article Bodies
 - **File:** `src/components/FamilyResources.jsx` → `RESOURCES[*].body`
 - **What it is:** Placeholder article prose for Training Zones, Coaching
   Philosophy, Meet Day Checklist, Glossary (mostly complete), plus
@@ -102,7 +62,7 @@ all placeholder data has been cleared.
 - **What to do:** Chase reviews each article body and either edits,
   rewrites, or approves. Then the placeholder flag comes off.
 
-### 9. Meet Analyzer Tool Preview
+### 6. Meet Analyzer Tool Preview
 - **File:** `src/components/FamilyAnalysis.jsx` → `MeetAnalyzerTool`
 - **What it is:** Static input form showing the shape of the eventual
   tool. All inputs disabled. Banner reads "Coming Soon."
@@ -111,7 +71,7 @@ all placeholder data has been cleared.
 - **What to do:** Wire up event data flow, comparison against elite
   template, and visualization. Remove the banner.
 
-### 10. Race Pace Calculator Tool Preview
+### 7. Race Pace Calculator Tool Preview
 - **File:** `src/components/FamilyAnalysis.jsx` → `RacePaceTool`
 - **What it is:** Static input form with event / course / goal time
   fields. Inputs disabled. Banner reads "Coming Soon."
@@ -132,6 +92,23 @@ all placeholder data has been cleared.
   once that's built. For now it's hardcoded.
 - **What to do:** When admin edit UI ships, verify the toggle behavior works
   through the UI and remove this note.
+
+---
+
+## RESOLVED (archived for audit trail)
+
+The following placeholder entries were resolved by commits in the 6a–6e series
+that landed real 2026 standards data from official USA Swimming + TSA PDFs:
+
+- ✅ **USA Swimming Motivational Time Standards** — all 5 age groups × 2 genders
+  × 2 courses × 6 tiers now populated in `src/lib/standards.js` from the
+  official 2024-2028 PDF. (commit 6b)
+- ✅ **Championship Standards (Futures / Sectionals / Jr Nats / Nationals)** —
+  all 4 senior-tier cuts now populated in `src/lib/championship-standards.js`
+  from the 2026 USA Swimming PDFs. (commit 6c)
+- ✅ **TX TAGS Standards** — real 2026 TAGS qualifying times for 10U / 11-12 /
+  13-14 now in `TX_TAGS`. 15-16 and 17-18 entries removed (TAGS is a 14 & Under
+  meet). (commit 6d)
 
 ---
 
