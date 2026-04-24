@@ -284,10 +284,11 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
         <section>
           <h2 className="section-title">Range</h2>
           <p className="section-lede">
-            The whole swimmer in one look. Each spoke is an event, grouped by stroke.
-            Each ring is a time standard — from B at the center out to Nationals at
-            the edge. Cells brighten as {athlete.first} climbs toward each cut. SCY
-            on the left, LCM on the right.
+            The whole swimmer in one look. Each glowing petal is an event,
+            grouped by stroke around the circle. Petals reach further and
+            run hotter where {athlete.first} is closer to the top of the
+            time-standard ladder. Untested events don't glow. SCY on the
+            left, LCM on the right.
           </p>
           <SpecialtyBloom athlete={athlete} age={effectiveAge} gender={gender} />
         </section>
@@ -997,16 +998,22 @@ function SpecialtyBloom({ athlete, age, gender }) {
   )
 }
 
-// Legend explains what the rings and the heat colors mean so the visual
-// doesn't require guessing. Two parts:
-//   1. Tier ring order — center → edge (B → Nationals)
-//   2. Heat gradient — far off → close → achieved
+// Legend — explains how to read the bloom.
+// Two dimensions encoded:
+//   1. How FAR each petal reaches from center = tier ladder position.
+//      Short petal = still around B level on that event. Long petal =
+//      pushing championship tiers on that event.
+//   2. Petal COLOR temperature = same ladder, expressed as heat. Pale
+//      blue at B → yellow at AA/AAA → orange at AAAA/Futures → deep
+//      red at Jr Nats/Nats. So the color reinforces the reach.
+// An untested event draws nothing — the bloom only glows where the
+// swimmer has actually competed.
 function BloomLegend() {
   const tierLabels = ['B','BB','A','AA','AAA','AAAA','Futures','Sectionals','Jr Nats','Nats']
   return (
     <div className="bloom-legend">
       <div className="bl-row">
-        <div className="bl-label">RINGS · center → edge</div>
+        <div className="bl-label">TIER LADDER · short petal → long petal</div>
         <div className="bl-tiers">
           {tierLabels.map((t, i) => (
             <span key={i} className="bl-tier">{t}</span>
@@ -1014,13 +1021,13 @@ function BloomLegend() {
         </div>
       </div>
       <div className="bl-row">
-        <div className="bl-label">HEAT · far → close → achieved</div>
+        <div className="bl-label">HEAT · cool (early tiers) → hot (championship)</div>
         <div className="bl-gradient">
           <div className="bl-grad-bar" />
           <div className="bl-grad-labels">
-            <span>far off</span>
-            <span>approaching</span>
-            <span>achieved</span>
+            <span>B · BB</span>
+            <span>AA · AAA · AAAA</span>
+            <span>Futures → Nats</span>
           </div>
         </div>
       </div>
@@ -1059,10 +1066,7 @@ function BloomCircle({ label, course, athlete, age, gender }) {
     return timeStr ? parseTime(timeStr) : null
   })
 
-  // Get cut time for a tier on an event. Note: the bloom only renders the
-  // universal ladder (B → AAAA → Futures → Sectionals → Jr Nats → Nats) —
-  // TAGS is intentionally not a bloom ring because it's a 14-and-under-only
-  // meet that doesn't fit the universal swimmer progression.
+  // Cut lookup (for the radial position per spoke)
   function cutFor(tier, event) {
     if (['B','BB','A','AA','AAA','AAAA'].includes(tier)) {
       const stds = eventStandards({ age, gender, course, event })
@@ -1078,86 +1082,125 @@ function BloomCircle({ label, course, athlete, age, gender }) {
     })
   }
 
-  // Proximity per ring — each ring independently scales 0..1 based on how
-  // close the athlete's time is to THAT specific tier. Previous bug had
-  // achieved tiers all returning max (1.0) which made the inner rings a
-  // solid red mass on strong athletes. Now achieved tiers get 1.0 but the
-  // rings ABOVE that tier scale against THEIR OWN neighbors, so the shape
-  // of the bloom reflects genuine spread across tiers.
+  // ---------------------------------------------------------------
+  // PER-SPOKE REACH
+  // ---------------------------------------------------------------
+  // For each event, compute how far the bloom "reaches out" on that spoke.
+  // Reach is expressed as a continuous position in [0..1] along the tier
+  // ladder (B=0, BB=1/9, A=2/9, ..., NATIONALS=9/9 = 1). Stronger swimmer
+  // = further reach = more visible wedge on that spoke.
   //
-  // For each ring:
-  //   bestSec <= cutSec         → 1.0 (achieved — this tier earned)
-  //   bestSec near cutSec       → 0.7-0.9 (close)
-  //   bestSec moderate gap      → 0.3-0.6 (making progress)
-  //   bestSec way off           → 0.0-0.1 (cold)
+  // Interpolation: if best time is between tier A and tier B cuts, reach
+  // sits proportionally between those two ladder positions.
   //
-  // Scale reference: use this tier's cut and the next-slower tier's cut
-  // (or this cut × 1.15 as a floor if no prev tier exists). Inside that
-  // band, the time maps linearly.
-  function proximity(bestSec, cutSec, prevCutSec) {
-    if (bestSec == null || cutSec == null) return 0
-    if (bestSec <= cutSec) return 1
-    const floor = prevCutSec ?? cutSec * 1.15
-    if (bestSec >= floor) return 0
-    return (floor - bestSec) / (floor - cutSec)
-  }
+  // Untested events → reach = 0 (no wedge drawn).
+  const reachBySpoke = spokes.map((spoke, si) => {
+    const best = bestBySpoke[si]
+    if (best == null) return 0
 
-  const grid = spokes.map((spoke, si) => {
-    const bestSec = bestBySpoke[si]
-    return BLOOM_TIERS.map((tier, ti) => {
-      const cutSec = cutFor(tier, spoke.event)
-      const prevTier = ti > 0 ? BLOOM_TIERS[ti - 1] : null
-      const prevCutSec = prevTier ? cutFor(prevTier, spoke.event) : null
-      return proximity(bestSec, cutSec, prevCutSec)
-    })
+    // Walk ladder from slowest tier up; find the highest tier achieved
+    // and compute proximity to the next one for smooth interpolation.
+    let highestAchievedIdx = -1
+    for (let t = 0; t < BLOOM_TIERS.length; t++) {
+      const cut = cutFor(BLOOM_TIERS[t], spoke.event)
+      if (cut != null && best <= cut) highestAchievedIdx = t
+    }
+
+    // If they haven't even hit B, compute fractional approach to B
+    if (highestAchievedIdx === -1) {
+      const bCut = cutFor('B', spoke.event)
+      if (bCut == null) return 0
+      // Floor: cut × 1.25 means "25% slower than B" = reach 0
+      const floor = bCut * 1.25
+      if (best >= floor) return 0
+      // Linear interp: best = bCut → 0 (on the B line), best = floor → 0
+      // Actually want: best just past bCut → small reach, best at floor → 0
+      return Math.max(0, 1 - (best - bCut) / (floor - bCut)) * (1 / 9) * 0.8
+    }
+
+    // If they've hit the top tier already, cap at full reach
+    if (highestAchievedIdx === BLOOM_TIERS.length - 1) return 1
+
+    // Otherwise interp between highestAchieved tier and the next one
+    const achCut = cutFor(BLOOM_TIERS[highestAchievedIdx], spoke.event)
+    const nextCut = cutFor(BLOOM_TIERS[highestAchievedIdx + 1], spoke.event)
+    if (achCut == null || nextCut == null) {
+      // Missing data for next tier → just park them at the achieved position
+      return highestAchievedIdx / (BLOOM_TIERS.length - 1)
+    }
+    // Proximity to next cut: 0 at achCut, 1 at nextCut (or beyond)
+    const prox = Math.max(0, Math.min(1, (achCut - best) / (achCut - nextCut)))
+    const base = highestAchievedIdx / (BLOOM_TIERS.length - 1)
+    const step = 1 / (BLOOM_TIERS.length - 1)
+    return base + prox * step
   })
 
-  // SVG layout — larger size, more room for labels
+  // SVG layout
   const size = 440
   const cx = size / 2
   const cy = size / 2
-  // No center bubble — spokes start from a small dark point at the center.
-  const innerR = 8
+  const innerR = 10        // small dead zone at center
   const outerR = 170
-  const ringCount = BLOOM_TIERS.length
-  const ringWidth = (outerR - innerR) / ringCount
   const anglePerSpoke = (Math.PI * 2) / spokeCount
   const startAngle = -Math.PI / 2 - anglePerSpoke / 2
 
-  // Heat palette — smooth gradient from dark cool to hot red
-  function heatColor(p) {
-    p = Math.max(0, Math.min(1, p))
-    if (p < 0.02) return 'rgba(30,40,55,0.45)'
+  // Heat palette — cool at low tiers (center) → hot at high tiers (edge).
+  // Maps a tier position (0..1 along the ladder) to a warm color.
+  // Empty / pre-B → very low alpha so wedge fades to nothing.
+  function heatAt(tierPos) {
+    // tierPos in [0,1]: 0 = B territory, 1 = Nationals
     const stops = [
-      { p: 0.00, c: [42, 70, 95]   },
-      { p: 0.25, c: [34, 150, 160] },
-      { p: 0.50, c: [180, 190, 60] },
-      { p: 0.75, c: [240, 150, 40] },
-      { p: 1.00, c: [220, 55, 45]  },
+      { p: 0.00, c: [120, 180, 205] }, // pale blue (B)
+      { p: 0.20, c: [130, 200, 175] }, // pale teal (BB/A)
+      { p: 0.40, c: [230, 225, 120] }, // yellow (AA/AAA)
+      { p: 0.60, c: [245, 175, 70]  }, // amber (AAAA)
+      { p: 0.80, c: [235, 110, 55]  }, // orange (Futures/Sectionals)
+      { p: 1.00, c: [215, 55, 50]   }, // deep red (Jr Nats/Nats)
     ]
     for (let i = 0; i < stops.length - 1; i++) {
       const a = stops[i], b = stops[i+1]
-      if (p >= a.p && p <= b.p) {
-        const t = (p - a.p) / (b.p - a.p)
+      if (tierPos >= a.p && tierPos <= b.p) {
+        const t = (tierPos - a.p) / (b.p - a.p)
         const r = Math.round(a.c[0] + t * (b.c[0] - a.c[0]))
         const g = Math.round(a.c[1] + t * (b.c[1] - a.c[1]))
         const bl = Math.round(a.c[2] + t * (b.c[2] - a.c[2]))
         return `rgb(${r},${g},${bl})`
       }
     }
-    return 'rgb(220,55,45)'
+    return 'rgb(215,55,50)'
   }
 
-  function wedgePath(spokeIdx, ringIdx) {
+  // Draw each spoke as a single tapered wedge filled with a radial gradient.
+  // The wedge extends from innerR out to (innerR + reach × (outerR - innerR)).
+  // Gradient: hot core, fades toward transparent at tip — produces the soft
+  // feathered halo without hard edges. Tangential feathering is handled by
+  // the heavy gaussian blur layer applied to the whole group.
+  function wedgeShape(spokeIdx, reach) {
     const a0 = startAngle + spokeIdx * anglePerSpoke
     const a1 = a0 + anglePerSpoke
-    const r0 = innerR + ringIdx * ringWidth
-    const r1 = r0 + ringWidth
-    const x0 = cx + r0 * Math.cos(a0), y0 = cy + r0 * Math.sin(a0)
-    const x1 = cx + r1 * Math.cos(a0), y1 = cy + r1 * Math.sin(a0)
-    const x2 = cx + r1 * Math.cos(a1), y2 = cy + r1 * Math.sin(a1)
-    const x3 = cx + r0 * Math.cos(a1), y3 = cy + r0 * Math.sin(a1)
-    return `M ${x0} ${y0} L ${x1} ${y1} A ${r1} ${r1} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${r0} ${r0} 0 0 0 ${x0} ${y0} Z`
+    const aCenter = (a0 + a1) / 2
+    // Base width: tangent to the inner circle across the spoke's angular slice
+    const baseHalf = innerR * Math.sin(anglePerSpoke / 2) * 1.5
+    const tipR = innerR + reach * (outerR - innerR)
+    // Base corners perpendicular to center angle
+    const nx = Math.cos(aCenter)
+    const ny = Math.sin(aCenter)
+    const px = -ny, py = nx // perpendicular unit vector
+    const baseX = cx + innerR * nx
+    const baseY = cy + innerR * ny
+    const b1x = baseX + baseHalf * px, b1y = baseY + baseHalf * py
+    const b2x = baseX - baseHalf * px, b2y = baseY - baseHalf * py
+    // Tip half-width grows with reach so the wedge petals outward
+    const tipHalf = innerR * Math.sin(anglePerSpoke / 2) * (1 + reach * 2)
+    const tipX = cx + tipR * nx
+    const tipY = cy + tipR * ny
+    const t1x = tipX + tipHalf * px, t1y = tipY + tipHalf * py
+    const t2x = tipX - tipHalf * px, t2y = tipY - tipHalf * py
+    // Quadratic curves on each side give the petal its organic teardrop
+    return `M ${b1x} ${b1y}
+            Q ${t1x} ${t1y}, ${tipX} ${tipY}
+            Q ${t2x} ${t2y}, ${b2x} ${b2y}
+            A ${innerR} ${innerR} 0 0 1 ${b1x} ${b1y} Z`
   }
 
   return (
@@ -1165,31 +1208,70 @@ function BloomCircle({ label, course, athlete, age, gender }) {
       <div className="bloom-label">{label}</div>
       <svg viewBox={`0 0 ${size} ${size}`} xmlns="http://www.w3.org/2000/svg">
         <defs>
-          {/* Much gentler blur — just enough to soften cell edges so they
-              feather into each other. Before it was 1.8 which smeared the
-              whole thing into a splat. */}
-          <filter id={`bloom-blur-${course}`} x="-5%" y="-5%" width="110%" height="110%">
-            <feGaussianBlur stdDeviation="0.6" />
+          {/* Heavy gaussian blur — this is what makes adjacent spokes bleed
+              into each other and read as one organic glow rather than
+              discrete petals. stdDeviation=9 is dramatic on purpose; with
+              per-spoke reach it prevents the old pie-chart read. */}
+          <filter
+            id={`bloom-blur-${course}`}
+            x="-20%" y="-20%" width="140%" height="140%"
+          >
+            <feGaussianBlur stdDeviation="9" />
           </filter>
+
+          {/* Per-spoke radial gradients — hot at core, transparent at tip.
+              Creates the "glowing ember" look so edges have no hard line. */}
+          {spokes.map((_, si) => {
+            // Color the gradient by the highest-tier position on this spoke.
+            // Lower reach → cooler hue. Higher reach → hotter hue.
+            const reach = reachBySpoke[si]
+            const color = heatAt(reach)
+            return (
+              <radialGradient
+                key={si}
+                id={`spoke-grad-${course}-${si}`}
+                cx="50%" cy="50%" r="50%"
+              >
+                <stop offset="0%"   stopColor={color} stopOpacity="0.95" />
+                <stop offset="55%"  stopColor={color} stopOpacity="0.75" />
+                <stop offset="85%"  stopColor={color} stopOpacity="0.25" />
+                <stop offset="100%" stopColor={color} stopOpacity="0"    />
+              </radialGradient>
+            )
+          })}
         </defs>
 
+        {/* Faint guide rings — subtle, just enough to anchor the tier
+            reading without imposing a grid. Three reference rings at
+            the tier positions we care about most. */}
+        <g fill="none" stroke="rgba(120,125,135,0.09)" strokeWidth="1">
+          <circle cx={cx} cy={cy} r={innerR + (outerR - innerR) * 0.55} />
+          <circle cx={cx} cy={cy} r={innerR + (outerR - innerR) * 0.77} />
+          <circle cx={cx} cy={cy} r={outerR} />
+        </g>
+
+        {/* The bloom itself — all petals rendered into a single blurred
+            group so neighbors feather into each other radially AND
+            tangentially. Empty spokes draw nothing. */}
         <g filter={`url(#bloom-blur-${course})`}>
-          {spokes.map((spoke, si) => (
-            BLOOM_TIERS.map((tier, ti) => (
+          {spokes.map((spoke, si) => {
+            const reach = reachBySpoke[si]
+            if (reach < 0.03) return null // too cold to draw anything
+            return (
               <path
-                key={`${si}-${ti}`}
-                d={wedgePath(si, ti)}
-                fill={heatColor(grid[si][ti])}
+                key={si}
+                d={wedgeShape(si, reach)}
+                fill={`url(#spoke-grad-${course}-${si})`}
                 stroke="none"
               />
-            ))
-          ))}
+            )
+          })}
         </g>
 
         {/* Small dark dot at center where the spokes converge */}
-        <circle cx={cx} cy={cy} r={innerR} fill="#0a0a0b" stroke="rgba(212,168,83,0.2)" strokeWidth="0.5" />
+        <circle cx={cx} cy={cy} r={innerR * 0.6} fill="#0a0a0b" />
 
-        {/* Stroke family labels — positioned further out with more clearance */}
+        {/* Stroke family labels — positioned outside the outer reference ring */}
         <g fontFamily="-apple-system, sans-serif" fontSize="10" fontWeight="700" fill="#D4A853" letterSpacing="0.12em">
           {strokeBoundaries.map(b => {
             const midIdx = (b.startIdx + b.endIdx) / 2
@@ -1209,7 +1291,7 @@ function BloomCircle({ label, course, athlete, age, gender }) {
           })}
         </g>
 
-        {/* Distance labels at each spoke tip — smaller, tucked closer to the rings */}
+        {/* Distance labels at each spoke tip */}
         <g fontFamily="SF Mono, ui-monospace, monospace" fontSize="9" fontWeight="500" fill="rgba(180,180,185,0.65)">
           {spokes.map((spoke, si) => {
             const a = startAngle + (si + 0.5) * anglePerSpoke
