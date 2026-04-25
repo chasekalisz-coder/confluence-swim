@@ -1,6 +1,6 @@
 
 
-import { ATHLETES, normalizeAthlete } from '../data/athletes.js'
+import { ATHLETES, normalizeAthlete, makeBlankAthlete } from '../data/athletes.js'
 
 async function callDb(action, params = {}) {
   let res, data
@@ -80,15 +80,25 @@ export async function loadAthletes() {
         gender:              a.gender              ?? dbRec.gender,
       })
     })
-    // Append any athletes from DB that aren't in the hardcoded list.
-    // These are manually-added athletes — heal them through normalizeAthlete
-    // so they have every field a seeded athlete has (showChampionshipCuts,
-    // empty arrays for upcomingMeets/pastMeets/mockSessions/progression
-    // etc.). Without this, manually-added athletes look "broken" relative
-    // to seeded ones.
+    // Manually-added athletes — not in the fixture but exist in DB.
+    // Give them the EXACT same merge treatment as fixture athletes so
+    // their meetTimes, goalTimes, events, age, gender, progression all
+    // flow through to the performance profile identically to Jon etc.
     rows.forEach(r => {
       if (!ATHLETES.some(a => a.id === r.id)) {
-        ordered.push(normalizeAthlete(r.data))
+        const dbRec = r.data || {}
+        const dbHasProgression = Array.isArray(dbRec.progression)
+        const base = makeBlankAthlete({ id: r.id, showChampionshipCuts: true })
+        ordered.push(normalizeAthlete({
+          ...base,
+          ...dbRec,
+          id: r.id,
+          showChampionshipCuts: dbRec.showChampionshipCuts ?? true,
+          meetTimes:   Array.isArray(dbRec.meetTimes)   ? dbRec.meetTimes   : [],
+          goalTimes:   Array.isArray(dbRec.goalTimes)   ? dbRec.goalTimes   : [],
+          progression: dbHasProgression                 ? dbRec.progression : [],
+          events:      Array.isArray(dbRec.events)      ? dbRec.events      : [],
+        }))
       }
     })
     return { athletes: ordered, status: 'ok' }
