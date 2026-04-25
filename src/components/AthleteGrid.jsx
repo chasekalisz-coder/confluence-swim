@@ -14,6 +14,8 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
   const [newDob, setNewDob] = useState('')
   const [newGender, setNewGender] = useState('')
   const [saving, setSaving] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState(null)
 
   const dot = {
     'ok': { color: '#10b981', text: `${athletes.length} athletes loaded` },
@@ -53,6 +55,26 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
       setNewGender('')
     } catch (err) { alert('Failed to add: ' + err.message) }
     setSaving(false)
+  }
+
+  const handleImportProgression = async () => {
+    const ok = window.confirm(
+      'Import progression data for all 11 athletes from the master docs?\n\n' +
+      'This MERGES new entries — anything already on each athlete is preserved.\n' +
+      'Running it twice is safe (duplicates are skipped).'
+    )
+    if (!ok) return
+    setImporting(true)
+    setImportResult(null)
+    try {
+      const r = await fetch('/api/import-progression', { method: 'POST' })
+      const data = await r.json()
+      if (!r.ok || !data.ok) throw new Error(data.error || 'Import failed')
+      setImportResult(data.summary || [])
+    } catch (err) {
+      alert('Import failed: ' + err.message)
+    }
+    setImporting(false)
   }
 
   return (
@@ -145,6 +167,41 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
       ) : (
         <button className="add-athlete-btn" onClick={() => setAdding(true)}>+ Add New Athlete</button>
       )}
+
+      <div style={{marginTop:24, padding:20, background:'rgba(124,58,237,0.06)', border:'1px solid rgba(124,58,237,0.25)', borderRadius:10}}>
+        <div style={{fontSize:13, fontWeight:600, color:'#f1f5f9', marginBottom:6}}>
+          Bulk import progression history
+        </div>
+        <div style={{fontSize:12, color:'#94a3b8', marginBottom:12, lineHeight:1.5}}>
+          Loads every historical swim from the master progression docs (~1,100 entries
+          across all 11 athletes) into the database. Safe to run more than once —
+          duplicates are skipped automatically.
+        </div>
+        <button
+          className="btn btn-primary"
+          onClick={handleImportProgression}
+          disabled={importing}
+          style={{background:'#7C3AED', borderColor:'#7C3AED'}}
+        >
+          {importing ? 'Importing…' : 'Import progression data'}
+        </button>
+
+        {importResult && (
+          <div style={{marginTop:14, padding:12, background:'rgba(15,23,42,0.6)', border:'1px solid rgba(148,163,184,0.15)', borderRadius:8, fontSize:12, color:'#cbd5e1'}}>
+            <div style={{fontWeight:600, color:'#10b981', marginBottom:8}}>Import complete.</div>
+            {importResult.map((row, i) => (
+              <div key={i} style={{display:'flex', justifyContent:'space-between', padding:'4px 0', borderBottom:i < importResult.length - 1 ? '1px solid rgba(148,163,184,0.08)' : 'none'}}>
+                <span>{row.name || row.athleteId}</span>
+                <span style={{color: row.status === 'ok' ? '#94a3b8' : '#f59e0b'}}>
+                  {row.status === 'ok'
+                    ? `+${row.addedNew} new · ${row.duplicatesSkipped} skipped · ${row.finalTotal} total`
+                    : `skipped (${row.reason})`}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

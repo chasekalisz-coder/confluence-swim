@@ -1,0 +1,440 @@
+[
+  {
+    "event": "50 Free SCY",
+    "time": "40.47",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "42.17",
+    "date": "2026-01-16",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "42.83",
+    "date": "2025-12-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "43.03",
+    "date": "2025-10-24",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "44.36",
+    "date": "2025-08-01",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "44.44",
+    "date": "2025-07-10",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "44.52",
+    "date": "2025-06-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "45.64",
+    "date": "2025-02-28",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "47.11",
+    "date": "2025-02-15",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "48.34",
+    "date": "2025-01-10",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:26.92",
+    "date": "2026-02-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:32.67",
+    "date": "2026-01-17",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:35.05",
+    "date": "2025-12-12",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:36.74",
+    "date": "2025-06-13",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:40.62",
+    "date": "2025-07-11",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:42.02",
+    "date": "2025-03-01",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:42.88",
+    "date": "2025-05-03",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:44.89",
+    "date": "2025-02-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:47.48",
+    "date": "2025-01-11",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:49.97",
+    "date": "2024-07-12",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "3:06.87",
+    "date": "2026-02-14",
+    "meet": ""
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "3:31.53",
+    "date": "2025-08-01",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "55.50",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "55.88",
+    "date": "2026-01-16",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "57.26",
+    "date": "2025-10-24",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "1:01.67",
+    "date": "2025-12-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "1:05.58",
+    "date": "2024-06-20",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "1:07.89",
+    "date": "2024-09-21",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "49.81",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "52.49",
+    "date": "2026-01-16",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "53.05",
+    "date": "2025-06-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "53.71",
+    "date": "2025-07-10",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "55.55",
+    "date": "2025-02-28",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "55.68",
+    "date": "2025-01-10",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "56.00",
+    "date": "2025-02-14",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "57.31",
+    "date": "2024-09-21",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "57.42",
+    "date": "2024-11-08",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "58.70",
+    "date": "2024-02-02",
+    "meet": ""
+  },
+  {
+    "event": "100 Back SCY",
+    "time": "1:58.00",
+    "date": "2025-08-01",
+    "meet": ""
+  },
+  {
+    "event": "100 Back SCY",
+    "time": "1:58.29",
+    "date": "2025-07-11",
+    "meet": ""
+  },
+  {
+    "event": "100 Back SCY",
+    "time": "2:03.42",
+    "date": "2025-03-01",
+    "meet": ""
+  },
+  {
+    "event": "100 Back SCY",
+    "time": "2:04.80",
+    "date": "2024-12-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Back SCY",
+    "time": "2:05.12",
+    "date": "2025-02-15",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "52.11",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "53.40",
+    "date": "2025-10-24",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "54.11",
+    "date": "2026-01-16",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "55.19",
+    "date": "2025-06-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "55.54",
+    "date": "2025-07-10",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "55.80",
+    "date": "2025-12-12",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "1:02.12",
+    "date": "2024-06-20",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "1:02.13",
+    "date": "2025-01-10",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "1:05.57",
+    "date": "2024-12-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "1:06.09",
+    "date": "2024-09-21",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:52.46",
+    "date": "2026-01-17",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:54.75",
+    "date": "2025-10-25",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:55.09",
+    "date": "2026-02-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:57.05",
+    "date": "2025-12-13",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:59.72",
+    "date": "2025-08-02",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "2:02.95",
+    "date": "2025-07-11",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "2:08.92",
+    "date": "2025-05-03",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "2:11.52",
+    "date": "2024-07-12",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "2:14.75",
+    "date": "2025-01-11",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "2:17.99",
+    "date": "2025-02-14",
+    "meet": ""
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:46.66",
+    "date": "2025-10-23",
+    "meet": ""
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:51.23",
+    "date": "2025-12-12",
+    "meet": ""
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:52.75",
+    "date": "2025-07-10",
+    "meet": ""
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:59.52",
+    "date": "2025-02-28",
+    "meet": ""
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "2:04.46",
+    "date": "2024-12-13",
+    "meet": ""
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "2:07.60",
+    "date": "2024-10-12",
+    "meet": ""
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "2:21.31",
+    "date": "2024-02-02",
+    "meet": ""
+  },
+  {
+    "event": "200 IM SCY",
+    "time": "3:47.87",
+    "date": "2026-01-17",
+    "meet": ""
+  },
+  {
+    "event": "100 Free LCM",
+    "time": "2:15.47",
+    "date": "2024-05-31",
+    "meet": ""
+  },
+  {
+    "event": "100 Back LCM",
+    "time": "2:29.59",
+    "date": "2024-05-13",
+    "meet": ""
+  }
+]

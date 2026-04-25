@@ -15,16 +15,17 @@ None currently.
 
 ## P1 — NEXT UP
 
-- [~] **Step 11: Bulk-load progression data into Neon** — IN PROGRESS, scripted
-  Parser written, all 11 docs parsed cleanly to `scripts/parsed/*.json` (1110 entries, zero diagnostics).
-  Push script ready at `scripts/push-progression.mjs` with safety rails (one athlete per call, MERGE by default, requires `CONFIRM=yes`, reads back to verify).
-  Wrapper at `scripts/push-all-progression.mjs` runs all 11 in smallest-first order.
-  **Next action — Chase to run from his machine** (Claude's bash_tool can't reach vercel.app):
-    1. `node scripts/push-progression.mjs --athlete=ath_farris --dry`  (verify)
-    2. `CONFIRM=yes node scripts/push-progression.mjs --athlete=ath_farris`  (canary)
-    3. Spot-check Farris on the live site
-    4. `CONFIRM=yes node scripts/push-all-progression.mjs`  (everyone else)
-  See `scripts/README.md` for full instructions.
+- [~] **Step 11: Bulk-load progression data into Neon** — IN PROGRESS, button on admin page
+  Built a one-click "Import progression data" button on the admin Athletes page
+  (`AthleteGrid.jsx`) that POSTs to `/api/import-progression`. Endpoint reads
+  the parsed JSON (already shipped at `api/data/ath_*.json`), merges into
+  each athlete's record (dedupes), writes a change_log row.
+  **Next action — Chase**: open the admin page, click the purple
+  "Import progression data" button, confirm the prompt. UI shows per-athlete
+  results when done. Safe to click more than once — duplicates skip.
+
+  (Older terminal scripts at `scripts/*.mjs` still work but aren't needed
+  with the button.)
 
 - [ ] **Step 12: Merge `v2-redesign` → `main`**
   Blocked on Step 11 completion
