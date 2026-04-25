@@ -281,7 +281,7 @@ function AerobicDevelopmentChart({ athlete }) {
     const n = sorted.length
     sorted.forEach((s, idx) => {
       const d = s.data || {}
-      if (d.noteType !== 'training') return
+      if (!['aerobic','threshold'].includes(s.category)) return
       const sets = d.sets || (d.mainSet ? [d.mainSet] : [])
       sets.forEach(set => {
         if (!set?.reps?.length) return
