@@ -818,7 +818,8 @@ function ProgressionChart({ data, athleteName }) {
   // All the chart math depends on having >= 2 points. Guard it so we don't
   // divide by zero or build a broken path when an event only has 1 swim.
   let xScale, yScale, pathD, yTicks, pointsWithPRFlag, firstPt, lastPt, midPt,
-      dropSec = 0, dropPct = 0, fmtAxisDate
+      dropSec = 0, dropPct = 0, fmtAxisDate,
+      solidSegments = [], dashSegments = []
 
   if (hasEnoughPoints) {
     // Axes domain
@@ -844,9 +845,35 @@ function ProgressionChart({ data, athleteName }) {
     const xSpanPad = Math.min((xMax - xMin) * 0.015, MS_2_WEEKS) || MS_2_WEEKS
     xScale = (d) => padL + ((d - xMin) / ((xMax + xSpanPad) - xMin || 1)) * plotW
 
+    // Full path used for animation length measurement and area fill.
     pathD = points.map((p, i) =>
       `${i === 0 ? 'M' : 'L'} ${xScale(p.date.getTime()).toFixed(1)} ${yScale(p.time).toFixed(1)}`
     ).join(' ')
+
+    // Build solid + dashed segments split on season gaps (> 90 days).
+    // Solid lines = active season. Dashed = season break connector.
+    const GAP_MS = 90 * 24 * 60 * 60 * 1000
+    let curSeg = []
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i]
+      const px = xScale(p.date.getTime()).toFixed(1)
+      const py = yScale(p.time).toFixed(1)
+      if (i === 0) {
+        curSeg.push(`M ${px} ${py}`)
+      } else {
+        const gap = p.date.getTime() - points[i - 1].date.getTime()
+        if (gap > GAP_MS) {
+          if (curSeg.length >= 1) solidSegments.push(curSeg.join(' '))
+          const prevPx = xScale(points[i - 1].date.getTime()).toFixed(1)
+          const prevPy = yScale(points[i - 1].time).toFixed(1)
+          dashSegments.push(`M ${prevPx} ${prevPy} L ${px} ${py}`)
+          curSeg = [`M ${px} ${py}`]
+        } else {
+          curSeg.push(`L ${px} ${py}`)
+        }
+      }
+    }
+    if (curSeg.length >= 1) solidSegments.push(curSeg.join(' '))
 
     // Y-axis ticks — 4 evenly spaced
     yTicks = [0, 1, 2, 3].map(i => {
@@ -932,6 +959,8 @@ function ProgressionChart({ data, athleteName }) {
           pointsWithPRFlag={pointsWithPRFlag}
           selectedEvent={selectedEvent}
           fmtAxisDate={fmtAxisDate}
+          solidSegments={solidSegments}
+          dashSegments={dashSegments}
         />
       ) : (
         <div className="empty-state">
@@ -961,6 +990,7 @@ function AnimatedProgressionChart({
   yTicks, firstPt, lastPt, midPt,
   xScale, yScale, pathD, pointsWithPRFlag,
   selectedEvent, fmtAxisDate,
+  solidSegments = [], dashSegments = [],
 }) {
   const lineRef     = useRef(null)
   const revealRef   = useRef(null)
@@ -1146,17 +1176,46 @@ function AnimatedProgressionChart({
           clipPath="url(#apc-area-clip)"
         />
 
-        {/* The animated line */}
+        {/* Hidden full path — used only for getTotalLength() animation measurement.
+             Invisible (opacity 0) so it doesn't render, but the ref gives us
+             the correct total path length regardless of how we split segments. */}
         <path
           ref={lineRef}
           d={pathD}
           fill="none"
-          stroke="url(#apc-line-grad)"
-          strokeWidth="3"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          filter="url(#apc-line-glow)"
+          stroke="none"
+          strokeWidth="0"
+          opacity="0"
         />
+
+        {/* Visible solid segments — active season swims */}
+        {solidSegments.map((d, i) => (
+          <path
+            key={'s'+i}
+            d={d}
+            fill="none"
+            stroke="url(#apc-line-grad)"
+            strokeWidth="3"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            filter="url(#apc-line-glow)"
+            clipPath="url(#apc-area-clip)"
+          />
+        ))}
+
+        {/* Dashed connectors across season breaks (> 90 days) */}
+        {dashSegments.map((d, i) => (
+          <path
+            key={'x'+i}
+            d={d}
+            fill="none"
+            stroke="rgba(212,168,83,0.25)"
+            strokeWidth="1.5"
+            strokeDasharray="5,6"
+            strokeLinecap="round"
+            clipPath="url(#apc-area-clip)"
+          />
+        ))}
 
         {/* Dots + PR labels + final caption.
             Rules:
