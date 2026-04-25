@@ -177,40 +177,54 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
         <button className="add-athlete-btn" onClick={() => setAdding(true)}>+ Add New Athlete</button>
       )}
 
-      <div style={{marginTop:24, padding:20, background:'rgba(124,58,237,0.06)', border:'1px solid rgba(124,58,237,0.25)', borderRadius:10}}>
-        <div style={{fontSize:13, fontWeight:600, color:'#f1f5f9', marginBottom:6}}>
-          Bulk import progression history
-        </div>
-        <div style={{fontSize:12, color:'#94a3b8', marginBottom:12, lineHeight:1.5}}>
-          Loads every historical swim from the master progression docs (~1,100 entries
-          across all 11 athletes) into the database. Safe to run more than once —
-          duplicates are skipped automatically.
-        </div>
-        <button
-          className="btn btn-primary"
-          onClick={handleImportProgression}
-          disabled={importing}
-          style={{background:'#7C3AED', borderColor:'#7C3AED'}}
-        >
-          {importing ? 'Importing…' : 'Import progression data'}
-        </button>
+      {(() => {
+        // The bulk-import callout is a one-time setup tool. Once every
+        // athlete has progression data, hide it. Showing a result panel
+        // (right after a click) keeps the box visible so Chase can read
+        // what landed.
+        const everyoneHasProgression =
+          (athletes || []).length > 0 &&
+          (athletes || []).every(a => Array.isArray(a.progression) && a.progression.length > 0)
+        const shouldShow = importResult || !everyoneHasProgression
+        if (!shouldShow) return null
+        return (
+          <div style={{marginTop:24, padding:20, background:'rgba(124,58,237,0.06)', border:'1px solid rgba(124,58,237,0.25)', borderRadius:10}}>
+            <div style={{fontSize:13, fontWeight:600, color:'#f1f5f9', marginBottom:6}}>
+              Bulk import progression history
+            </div>
+            <div style={{fontSize:12, color:'#94a3b8', marginBottom:12, lineHeight:1.5}}>
+              One-time setup: loads every historical swim from the master progression
+              docs into the database. Safe to run more than once — duplicates skip
+              automatically. This box hides itself once every athlete has progression
+              data loaded.
+            </div>
+            <button
+              className="btn btn-primary"
+              onClick={handleImportProgression}
+              disabled={importing}
+              style={{background:'#7C3AED', borderColor:'#7C3AED'}}
+            >
+              {importing ? 'Importing…' : 'Import progression data'}
+            </button>
 
-        {importResult && (
-          <div style={{marginTop:14, padding:12, background:'rgba(15,23,42,0.6)', border:'1px solid rgba(148,163,184,0.15)', borderRadius:8, fontSize:12, color:'#cbd5e1'}}>
-            <div style={{fontWeight:600, color:'#10b981', marginBottom:8}}>Import complete.</div>
-            {importResult.map((row, i) => (
-              <div key={i} style={{display:'flex', justifyContent:'space-between', padding:'4px 0', borderBottom:i < importResult.length - 1 ? '1px solid rgba(148,163,184,0.08)' : 'none'}}>
-                <span>{row.name || row.athleteId}</span>
-                <span style={{color: row.status === 'ok' ? '#94a3b8' : '#f59e0b'}}>
-                  {row.status === 'ok'
-                    ? `+${row.addedNew} new · ${row.duplicatesSkipped} skipped · ${row.finalTotal} total`
-                    : `skipped (${row.reason})`}
-                </span>
+            {importResult && (
+              <div style={{marginTop:14, padding:12, background:'rgba(15,23,42,0.6)', border:'1px solid rgba(148,163,184,0.15)', borderRadius:8, fontSize:12, color:'#cbd5e1'}}>
+                <div style={{fontWeight:600, color:'#10b981', marginBottom:8}}>Import complete.</div>
+                {importResult.map((row, i) => (
+                  <div key={i} style={{display:'flex', justifyContent:'space-between', padding:'4px 0', borderBottom:i < importResult.length - 1 ? '1px solid rgba(148,163,184,0.08)' : 'none'}}>
+                    <span>{row.name || row.athleteId}</span>
+                    <span style={{color: row.status === 'ok' ? '#94a3b8' : '#f59e0b'}}>
+                      {row.status === 'ok'
+                        ? `+${row.addedNew} new · ${row.duplicatesSkipped} skipped · ${row.finalTotal} total`
+                        : `skipped (${row.reason})`}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
+        )
+      })()}
     </div>
   )
 }
