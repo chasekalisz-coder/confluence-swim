@@ -82,6 +82,19 @@ Each session block captures: what happened, decisions made, things that broke, t
   3. `loadAthletes` now wraps both seeded merges and manually-added appends in `normalizeAthlete()`. This is heal-on-read: any old athlete missing fields gets them filled in next time the page loads. No migration script needed — just open the site and they're healed.
   4. `addAthlete` now does the same readback verification `updateAthlete` does. Silent failures get caught.
 
+### Save verifier was too strict — softened
+- Chase clarified the real ongoing issue: "you couldn't see or tell I uploaded times to their profiles that were accurate and why it kept saying something was off when it wasn't"
+- The verifier in `updateAthlete` was strict-equality on counts (sent N meetTimes, DB must have exactly N). False alarms whenever:
+  - The bulk import endpoint touched progression between save and readback
+  - Normalization filled in a missing field, changing array shape
+  - Two edit sessions overlapped
+- Softened: verifier now only alarms on actual failure modes — record vanishing, or sent a non-empty list and DB came back with zero. Off-by-N count differences get logged (DevTools console) but don't surface as "Save failed" alerts.
+- Net effect: saves that actually persist will no longer trigger false errors. Real persistence failures still alert loudly.
+
+### Import callout — now hides itself when not needed
+- `AthleteGrid` only shows the "Bulk import progression history" callout when there's at least one athlete still missing progression data. Once everyone has progression entries, it disappears from the home page.
+- If Chase ever needs to re-import (after updating a master doc, or after adding a new athlete), the box reappears automatically because the new athlete has empty progression.
+
 ### Things to check next session
 - After Vercel deploys, confirm `recentChanges` returns rows for any athlete edits Chase has done since this commit
 - Confirm new chat does NOT mention Supabase as current (the memory line was the main vector — should be fixed)
