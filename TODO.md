@@ -245,3 +245,19 @@ None currently.
 ---
 
 **End of TODO.**
+
+## FUTURE — Historical Note Reformat
+
+Chase has handwritten session notes from before the app existed. Goal is to
+feed them through the AI to reformat into standard Confluence note structure
+so they appear uniformly in the athlete's profile timeline alongside new notes.
+
+Requirements when building:
+- Needs an input method (paste text or photo upload of old note)
+- AI runs in "reformat" mode — not generating from scratch, reformatting existing
+- Must save with flag: source: "historical_reformat" on the session record
+- This flag ensures aerobic chart and other data charts EXCLUDE these sessions
+  (old notes won't have HR counts, rep times etc in the right format)
+- The note itself shows in Session Notes tab like any other note
+- Date should reflect the ORIGINAL session date, not today
+- This is a future build — do not start until Chase explicitly asks for it
