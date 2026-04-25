@@ -17,6 +17,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
+import RacePaceCalculator from './RacePaceCalculator.jsx'
 import {
   pickNextCut,
   formatTime,
@@ -638,35 +639,12 @@ function MeetAnalyzerTool({ athlete, onClose }) {
 }
 
 // ============================================================
-// RacePaceTool — opens the standalone Race Pace Calculator
+// RacePaceTool — native React component
 function RacePaceTool({ athlete, onClose }) {
   return (
     <div className="tool-view">
       <button className="back" onClick={onClose}>← Back to Analysis</button>
-
-      <div className="tool-header">
-        <div className="tool-tag">Tool</div>
-        <h1 className="tool-title">Race Pace Calculator</h1>
-        <p className="tool-sub">
-          Set a goal time for any event and see the exact splits modeled from
-          elite NCAA and World Championship performance data.
-        </p>
-      </div>
-
-      <div style={{ textAlign: 'center', padding: '40px 0' }}>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
-          Opens in a new tab — enter any goal time and get your target splits instantly.
-        </p>
-        <a
-          href="/pace.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-primary"
-          style={{ fontSize: 15, padding: '12px 32px', textDecoration: 'none', display: 'inline-block' }}
-        >
-          Open Race Pace Calculator →
-        </a>
-      </div>
+      <RacePaceCalculator />
     </div>
   )
 }
