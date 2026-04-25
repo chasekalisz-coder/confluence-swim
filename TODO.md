@@ -91,6 +91,12 @@ None currently.
 
 ## P2 — PLANNED
 
+- [ ] **Race Pace Calculator — average line position fix**
+  The horizontal average line through the split bars is not accurately placed.
+  Visual bug only — the split times and percentages are correct.
+  Low priority, fix post-launch.
+
+
 - [ ] **Quality session tracking (fast 50s, max effort sets)**
   Similar to color paces but for quality/sprint work. Jon has a lot of
   fast 50 data and max-effort 100s Fly. Track pace and context (suited,
