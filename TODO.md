@@ -54,7 +54,7 @@ None currently.
   a real coaching note per athlete.
 
 
-- [ ] **Fix fixture drift on Liam Aikey**
+- [x] **Fix fixture drift on Liam Aikey**
   - 50 Free SCY: 45.73 → 42.60
   - 50 Breast SCY: 53.63 → 51.63
   - 50 Fly SCY: 1:26.41 → 1:00.02
@@ -62,12 +62,12 @@ None currently.
   Note: Chase confirms live site is accurate — this is cosmetic fixture cleanup, not functional
   Do during Step 11 bulk-load or a dedicated pass
 
-- [ ] **Fix fixture drift on Farris**
+- [x] **Fix fixture drift on Farris**
   Fixture has `meetTimes: []` — real data has 50 Free 1:55.96, 50 Fly 1:11.83
   Events list also doesn't match
   Same note as Liam: cosmetic only, site is accurate
 
-- [ ] **Add Pace Heard + Mason Liao to fixture**
+- [x] **Add Pace Heard + Mason Liao to fixture**
   Currently DB-only. Adding to fixture makes the seed complete if DB ever needs reset
   Pace: 17 events (see `docs/progression/pace-progression-master.md`)
   Mason: 6 events (see `docs/progression/mason-progression-master.md`)
