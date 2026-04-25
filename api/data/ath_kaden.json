@@ -1,0 +1,566 @@
+[
+  {
+    "event": "50 Free SCY",
+    "time": "30.48",
+    "date": "2026-02-28",
+    "meet": ""
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "30.91",
+    "date": "2026-01-10",
+    "meet": "LAC Ice Breaker"
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "35.30",
+    "date": "2025-06-15",
+    "meet": "Select Swim June We Love Flipturns SC Meet"
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "37.70",
+    "date": "2024-11-10",
+    "meet": "NT LAC A-maize-ing Autumn Meet"
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "37.98",
+    "date": "2025-05-04",
+    "meet": "NT MTRO BB/B/C Meet"
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "40.77",
+    "date": "2024-12-15",
+    "meet": "NT LAC Jingle Bell"
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "40.80",
+    "date": "2025-03-08",
+    "meet": "NT IRON 14 & Under Leaping into Spring"
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "42.56",
+    "date": "2024-04-13",
+    "meet": "NT LAC Season Opener"
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "45.58",
+    "date": "2024-06-02",
+    "meet": "NT LAC Summer Sizzler"
+  },
+  {
+    "event": "50 Free SCY",
+    "time": "46.12",
+    "date": "2024-05-05",
+    "meet": "NT LAC May Madness"
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:06.85",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:07.76",
+    "date": "2026-01-11",
+    "meet": "LAC Ice Breaker"
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:15.50",
+    "date": "2025-06-15",
+    "meet": "Select Swim June We Love Flipturns SC Meet"
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:22.80",
+    "date": "2025-05-03",
+    "meet": "NT MTRO BB/B/C Meet"
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:24.64",
+    "date": "2025-03-09",
+    "meet": "NT IRON 14 & Under Leaping into Spring"
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:28.30",
+    "date": "2024-12-15",
+    "meet": "NT LAC Jingle Bell"
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:37.82",
+    "date": "2024-02-25",
+    "meet": "NT RACE Mustache Madness"
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:38.68",
+    "date": "2024-04-14",
+    "meet": "NT LAC Season Opener"
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:46.37",
+    "date": "2024-05-04",
+    "meet": "NT LAC May Madness"
+  },
+  {
+    "event": "100 Free SCY",
+    "time": "1:48.77",
+    "date": "2024-06-01",
+    "meet": "NT LAC Summer Sizzler"
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:34.49",
+    "date": "2025-10-04",
+    "meet": "2025 LAC Splashing Pumpkins"
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:42.65",
+    "date": "2025-06-14",
+    "meet": "Select Swim June We Love Flipturns SC Meet"
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "2:57.84",
+    "date": "2025-05-04",
+    "meet": "NT MTRO BB/B/C Meet"
+  },
+  {
+    "event": "200 Free SCY",
+    "time": "3:40.28",
+    "date": "2024-04-13",
+    "meet": "NT LAC Season Opener"
+  },
+  {
+    "event": "500 Free SCY",
+    "time": "6:24.30",
+    "date": "2026-02-26",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "37.86",
+    "date": "2026-02-14",
+    "meet": ""
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "39.38",
+    "date": "2025-10-05",
+    "meet": "2025 LAC Splashing Pumpkins"
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "54.93",
+    "date": "2024-04-14",
+    "meet": "NT LAC Season Opener"
+  },
+  {
+    "event": "50 Fly SCY",
+    "time": "1:03.76",
+    "date": "2024-02-04",
+    "meet": "COR BB-B-C My Valentine Meet"
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "35.67",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "38.48",
+    "date": "2025-10-04",
+    "meet": "2025 LAC Splashing Pumpkins"
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "38.82",
+    "date": "2026-01-10",
+    "meet": "LAC Ice Breaker"
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "42.03",
+    "date": "2025-06-14",
+    "meet": "Select Swim June We Love Flipturns SC Meet"
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "45.39",
+    "date": "2025-06-15",
+    "meet": "Select Swim June We Love Flipturns SC Meet"
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "49.62",
+    "date": "2025-05-03",
+    "meet": "NT MTRO BB/B/C Meet"
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "50.42",
+    "date": "2025-03-09",
+    "meet": "NT IRON 14 & Under Leaping into Spring"
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "51.61",
+    "date": "2024-02-24",
+    "meet": "NT RACE Mustache Madness"
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "1:03.08",
+    "date": "2024-02-03",
+    "meet": "COR BB-B-C My Valentine Meet"
+  },
+  {
+    "event": "50 Back SCY",
+    "time": "1:04.02",
+    "date": "2024-01-13",
+    "meet": "NT RACE Mr. Freeze Open"
+  },
+  {
+    "event": "100 Back SCY",
+    "time": "1:15.18",
+    "date": "2026-02-28",
+    "meet": ""
+  },
+  {
+    "event": "100 Back SCY",
+    "time": "1:24.18",
+    "date": "2025-10-05",
+    "meet": "2025 LAC Splashing Pumpkins"
+  },
+  {
+    "event": "100 Back SCY",
+    "time": "1:32.54",
+    "date": "2025-06-15",
+    "meet": "Select Swim June We Love Flipturns SC Meet"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "37.60",
+    "date": "2026-03-07",
+    "meet": "TAGS Championships (25y)"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "37.68",
+    "date": "2026-03-07",
+    "meet": "TAGS Championships (25y)"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "39.74",
+    "date": "2026-01-10",
+    "meet": "LAC Ice Breaker"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "41.02",
+    "date": "2025-10-04",
+    "meet": "2025 LAC Splashing Pumpkins"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "44.89",
+    "date": "2025-06-14",
+    "meet": "Select Swim June We Love Flipturns SC Meet"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "46.77",
+    "date": "2025-05-04",
+    "meet": "NT MTRO BB/B/C Meet"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "49.73",
+    "date": "2024-11-10",
+    "meet": "NT LAC A-maize-ing Autumn Meet"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "51.40",
+    "date": "2025-03-09",
+    "meet": "NT IRON 14 & Under Leaping into Spring"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "53.33",
+    "date": "2024-12-15",
+    "meet": "NT LAC Jingle Bell"
+  },
+  {
+    "event": "50 Breast SCY",
+    "time": "1:02.40",
+    "date": "2024-06-01",
+    "meet": "NT LAC Summer Sizzler"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:24.34",
+    "date": "2026-02-14",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:25.31",
+    "date": "2026-03-06",
+    "meet": "TAGS Championships (25y)"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:26.29",
+    "date": "2026-03-06",
+    "meet": "TAGS Championships (25y)"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:28.38",
+    "date": "2026-01-11",
+    "meet": "LAC Ice Breaker"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:39.47",
+    "date": "2025-06-14",
+    "meet": "Select Swim June We Love Flipturns SC Meet"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:45.67",
+    "date": "2025-05-03",
+    "meet": "NT MTRO BB/B/C Meet"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:50.62",
+    "date": "2025-03-08",
+    "meet": "NT IRON 14 & Under Leaping into Spring"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:52.19",
+    "date": "2024-12-15",
+    "meet": "NT LAC Jingle Bell"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "1:58.73",
+    "date": "2024-04-14",
+    "meet": "NT LAC Season Opener"
+  },
+  {
+    "event": "100 Breast SCY",
+    "time": "2:05.81",
+    "date": "2024-05-05",
+    "meet": "NT LAC May Madness"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:13.76",
+    "date": "2026-03-08",
+    "meet": "TAGS Championships (25y)"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:14.17",
+    "date": "2026-03-08",
+    "meet": "TAGS Championships (25y)"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:19.46",
+    "date": "2026-01-11",
+    "meet": "LAC Ice Breaker"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:21.33",
+    "date": "2025-10-05",
+    "meet": "2025 LAC Splashing Pumpkins"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:27.95",
+    "date": "2025-06-15",
+    "meet": "Select Swim June We Love Flipturns SC Meet"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:33.81",
+    "date": "2024-11-10",
+    "meet": "NT LAC A-maize-ing Autumn Meet"
+  },
+  {
+    "event": "100 IM SCY",
+    "time": "1:47.90",
+    "date": "2024-05-04",
+    "meet": "NT LAC May Madness"
+  },
+  {
+    "event": "200 IM SCY",
+    "time": "2:40.08",
+    "date": "2026-02-13",
+    "meet": ""
+  },
+  {
+    "event": "200 IM SCY",
+    "time": "2:41.38",
+    "date": "2026-03-06",
+    "meet": "TAGS Championships (25y)"
+  },
+  {
+    "event": "200 IM SCY",
+    "time": "2:51.50",
+    "date": "2025-10-03",
+    "meet": "2025 LAC Splashing Pumpkins"
+  },
+  {
+    "event": "50 Free LCM",
+    "time": "35.52",
+    "date": "2025-07-17",
+    "meet": ""
+  },
+  {
+    "event": "50 Free LCM",
+    "time": "36.44",
+    "date": "2025-06-29",
+    "meet": "2025 NT LCM Age Group Championship"
+  },
+  {
+    "event": "50 Free LCM",
+    "time": "47.04",
+    "date": "2024-07-06",
+    "meet": "NT LAC NT LAC Fun in the Sun"
+  },
+  {
+    "event": "100 Free LCM",
+    "time": "1:16.74",
+    "date": "2026-04-10",
+    "meet": ""
+  },
+  {
+    "event": "100 Free LCM",
+    "time": "1:20.18",
+    "date": "2025-06-29",
+    "meet": "2025 NT LCM Age Group Championship"
+  },
+  {
+    "event": "100 Free LCM",
+    "time": "1:45.79",
+    "date": "2024-07-07",
+    "meet": "NT LAC NT LAC Fun in the Sun"
+  },
+  {
+    "event": "200 Free LCM",
+    "time": "2:40.63",
+    "date": "2026-04-11",
+    "meet": ""
+  },
+  {
+    "event": "200 Free LCM",
+    "time": "2:54.25",
+    "date": "2025-06-27",
+    "meet": "2025 NT LCM Age Group Championship"
+  },
+  {
+    "event": "200 Free LCM",
+    "time": "2:55.06",
+    "date": "2025-06-27",
+    "meet": "2025 NT LCM Age Group Championship"
+  },
+  {
+    "event": "50 Fly LCM",
+    "time": "1:02.01",
+    "date": "2024-07-07",
+    "meet": "NT LAC NT LAC Fun in the Sun"
+  },
+  {
+    "event": "50 Back LCM",
+    "time": "59.18",
+    "date": "2024-07-06",
+    "meet": "NT LAC NT LAC Fun in the Sun"
+  },
+  {
+    "event": "100 Back LCM",
+    "time": "1:29.04",
+    "date": "2026-04-11",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast LCM",
+    "time": "42.01",
+    "date": "2026-04-11",
+    "meet": ""
+  },
+  {
+    "event": "50 Breast LCM",
+    "time": "46.16",
+    "date": "2025-07-18",
+    "meet": "Texas Age Group Championships"
+  },
+  {
+    "event": "50 Breast LCM",
+    "time": "46.57",
+    "date": "2025-06-28",
+    "meet": "2025 NT LCM Age Group Championship"
+  },
+  {
+    "event": "50 Breast LCM",
+    "time": "47.73",
+    "date": "2025-06-28",
+    "meet": "2025 NT LCM Age Group Championship"
+  },
+  {
+    "event": "50 Breast LCM",
+    "time": "49.32",
+    "date": "2025-06-29",
+    "meet": "2025 NT LCM Age Group Championship"
+  },
+  {
+    "event": "50 Breast LCM",
+    "time": "59.44",
+    "date": "2024-07-07",
+    "meet": "NT LAC NT LAC Fun in the Sun"
+  },
+  {
+    "event": "100 Breast LCM",
+    "time": "1:34.21",
+    "date": "2026-04-10",
+    "meet": ""
+  },
+  {
+    "event": "100 Breast LCM",
+    "time": "1:46.25",
+    "date": "2025-06-29",
+    "meet": "2025 NT LCM Age Group Championship"
+  },
+  {
+    "event": "100 Breast LCM",
+    "time": "2:14.94",
+    "date": "2024-07-06",
+    "meet": "NT LAC NT LAC Fun in the Sun"
+  },
+  {
+    "event": "200 IM LCM",
+    "time": "3:04.14",
+    "date": "2026-04-10",
+    "meet": ""
+  }
+]

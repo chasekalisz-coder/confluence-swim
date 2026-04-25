@@ -54,6 +54,14 @@ Each session block captures: what happened, decisions made, things that broke, t
 - Did NOT push to live API: Claude's bash_tool allowlist excludes `vercel.app`, so Chase runs the scripts from his machine
 - Parsed JSON committed to repo (`scripts/parsed/`) so it's reviewable and so any Claude in a future chat can see exactly what was loaded
 
+### Step 11 follow-up — Chase doesn't use a terminal, so built a button
+- Chase made clear he doesn't run scripts from a terminal — everything goes through git + Vercel
+- Refactored Step 11 to ship as a one-click button on the admin Athletes page
+- Copied parsed JSON into `api/data/ath_*.json` (so the serverless function can statically import it)
+- New endpoint: `api/import-progression.js` — same merge logic as the script, runs server-side, writes change_log rows
+- New UI in `src/components/AthleteGrid.jsx` — purple "Import progression data" callout with a button that POSTs to the endpoint and shows per-athlete results
+- Confirms before sending, safe to click more than once (idempotent merge)
+
 ### Things to check next session
 - After Vercel deploys, confirm `recentChanges` returns rows for any athlete edits Chase has done since this commit
 - Confirm new chat does NOT mention Supabase as current (the memory line was the main vector — should be fixed)
