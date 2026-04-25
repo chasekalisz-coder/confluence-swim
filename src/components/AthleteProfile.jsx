@@ -148,8 +148,8 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
       const age = editData.age ? parseInt(editData.age) : athlete.age
       const updated = {
         ...athlete,
-        first: editData.first,
-        last: editData.last,
+        first: (editData.first || '').trim(),
+        last: (editData.last || '').trim(),
         dob: editData.dob,
         age,
         gender: editData.gender || null,

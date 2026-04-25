@@ -22,6 +22,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
+import { fullName } from '../data/athletes.js'
 import {
   parseTime,
   formatTime,
@@ -156,7 +157,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
         {/* ============ HERO ============ */}
         <section className="hero">
           <div className="name">
-            {athlete.first}{athlete.last ? ' ' + athlete.last : ''}
+            {fullName(athlete)}
           </div>
           <div className="meta">
             <span className="age">{effectiveAge} years old</span>
