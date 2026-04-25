@@ -70,6 +70,18 @@ Each session block captures: what happened, decisions made, things that broke, t
   1. **Tolerant matching in import**: `import-progression.js` now first tries exact ID match (fast path for seeded athletes), falls back to first-name lookup. So even if Mason is `ath_mason_l8x7q3` in Neon, his record will be found by first name "Mason".
   2. **Clean ID generation going forward**: `AthleteGrid.jsx` "Add Athlete" no longer appends a random timestamp. New athletes get clean IDs like `ath_mason`, falling back to `ath_mason_2`, `ath_mason_3`, etc. only if the base name is already taken. Old random-suffix athletes still work — the import handles them via the first-name fallback.
 
+### Underlying problem Chase has been hitting all along — fixed
+- Chase pushed back: "anything I manually enter has a problem, this has been ongoing." He was right.
+- Real root cause (three issues compounding):
+  1. `addAthlete` only initialized 6 fields. Seeded athletes have 13+ fields. So manually-added athletes were missing `progression`, `pronouns`, `upcomingMeets`, `pastMeets`, `mockSessions` etc.
+  2. `loadAthletes` merge layer only enriches athletes that match the seeded fixture. Manually-added athletes were appended raw at the bottom, skipping the merge entirely. They never got the local-source-of-truth fields.
+  3. `addAthlete` had no readback verification — silent failures possible. `updateAthlete` already had it.
+- Fix:
+  1. Added `makeBlankAthlete()` and `normalizeAthlete()` helpers in `src/data/athletes.js` — single source of truth for the canonical athlete shape (every field defined, arrays default to `[]`).
+  2. `AthleteGrid.handleAdd` now calls `makeBlankAthlete()` instead of building inline. Every new athlete now has every field a seeded athlete has from day one.
+  3. `loadAthletes` now wraps both seeded merges and manually-added appends in `normalizeAthlete()`. This is heal-on-read: any old athlete missing fields gets them filled in next time the page loads. No migration script needed — just open the site and they're healed.
+  4. `addAthlete` now does the same readback verification `updateAthlete` does. Silent failures get caught.
+
 ### Things to check next session
 - After Vercel deploys, confirm `recentChanges` returns rows for any athlete edits Chase has done since this commit
 - Confirm new chat does NOT mention Supabase as current (the memory line was the main vector — should be fixed)

@@ -405,3 +405,53 @@ export function initials(a) {
 export function primaryEvents(a) {
   return a.events.slice(0, 3).join(' · ')
 }
+
+// ============================================================
+// makeBlankAthlete — single source of truth for the shape every
+// athlete record should have. Used by:
+//   • AthleteGrid Add Athlete (manually-added athletes)
+//   • normalizeAthlete (backfills any missing fields on existing
+//     records so old / partial athletes look identical to fresh ones)
+// ============================================================
+export function makeBlankAthlete(opts = {}) {
+  const gender = opts.gender || null
+  return {
+    id: opts.id,
+    first: opts.first || '',
+    last: opts.last || '',
+    age: opts.age != null ? opts.age : null,
+    dob: opts.dob || null,
+    gender,
+    pronouns: opts.pronouns || (gender === 'F' ? 'she' : gender === 'M' ? 'he' : ''),
+    showChampionshipCuts: opts.showChampionshipCuts ?? true,
+    events: Array.isArray(opts.events) ? opts.events : [],
+    meetTimes: Array.isArray(opts.meetTimes) ? opts.meetTimes : [],
+    goalTimes: Array.isArray(opts.goalTimes) ? opts.goalTimes : [],
+    progression: Array.isArray(opts.progression) ? opts.progression : [],
+    upcomingMeets: Array.isArray(opts.upcomingMeets) ? opts.upcomingMeets : [],
+    pastMeets: Array.isArray(opts.pastMeets) ? opts.pastMeets : [],
+    mockSessions: Array.isArray(opts.mockSessions) ? opts.mockSessions : [],
+  }
+}
+
+// Take an athlete record from anywhere (DB, fixture, edit form) and
+// return one with every required field defined. Existing values pass
+// through untouched; missing ones get safe defaults from
+// makeBlankAthlete. This is the heal-on-read step — old records that
+// were saved before a field existed look identical to brand-new ones.
+export function normalizeAthlete(record) {
+  if (!record || typeof record !== 'object') return record
+  return { ...makeBlankAthlete(record), ...record,
+    // Re-assert the array defaults *after* the spread, because the
+    // spread will pull through `progression: undefined` etc. on old
+    // records, which would then look like "field present, value
+    // undefined" to anything checking Array.isArray.
+    events:        Array.isArray(record.events)        ? record.events        : [],
+    meetTimes:     Array.isArray(record.meetTimes)     ? record.meetTimes     : [],
+    goalTimes:     Array.isArray(record.goalTimes)     ? record.goalTimes     : [],
+    progression:   Array.isArray(record.progression)   ? record.progression   : [],
+    upcomingMeets: Array.isArray(record.upcomingMeets) ? record.upcomingMeets : [],
+    pastMeets:     Array.isArray(record.pastMeets)     ? record.pastMeets     : [],
+    mockSessions:  Array.isArray(record.mockSessions)  ? record.mockSessions  : [],
+  }
+}
