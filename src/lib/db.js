@@ -1,6 +1,6 @@
 
 
-import { ATHLETES } from '../data/athletes.js'
+import { ATHLETES, normalizeAthlete } from '../data/athletes.js'
 
 async function callDb(action, params = {}) {
   let res, data
@@ -64,9 +64,9 @@ export async function loadAthletes() {
     // seeded before the progression column was user-writable.
     const ordered = ATHLETES.map(a => {
       const dbRec = byId[a.id]
-      if (!dbRec) return a
+      if (!dbRec) return normalizeAthlete(a)
       const dbHasProgression = Array.isArray(dbRec.progression)
-      return {
+      return normalizeAthlete({
         ...a,           // local wins for new fields
         ...dbRec,       // DB overrides where both exist
         // ...then re-assert local for fields we know DB won't have
@@ -78,12 +78,17 @@ export async function loadAthletes() {
         // fallback only for un-migrated athletes.
         progression:         dbHasProgression ? dbRec.progression : a.progression,
         gender:              a.gender              ?? dbRec.gender,
-      }
+      })
     })
-    // Append any athletes from DB that aren't in the hardcoded list
+    // Append any athletes from DB that aren't in the hardcoded list.
+    // These are manually-added athletes — heal them through normalizeAthlete
+    // so they have every field a seeded athlete has (showChampionshipCuts,
+    // empty arrays for upcomingMeets/pastMeets/mockSessions/progression
+    // etc.). Without this, manually-added athletes look "broken" relative
+    // to seeded ones.
     rows.forEach(r => {
       if (!ATHLETES.some(a => a.id === r.id)) {
-        ordered.push(r.data)
+        ordered.push(normalizeAthlete(r.data))
       }
     })
     return { athletes: ordered, status: 'ok' }
@@ -174,7 +179,20 @@ export async function updateAthlete(athleteId, data) {
 }
 
 export async function addAthlete(athlete) {
-  return callDb('addAthlete', { athlete })
+  const result = await callDb('addAthlete', { athlete })
+  // Readback verification — same pattern as updateAthlete. If the DB
+  // claimed success but the row isn't there, we want to know loudly.
+  try {
+    const { athletes: rows } = await callDb('listAthletes')
+    const saved = (rows || []).find(r => r.id === athlete.id)
+    if (!saved) {
+      throw new Error(`Add appeared to succeed but ${athlete.id} not found on readback.`)
+    }
+    console.log(`[addAthlete ${athlete.id}] verified — record exists in DB`)
+  } catch (verifyErr) {
+    throw verifyErr
+  }
+  return result
 }
 
 export async function deleteAthlete(athleteId) {
