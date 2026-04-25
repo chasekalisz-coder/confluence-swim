@@ -1,5 +1,33 @@
 # PROGRESS.md — Session Log
 
+## Session 10 — 2026-04-25 (Launch-readiness pass)
+
+### Approach
+Chase uploaded a full site review doc (Site_checks_and_fixes.docx). Plan: knock out unambiguous quick fixes first, then go section by section for deeper review. Each section gets dedicated attention before moving on.
+
+### Quick fixes completed (commit e06ff2e)
+- **Δ headers → plain language**: "Gap to Next" and "Gap to Goal" in Times & Goals table
+- **TX TAGs column removed** from Times & Goals table (it already lives in Championship Standards)
+- **Hero age/age-group text bumped**: age 15→17px, age-bucket 11→13px
+- **Progression chart**: removed solid/dashed season-break split — single clean continuous line
+- **Age-Up Preview**: events that don't exist in the next age group are now hidden (not shown as dead rows)
+- **Championship accordion**: sub-headers (Event / Best / Sectionals / etc.) now repeat inside each expanded stroke family so columns are always labeled regardless of scroll position
+
+### Still to review (section by section per doc)
+- SCY/LCM toggle placement
+- Red color system in Times & Goals
+- Times & Goals: row spacing, collapsible option
+- Progression chart deeper fixes (dot/label logic, visual)
+- Championship table: remove TAGS tier, add Pro Swim / OT, header sizes
+- Age-Up Preview: further improvements?
+- Event Power Rankings: visual improvement
+- Range/Bloom: improvements?
+- Training section: hide or wire?
+- Last Race / Meet Analyzer: keep, kill, or rework?
+- Upcoming Meets: admin entry build
+- Scheduling: full portal build
+- Resources: fine as-is
+
 ## Session 9 — 2026-04-25
 
 ### Completed
