@@ -268,14 +268,17 @@ MAIN SET DATA EXTRACTION
 
 From the photo, extract the main set's data into structured form:
 - The main set name (e.g., "3x300 Free @ 4:30" or "8x200 Progressive Fly")
-- Every rep: rep number, distance, final time, HR (10-sec count) if shown, and any internal splits
+- Every rep: rep number, distance, final time, HR (10-sec count), and any internal splits
+- HR is ALWAYS present on the sheet as a number (e.g. 25, 27, 29). It is the 10-second
+  pulse count taken immediately after the rep. Extract it for every rep — do not leave it
+  null unless the number is physically unreadable on the photo (add a warning if so).
 - Zone if indicated (white/pink/red/blue/purple)
 - Interval if shown
 - Hi-Lo pulse values if shown (hi, lo, drop)
 - Pace targets if shown on the sheet (common for active rest / pace work sessions)
 
 If data is ambiguous or unreadable, add a note to the warnings array.
-Do NOT invent numbers.
+Do NOT invent numbers. If HR is genuinely absent from the sheet, set it to null and warn.
 
 ═══════════════════════════════════════════════
 CHART SELECTION
@@ -286,13 +289,15 @@ the actual data supports. Never select a chart you can't fill with real data.
 
 Available chart types:
 - "rep_times_bar"         — bar chart of final times per rep, colored by zone
-- "hr_line"               — line chart of 10-sec pulse count per rep (requires HR data on every rep)
+- "hr_line"               — line chart of 10-sec pulse count per rep. SELECT THIS whenever
+                            HR data is present on the reps (which it almost always will be).
+                            This is the most useful chart for aerobic development tracking.
 - "opening_50_drift"      — for progressive sets: opening 50 of each rep across the set
 - "rep_internal_splits"   — internal splits of a single rep (e.g., Rep 8 of an 8x200 progressive)
 - "hi_lo_block"           — Hi pulse / Lo pulse / Drop visualization (requires hiLo data)
 
 Default is zero charts. Charts must earn their place by revealing something
-the prose can't.
+the prose can't. Exception: always include "hr_line" when HR data is available.
 
 ═══════════════════════════════════════════════
 OUTPUT FORMAT
