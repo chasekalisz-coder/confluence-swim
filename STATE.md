@@ -1,7 +1,7 @@
 # STATE.md — Current Project State
 
-**Last updated:** 2026-04-24 (Session 6)
-**Updated by:** Claude (persistent context system setup)
+**Last updated:** 2026-04-24 (Session 7)
+**Updated by:** Claude
 
 ---
 
@@ -26,7 +26,7 @@
 - **GitHub:** github.com/chasekalisz-coder/confluence-swim
 - **Active branch:** `v2-redesign` (all current work)
 - **Production branch:** `main` (OLD design — not yet merged to production)
-- **Last commit on v2-redesign:** `28a4f45` (Step 8: Add / Edit / Delete on Meet Results)
+- **Last commit on v2-redesign:** `a7f1a5f` (name trimming + fullName helper, end of Session 7)
 
 **URLs:**
 - **Production (old design):** https://confluence-swim.vercel.app

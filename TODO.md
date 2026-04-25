@@ -15,20 +15,18 @@ None currently.
 
 ## P1 — NEXT UP
 
-- [~] **Step 11: Bulk-load progression data into Neon** — IN PROGRESS, button on admin page
-  Built a one-click "Import progression data" button on the admin Athletes page
-  (`AthleteGrid.jsx`) that POSTs to `/api/import-progression`. Endpoint reads
-  the parsed JSON (already shipped at `api/data/ath_*.json`), merges into
-  each athlete's record (dedupes), writes a change_log row.
-  **Next action — Chase**: open the admin page, click the purple
-  "Import progression data" button, confirm the prompt. UI shows per-athlete
-  results when done. Safe to click more than once — duplicates skip.
-
-  (Older terminal scripts at `scripts/*.mjs` still work but aren't needed
-  with the button.)
+- [~] **Step 11: Bulk-load progression data into Neon** — 9 of 11 done
+  Imported via the button on the admin Athletes page. Worked clean for
+  Ben (205), Farris (2), Grace (78), Hannah (73), Jon (282 new / 304
+  total), Kaden (94), Lana (125), Liam (19), Marley (132).
+  **Mason and Pace skipped** the first run because their IDs had random
+  suffixes (`ath_mason_l8x7q3`) from the old Add Athlete code. Fixed:
+  import now matches by first name as a fallback, and new athletes get
+  clean IDs going forward. Click the import button one more time after
+  the latest deploy and Mason + Pace should land.
 
 - [ ] **Step 12: Merge `v2-redesign` → `main`**
-  Blocked on Step 11 completion
+  Blocked on Step 11 completion (Mason + Pace re-import)
   Production cutover — flips confluence-swim.vercel.app to the new design + admin portal
   Checklist before merge: verify all Session 5 commits work in preview, spot-check Farris (no data) + Lana (next athlete to get sessions), confirm Step 8 CRUD works on every athlete profile
 
