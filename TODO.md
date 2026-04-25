@@ -44,6 +44,40 @@ None currently.
 
 ## P2 — PLANNED
 
+- [ ] **Chase coach profile with live USA Swimming times (no API key)**
+  Public results on usaswimming.org are scrapeable. Build a server-side
+  proxy that fetches and caches times in Neon on a schedule. Show Chase
+  a live-updating profile card parents can see. No official API needed.
+
+- [ ] **Clerk auth — identity + role-based access**
+  Three tiers: (1) Chase admin = full access, (2) Provider sub-admin =
+  full access to their athletes only, (3) Family = their kid only.
+  This is the main security unlock. Everything else (sub-admin, family
+  gating) builds on top of Clerk roles.
+
+- [ ] **Sub-admin for other providers**
+  Once Clerk is in: provider coaches get their own login, see only their
+  athletes, can do everything Chase can do for those athletes. Chase
+  sees all providers and all athletes. Families see only their kid.
+
+- [ ] **IMX score / custom Confluence metric**
+  USA Swimming IMX = points across 6 events (50/100/200 Free, 100 Back,
+  100 Breast, 100 Fly). Build our own version that weights events
+  differently and incorporates training load data. Show it on athlete
+  profiles as a season-over-season trend.
+
+- [ ] **Sport vertical expansion plan (track + field, etc.)**
+  Most of stack transfers: athlete profiles, session notes, progression
+  chart, AI coaching notes. What needs swapping: event list, zone/pace
+  system, cut standards. Estimated 2-3 weeks to port to a new sport.
+  Not urgent — document the architecture decisions that make this easy.
+
+- [ ] **Link site to main Squarespace site**
+  Add confluence-swim.vercel.app as a tab or subdomain on the main
+  Confluence Sport website. Squarespace supports custom code embeds
+  and external link tabs. Simple config change, no code needed.
+
+
 - [ ] **Aerobic development chart (pace vs HR count)**
   Scatter plot: x=HR count, y=pace, zone color bands (White/Pink/Red), opacity=season phase.
   Each dot = one rep from a saved training session. Down+left = adaptation.
