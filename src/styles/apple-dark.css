@@ -378,8 +378,8 @@ body.v2-active #root {
 }
 .v2 .times-row.header {
   padding: 14px 8px;
-  font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--v2-text-3);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.10em;
+  text-transform: uppercase; color: var(--v2-text-2);
 }
 .v2 .times-row .event { font-size: 13px; font-weight: 600; color: var(--v2-text-2); }
 .v2 .times-row .time { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: var(--v2-text); }
@@ -2163,8 +2163,8 @@ body.v2-active #root {
   grid-template-columns: 70px 1fr 1.2fr 1.2fr 1.2fr 1.2fr;
   gap: 14px;
   padding: 10px 16px 10px 36px;
-  font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--v2-text-3);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.10em;
+  text-transform: uppercase; color: var(--v2-text-2);
 }
 .v2 .ca-family {
   background: var(--v2-surface-2);
@@ -2216,8 +2216,8 @@ body.v2-active #root {
   display: grid;
   gap: 14px;
   padding: 8px 16px 8px 36px;
-  font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--v2-text-3);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.10em;
+  text-transform: uppercase; color: var(--v2-text-2);
   border-bottom: 0.5px solid var(--v2-border);
   margin-bottom: 4px;
 }
