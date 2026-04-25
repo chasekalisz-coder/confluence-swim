@@ -837,6 +837,13 @@ function ProgressionChart({ data, athleteName }) {
     // Convention here: fast at top (lower time = higher on chart)
     yScale = (t) => padT + ((yDomainMax - t) / (yDomainMax - yDomainMin)) * plotH
 
+    // Add a small right margin to the x domain (5% of the span) so the last
+    // dot isn't flush against the right edge of the chart area.
+    const xSpanPad = (xMax - xMin) * 0.05 || 1000 * 60 * 60 * 24 * 7
+    const xScaleWithPad = (d) => padL + ((d - xMin) / ((xMax + xSpanPad) - xMin || 1)) * plotW
+    // Replace xScale for actual data coords but keep the original for axis extent
+    xScale = xScaleWithPad
+
     pathD = points.map((p, i) =>
       `${i === 0 ? 'M' : 'L'} ${xScale(p.date.getTime()).toFixed(1)} ${yScale(p.time).toFixed(1)}`
     ).join(' ')
@@ -849,30 +856,27 @@ function ProgressionChart({ data, athleteName }) {
 
     // Identify PRs (running min) — these are the candidate labeled points.
     // Then apply a de-clutter pass: if two PR labels would sit on top of
-    // each other horizontally (within ~36px), keep only the more recent /
-    // bigger drop and demote the other to unlabeled PR dot. Fixes the
-    // "2:35.56 / 2:34.18 / 33.04 all stacked" glitch seen on clustered
-    // late-stage PRs.
+    // each other horizontally, keep only the most recent one (fastest).
+    // 60px minimum — a time label like "1:05.82" is ~50px wide at 12px.
     let runningMin = Infinity
     pointsWithPRFlag = points.map(p => {
       const isPR = p.time < runningMin
       if (isPR) runningMin = p.time
-      return { ...p, isPR, labelPR: isPR } // labelPR = will this PR get a text label?
+      return { ...p, isPR, labelPR: isPR }
     })
 
-    // Walk the PRs and suppress labels that are too close on-screen.
-    // We keep the more recent one (which is always the faster one anyway).
-    const MIN_LABEL_X_GAP = 36 // px
+    const MIN_LABEL_X_GAP = 60 // px
     const prIndices = pointsWithPRFlag
       .map((p, i) => ({ i, x: xScale(p.date.getTime()) }))
       .filter(({ i }) => pointsWithPRFlag[i].isPR)
 
-    // Right-to-left: always keep the LAST PR (hero), then collapse earlier
-    // ones that fall inside the min-gap from the one we just kept.
-    let lastKeptX = -Infinity
+    // Right-to-left: keep the final PR (hero) always, then suppress any
+    // earlier PR whose label would land within MIN_LABEL_X_GAP of the
+    // one we just decided to keep.
+    let lastKeptX = Infinity
     for (let j = prIndices.length - 1; j >= 0; j--) {
       const { i, x } = prIndices[j]
-      if (lastKeptX - x < MIN_LABEL_X_GAP && lastKeptX !== -Infinity) {
+      if (lastKeptX - x < MIN_LABEL_X_GAP) {
         pointsWithPRFlag[i].labelPR = false
       } else {
         lastKeptX = x
