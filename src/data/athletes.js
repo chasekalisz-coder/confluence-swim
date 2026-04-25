@@ -334,8 +334,11 @@ export const ATHLETES = [
   {
     id: "ath_farris", first: "Farris", last: "", age: 9, dob: null,
     gender: "M", pronouns: "he",
-    events: ["50 Free", "50 Fly", "50 Back", "50 Breast", "100 IM"],
-    meetTimes: []
+    events: ["50 Free", "50 Fly"],
+    meetTimes: [
+      { event: "100 Free SCY", time: "1:55.96" },
+      { event: "50 Fly SCY", time: "1:11.83" }
+    ]
   },
   {
     id: "ath_hannah", first: "Hannah", last: "Montgomery", age: 12, dob: null,
@@ -383,11 +386,27 @@ export const ATHLETES = [
   {
     id: "ath_liam", first: "Liam", last: "Aikey", age: 10, dob: "April 8",
     gender: "M", pronouns: "he",
-    events: ["50 Free", "50 Breast", "50 Fly"],
+    events: ["50 Free", "50 Back", "50 Breast", "50 Fly", "100 Free", "100 Breast"],
     meetTimes: [
-      { event: "50 Free SCY", time: "45.73" },
-      { event: "50 Breast SCY", time: "53.63" },
-      { event: "50 Fly SCY", time: "1:26.41" }
+      { event: "50 Free SCY", time: "42.60" },
+      { event: "50 Back SCY", time: "55.40" },
+      { event: "50 Breast SCY", time: "51.63" },
+      { event: "50 Fly SCY", time: "1:00.02" },
+      { event: "100 Free SCY", time: "1:29.30" },
+      { event: "100 Breast SCY", time: "1:54.19" }
+    ]
+  },
+  {
+    id: "ath_mason", first: "Mason", last: "Liao", age: 15, dob: null,
+    gender: "M", pronouns: "he",
+    events: ["50 Free", "100 Free", "50 Fly", "50 Back", "50 Breast", "100 IM"],
+    meetTimes: [
+      { event: "50 Free SCY", time: "41.53" },
+      { event: "100 Free SCY", time: "1:57.38" },
+      { event: "50 Fly SCY", time: "1:07.91" },
+      { event: "50 Back SCY", time: "42.49" },
+      { event: "50 Breast SCY", time: "1:04.14" },
+      { event: "100 IM SCY", time: "1:59.11" }
     ]
   }
 ]
