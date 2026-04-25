@@ -19,14 +19,31 @@ export default function App() {
   const [athletes, setAthletes] = useState([])
   const [selectedAthlete, setSelectedAthlete] = useState(null)
   const [selectedSession, setSelectedSession] = useState(null)
-  const [sessionOrigin, setSessionOrigin] = useState('athlete')  // where to go 'back' from SessionViewer
+  const [sessionOrigin, setSessionOrigin] = useState('athlete')
   const [connectionStatus, setConnectionStatus] = useState('loading')
+
+  // Check URL on load — if /athlete/:id, go directly to family profile.
+  // This is the family entry point. Families get a URL like
+  // confluence-swim.vercel.app/athlete/ath_jon and land directly on
+  // their kid's profile, never touching the admin grid.
+  const urlAthleteId = (() => {
+    const match = window.location.pathname.match(/^\/athlete\/([^/]+)/)
+    return match ? match[1] : null
+  })()
 
   useEffect(() => {
     loadAthletes().then(({ athletes, status, error }) => {
       setAthletes(athletes)
       setConnectionStatus(status)
       if (error) console.warn('Athletes load:', error)
+      // If URL has an athlete ID, auto-navigate to their family profile
+      if (urlAthleteId) {
+        const athlete = athletes.find(a => a.id === urlAthleteId)
+        if (athlete) {
+          setSelectedAthlete(athlete)
+          setView('family-profile')
+        }
+      }
     })
   }, [])
 
@@ -125,7 +142,7 @@ export default function App() {
     return (
       <FamilyProfile
         athlete={selectedAthlete}
-        onBack={goHome}
+        onBack={urlAthleteId ? null : goHome}
         onNavigate={handleV2Navigate}
       />
     )
