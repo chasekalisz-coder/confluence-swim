@@ -95,14 +95,19 @@ Each session block captures: what happened, decisions made, things that broke, t
 - `AthleteGrid` only shows the "Bulk import progression history" callout when there's at least one athlete still missing progression data. Once everyone has progression entries, it disappears from the home page.
 - If Chase ever needs to re-import (after updating a master doc, or after adding a new athlete), the box reappears automatically because the new athlete has empty progression.
 
-### Things to check next session
-- After Vercel deploys, confirm `recentChanges` returns rows for any athlete edits Chase has done since this commit
-- Confirm new chat does NOT mention Supabase as current (the memory line was the main vector — should be fixed)
-- Future Claude in next chat: hit `recentChanges` and confirm it returns at least the rows from this session's smoke test (if Chase tests it)
+### Name formatting cleanup — last bit before close
+- `AthleteProfile.saveEdit` now trims `first` and `last` before persisting. Stray spaces could no longer get burned into a record forever.
+- `FamilyProfile` was rendering names inline (`first + last`) instead of using `fullName()`. Switched to `fullName()` so name display is consistent with every other component.
+
+### How to test this work next session
+- Add a fake athlete via the admin form (e.g. "Test Test"), enter 5–10 times across a few events, save, refresh
+- Times should persist; profile should look identical in shape to a seeded athlete (Jon, Lana, etc.)
+- In a fresh chat, Claude should report seeing the test edits via the change_log on startup
+- Delete the test athlete after verifying
 
 ### Open loops at end of session
-- Step 11 (bulk-load progression into Neon) — still pending, not started
-- Step 12 (merge v2-redesign → main) — still blocked on Step 11
+- Step 11 — Mason + Pace still need their progression imported (one more click of the purple button after the deploy lands)
+- Step 12 (merge v2-redesign → main) — blocked on Step 11
 - Stale project handoff at `/mnt/project/CONFLUENCE_HANDOFF__1_.md` — still needs replacement by Chase
 
 ---
