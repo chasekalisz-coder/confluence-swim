@@ -72,22 +72,74 @@ export default async function handler(req, res) {
       )
     `
 
-    for (const [athleteId, parsedEntries] of Object.entries(PARSED)) {
-      const rows = await sql`SELECT id, data FROM athletes WHERE id = ${athleteId}`
-      const found = rows[0]
+    // Map our hardcoded doc-IDs to the first-name we should look up
+    // in Neon. Manually-added athletes get IDs like "ath_mason_l8x7q3"
+    // (with a random suffix), so matching strictly by ID misses them.
+    // First name + DB lookup is more forgiving.
+    const NAME_FOR_ID = {
+      ath_ben:    'Ben',
+      ath_farris: 'Farris',
+      ath_grace:  'Grace',
+      ath_hannah: 'Hannah',
+      ath_jon:    'Jon',
+      ath_kaden:  'Kaden',
+      ath_lana:   'Lana',
+      ath_liam:   'Liam',
+      ath_marley: 'Marley',
+      ath_mason:  'Mason',
+      ath_pace:   'Pace',
+    }
+
+    // Pull all athletes once, build first-name index for tolerant match
+    const allRows = await sql`SELECT id, data FROM athletes`
+    const byFirst = {}
+    for (const row of allRows) {
+      const d = row.data || {}
+      const first = (d.first || (d.name || '').split(' ')[0] || '').toLowerCase().trim()
+      if (!first) continue
+      if (!byFirst[first]) byFirst[first] = []
+      byFirst[first].push(row)
+    }
+
+    for (const [docAthleteId, parsedEntries] of Object.entries(PARSED)) {
+      // First try exact ID match (fast path for the seeded athletes)
+      let found = allRows.find(r => r.id === docAthleteId)
+      let matchedBy = 'id'
+
+      // Fallback: match by first name (handles manually-added athletes
+      // whose IDs have random suffixes)
+      if (!found) {
+        const wantFirst = (NAME_FOR_ID[docAthleteId] || '').toLowerCase()
+        const candidates = byFirst[wantFirst] || []
+        if (candidates.length === 1) {
+          found = candidates[0]
+          matchedBy = 'first-name'
+        } else if (candidates.length > 1) {
+          // Multiple athletes share that first name — refuse to guess
+          summary.push({
+            athleteId: docAthleteId,
+            status: 'skipped',
+            reason: `multiple athletes share first name "${NAME_FOR_ID[docAthleteId]}" — please import manually`,
+            parsedCount: parsedEntries.length,
+          })
+          continue
+        }
+      }
+
       if (!found) {
         summary.push({
-          athleteId,
+          athleteId: docAthleteId,
           status: 'skipped',
-          reason: 'athlete not found in DB',
+          reason: `no athlete in DB matched "${NAME_FOR_ID[docAthleteId] || docAthleteId}" — add the athlete first, then re-import`,
           parsedCount: parsedEntries.length,
         })
         continue
       }
 
-      const current      = found.data || {}
-      const existingProg = Array.isArray(current.progression) ? current.progression : []
-      const seen         = new Set(existingProg.map(entryKey))
+      const realAthleteId = found.id
+      const current       = found.data || {}
+      const existingProg  = Array.isArray(current.progression) ? current.progression : []
+      const seen          = new Set(existingProg.map(entryKey))
 
       let added = 0
       const merged = [...existingProg]
@@ -104,18 +156,19 @@ export default async function handler(req, res) {
       await sql`
         UPDATE athletes
         SET data = ${JSON.stringify(updated)}::jsonb, updated_at = now()
-        WHERE id = ${athleteId}
+        WHERE id = ${realAthleteId}
       `
 
       await sql`
         INSERT INTO change_log (entity_type, entity_id, action, summary)
-        VALUES ('athlete', ${athleteId}, 'progression-import', ${'Imported ' + added + ' entries (merge)'})
+        VALUES ('athlete', ${realAthleteId}, 'progression-import', ${'Imported ' + added + ' entries (merge)'})
       `
 
       summary.push({
-        athleteId,
+        athleteId: realAthleteId,
         status: 'ok',
-        name: current.name || `${current.first || ''} ${current.last || ''}`.trim() || athleteId,
+        matchedBy,
+        name: current.name || `${current.first || ''} ${current.last || ''}`.trim() || realAthleteId,
         parsedCount: parsedEntries.length,
         addedNew: added,
         duplicatesSkipped: parsedEntries.length - added,

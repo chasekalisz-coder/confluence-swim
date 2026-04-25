@@ -28,7 +28,18 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
   const handleAdd = async () => {
     if (!newFirst.trim()) return
     setSaving(true)
-    const id = 'ath_' + newFirst.toLowerCase().replace(/[^a-z]/g, '') + '_' + Date.now().toString(36)
+    // Clean ID from first name. We keep IDs predictable (ath_<first>)
+    // so import scripts and progression docs can match by ID directly.
+    // If that ID is already taken, fall back to a numeric suffix
+    // (ath_mason_2, ath_mason_3, ...) — never a random string.
+    const baseId    = 'ath_' + newFirst.toLowerCase().replace(/[^a-z]/g, '')
+    const takenIds  = new Set((athletes || []).map(a => a.id))
+    let id = baseId
+    let n = 2
+    while (takenIds.has(id)) {
+      id = baseId + '_' + n
+      n += 1
+    }
     const athlete = {
       id,
       first: newFirst.trim(),
