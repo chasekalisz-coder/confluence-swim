@@ -15,6 +15,53 @@ None currently.
 
 ## P1 — NEXT UP
 
+- [ ] **Program type field on athlete profiles**
+  Add a clickable dropdown to the athlete edit form: program type + number.
+  Programs: Gold Development (GD I, GD II, GD III...), and lower tiers.
+  Display on the athlete profile header in a prestigious way:
+  "JON POMPER · Gold Development III" — prominent, not buried.
+  Roman numerals for the iteration number.
+  Admin-editable only. Families see it read-only.
+
+- [ ] **Session counting — admin feature**
+  Three numbers to track per athlete:
+  1. Sessions in CURRENT program block (e.g. 4 of 10 in GD I)
+  2. Total sessions all-time with Chase
+  3. One master counter across all athletes (Chase's curiosity number)
+  Admin can manually set/adjust these. Eventually AI-generated notes
+  increment the count automatically (marked P2 — most historical
+  sessions weren't done in the app).
+  Show on admin athlete card. Families see their own session count
+  on their profile (decide later how much detail to show them).
+
+- [ ] **Scheduling / session request portal (URGENT — May slots)**
+  Families submit session requests with: first choice slots + secondary
+  slots that also work. Admin sees all requests in one view and can
+  optimize fulfillment across all families (goal: max requests filled,
+  not first-come-first-served).
+  Phase 1: calendar/weekly view for families to submit requests.
+  Phase 2: admin overview of all requests side by side.
+  Phase 3: optimization logic (algorithm to suggest best schedule given
+  all first + secondary requests — needs Chase to describe constraints).
+  This replaces the Squarespace slot system that was getting monopolized
+  by high-volume families.
+
+- [ ] **Feature gating by program type**
+  Once Clerk auth + program type field are in:
+  Lower program tiers see basic profile (times, meets, basic notes).
+  GD tier sees full feature set (progression chart, analysis, aerobic
+  development, training notes, race pace calculator, meet analyzer).
+  Seeing the locked features with an upsell prompt pushes families
+  toward GD. Needs Clerk first.
+
+- [ ] **Soften red zone color on performance profile**
+  Current red is too harsh — athletes with beginner times see a screen
+  full of red which reads as failure. Not a participation trophy fix —
+  same data, more positive framing. Ideas: use amber/orange instead of
+  red, or show improvement arrows rather than gap colors, or reframe
+  the label from a deficit to a target ("4.2s to BB" not red).
+
+
 - [~] **Step 11: Bulk-load progression data into Neon** — 9 of 11 done
   Imported via the button on the admin Athletes page. Worked clean for
   Ben (205), Farris (2), Grace (78), Hannah (73), Jon (282 new / 304
@@ -43,6 +90,25 @@ None currently.
 ---
 
 ## P2 — PLANNED
+
+- [ ] **Quality session tracking (fast 50s, max effort sets)**
+  Similar to color paces but for quality/sprint work. Jon has a lot of
+  fast 50 data and max-effort 100s Fly. Track pace and context (suited,
+  practice, time of season) for these efforts. Basic build first, mark
+  for improvement. If it looks massive, save for later.
+
+- [ ] **AI-generated notes auto-increment session count**
+  When a training note is saved, automatically increment the athlete's
+  current-program session count and all-time count. Needs the session
+  counting feature to be built first. Most historical sessions weren't
+  done in-app so manual backfill will be needed — Chase to figure out
+  those numbers and input manually. Mark as later priority.
+
+- [ ] **Program type shown in profile header**
+  Once program type field exists: show it prominently on the
+  family-facing athlete profile. "GOLD DEVELOPMENT III" as a badge or
+  subtitle under the athlete name. Prestigious, not a footnote.
+
 
 - [ ] **Chase coach profile with live USA Swimming times (no API key)**
   Public results on usaswimming.org are scrapeable. Build a server-side
