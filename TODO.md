@@ -44,6 +44,13 @@ None currently.
 
 ## P2 — PLANNED
 
+- [ ] **Aerobic development chart (pace vs HR count)**
+  Scatter plot: x=HR count, y=pace, zone color bands (White/Pink/Red), opacity=season phase.
+  Each dot = one rep from a saved training session. Down+left = adaptation.
+  Distance filter (50/100/200/300/400). Hover tooltip shows session/distance/zone/pace/HR.
+  Lives on athlete Analysis tab. Only meaningful once Jon has 10+ color sessions saved.
+  Mockup built in Session 7 — needs wiring to real session data from Neon.
+
 - [ ] **Training section: wire up AI to real athlete data**
   Currently not functioning — the AI training notes feature was built
   (test-ai.html + training-prompt.js + athlete-context.js) but never
