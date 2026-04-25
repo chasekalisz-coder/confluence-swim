@@ -800,13 +800,14 @@ function ProgressionChart({ data, athleteName }) {
   }
 
   const points = selectedEvent ? byEvent.get(selectedEvent) || [] : []
-  if (points.length < 2) {
-    return (
-      <div className="empty-state">
-        Need at least 2 dated times for {selectedEvent} to draw progression.
-      </div>
-    )
-  }
+  const hasEnoughPoints = points.length >= 2
+
+  // NOTE: If there aren't enough points we render the header + selector
+  // but skip the chart. This lets the user pick a different event without
+  // refreshing. (Previous version bailed out of the whole component with
+  // an empty-state, which froze the page when switching from a rich event
+  // to a sparse one — event selector disappeared, no way back without a
+  // page refresh.)
 
   // Plot dims
   const W = 700, H = 300
@@ -814,49 +815,80 @@ function ProgressionChart({ data, athleteName }) {
   const plotW = W - padL - padR
   const plotH = H - padT - padB
 
-  // Axes domain
-  const dates = points.map(p => p.date.getTime())
-  const times = points.map(p => p.time)
-  const xMin = Math.min(...dates)
-  const xMax = Math.max(...dates)
-  const yMin = Math.min(...times)
-  const yMax = Math.max(...times)
-  const yPad = (yMax - yMin) * 0.15 || 1
-  const yDomainMin = yMin - yPad
-  const yDomainMax = yMax + yPad
+  // All the chart math depends on having >= 2 points. Guard it so we don't
+  // divide by zero or build a broken path when an event only has 1 swim.
+  let xScale, yScale, pathD, yTicks, pointsWithPRFlag, firstPt, lastPt, midPt,
+      dropSec = 0, dropPct = 0, fmtAxisDate
 
-  const xScale = (d) => padL + ((d - xMin) / (xMax - xMin || 1)) * plotW
-  // Inverted y — fast at top, slow at bottom makes no sense for progression.
-  // Convention here: fast at top (lower time = higher on chart)
-  const yScale = (t) => padT + ((yDomainMax - t) / (yDomainMax - yDomainMin)) * plotH
+  if (hasEnoughPoints) {
+    // Axes domain
+    const dates = points.map(p => p.date.getTime())
+    const times = points.map(p => p.time)
+    const xMin = Math.min(...dates)
+    const xMax = Math.max(...dates)
+    const yMin = Math.min(...times)
+    const yMax = Math.max(...times)
+    const yPad = (yMax - yMin) * 0.15 || 1
+    const yDomainMin = yMin - yPad
+    const yDomainMax = yMax + yPad
 
-  const pathD = points.map((p, i) =>
-    `${i === 0 ? 'M' : 'L'} ${xScale(p.date.getTime()).toFixed(1)} ${yScale(p.time).toFixed(1)}`
-  ).join(' ')
+    xScale = (d) => padL + ((d - xMin) / (xMax - xMin || 1)) * plotW
+    // Inverted y — fast at top, slow at bottom makes no sense for progression.
+    // Convention here: fast at top (lower time = higher on chart)
+    yScale = (t) => padT + ((yDomainMax - t) / (yDomainMax - yDomainMin)) * plotH
 
-  // Y-axis ticks — 4 evenly spaced
-  const yTicks = [0, 1, 2, 3].map(i => {
-    const t = yDomainMin + (i / 3) * (yDomainMax - yDomainMin)
-    return { y: yScale(t), label: formatTime(t) }
-  })
+    pathD = points.map((p, i) =>
+      `${i === 0 ? 'M' : 'L'} ${xScale(p.date.getTime()).toFixed(1)} ${yScale(p.time).toFixed(1)}`
+    ).join(' ')
 
-  // Identify PRs (running min) — these are the only points that get labels
-  // so labels stop colliding when meets are clustered close in time.
-  let runningMin = Infinity
-  const pointsWithPRFlag = points.map(p => {
-    const isPR = p.time < runningMin
-    if (isPR) runningMin = p.time
-    return { ...p, isPR }
-  })
+    // Y-axis ticks — 4 evenly spaced
+    yTicks = [0, 1, 2, 3].map(i => {
+      const t = yDomainMin + (i / 3) * (yDomainMax - yDomainMin)
+      return { y: yScale(t), label: formatTime(t) }
+    })
 
-  // Drop first point → last point
-  const firstPt = points[0]
-  const lastPt = points[points.length - 1]
-  const dropSec = firstPt.time - lastPt.time
-  const dropPct = (dropSec / firstPt.time) * 100
+    // Identify PRs (running min) — these are the candidate labeled points.
+    // Then apply a de-clutter pass: if two PR labels would sit on top of
+    // each other horizontally (within ~36px), keep only the more recent /
+    // bigger drop and demote the other to unlabeled PR dot. Fixes the
+    // "2:35.56 / 2:34.18 / 33.04 all stacked" glitch seen on clustered
+    // late-stage PRs.
+    let runningMin = Infinity
+    pointsWithPRFlag = points.map(p => {
+      const isPR = p.time < runningMin
+      if (isPR) runningMin = p.time
+      return { ...p, isPR, labelPR: isPR } // labelPR = will this PR get a text label?
+    })
 
-  // Date axis: full month + 4-digit year, never the ambiguous 2-digit.
-  const fmtAxisDate = d => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    // Walk the PRs and suppress labels that are too close on-screen.
+    // We keep the more recent one (which is always the faster one anyway).
+    const MIN_LABEL_X_GAP = 36 // px
+    const prIndices = pointsWithPRFlag
+      .map((p, i) => ({ i, x: xScale(p.date.getTime()) }))
+      .filter(({ i }) => pointsWithPRFlag[i].isPR)
+
+    // Right-to-left: always keep the LAST PR (hero), then collapse earlier
+    // ones that fall inside the min-gap from the one we just kept.
+    let lastKeptX = -Infinity
+    for (let j = prIndices.length - 1; j >= 0; j--) {
+      const { i, x } = prIndices[j]
+      if (lastKeptX - x < MIN_LABEL_X_GAP && lastKeptX !== -Infinity) {
+        pointsWithPRFlag[i].labelPR = false
+      } else {
+        lastKeptX = x
+      }
+    }
+
+    // Drop first point → last point
+    firstPt = points[0]
+    lastPt = points[points.length - 1]
+    midPt = points[Math.floor(points.length / 2)]
+    dropSec = firstPt.time - lastPt.time
+    dropPct = (dropSec / firstPt.time) * 100
+
+    // Date axis: full month + 4-digit year, never the ambiguous 2-digit.
+    fmtAxisDate = d => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+  }
 
   return (
     <div className="progression-chart">
@@ -869,31 +901,39 @@ function ProgressionChart({ data, athleteName }) {
             ))}
           </select>
         </div>
-        <div className="pc-summary">
-          <span className="pc-drop-label">Drop over span:</span>
-          <span className="pc-drop-val mono">
-            {dropSec > 0 ? '−' : '+'}{Math.abs(dropSec).toFixed(2)}s
-          </span>
-          <span className="pc-drop-pct">
-            ({dropPct > 0 ? '−' : '+'}{Math.abs(dropPct).toFixed(1)}%)
-          </span>
-        </div>
+        {hasEnoughPoints && (
+          <div className="pc-summary">
+            <span className="pc-drop-label">Drop over span:</span>
+            <span className="pc-drop-val mono">
+              {dropSec > 0 ? '−' : '+'}{Math.abs(dropSec).toFixed(2)}s
+            </span>
+            <span className="pc-drop-pct">
+              ({dropPct > 0 ? '−' : '+'}{Math.abs(dropPct).toFixed(1)}%)
+            </span>
+          </div>
+        )}
       </div>
 
-      <AnimatedProgressionChart
-        W={W} H={H}
-        padL={padL} padR={padR} padT={padT} padB={padB}
-        yTicks={yTicks}
-        firstPt={firstPt}
-        lastPt={lastPt}
-        midPt={points[Math.floor(points.length / 2)]}
-        xScale={xScale}
-        yScale={yScale}
-        pathD={pathD}
-        pointsWithPRFlag={pointsWithPRFlag}
-        selectedEvent={selectedEvent}
-        fmtAxisDate={fmtAxisDate}
-      />
+      {hasEnoughPoints ? (
+        <AnimatedProgressionChart
+          W={W} H={H}
+          padL={padL} padR={padR} padT={padT} padB={padB}
+          yTicks={yTicks}
+          firstPt={firstPt}
+          lastPt={lastPt}
+          midPt={midPt}
+          xScale={xScale}
+          yScale={yScale}
+          pathD={pathD}
+          pointsWithPRFlag={pointsWithPRFlag}
+          selectedEvent={selectedEvent}
+          fmtAxisDate={fmtAxisDate}
+        />
+      ) : (
+        <div className="empty-state">
+          Need at least 2 dated times for {selectedEvent} to draw progression.
+        </div>
+      )}
     </div>
   )
 }
@@ -1069,18 +1109,30 @@ function AnimatedProgressionChart({
           ))}
         </g>
 
-        {/* X-axis date labels */}
+        {/* X-axis date labels — drop the middle label if it would overlap
+            first or last (small time spans with clustered meets). */}
         <g fill="#475569" fontSize="10" fontFamily="-apple-system, sans-serif" style={{ letterSpacing: '0.08em' }}>
-          {[firstPt, midPt, lastPt].map((p, i, a) => (
-            <text
-              key={i}
-              x={xScale(p.date.getTime())}
-              y={H - padB + 22}
-              textAnchor={i === 0 ? 'start' : i === a.length - 1 ? 'end' : 'middle'}
-            >
-              {fmtAxisDate(p.date).toUpperCase()}
-            </text>
-          ))}
+          {(() => {
+            const MIN_DATE_X_GAP = 70 // px
+            const firstX = xScale(firstPt.date.getTime())
+            const lastX  = xScale(lastPt.date.getTime())
+            const midX   = xScale(midPt.date.getTime())
+            const showMid =
+              midPt !== firstPt && midPt !== lastPt &&
+              (midX - firstX) >= MIN_DATE_X_GAP &&
+              (lastX - midX)  >= MIN_DATE_X_GAP
+            const dates = showMid ? [firstPt, midPt, lastPt] : [firstPt, lastPt]
+            return dates.map((p, i, a) => (
+              <text
+                key={i}
+                x={xScale(p.date.getTime())}
+                y={H - padB + 22}
+                textAnchor={i === 0 ? 'start' : i === a.length - 1 ? 'end' : 'middle'}
+              >
+                {fmtAxisDate(p.date).toUpperCase()}
+              </text>
+            ))
+          })()}
         </g>
 
         {/* Filled area, clipped by the reveal rect so it sweeps in behind the line head */}
@@ -1109,6 +1161,9 @@ function AnimatedProgressionChart({
             const cy = yScale(p.time)
             const isFinal = i === lastPRIdx
             if (p.isPR) {
+              // The final PR always gets labeled. Earlier PRs only get labeled
+              // if they survived the de-clutter pass (labelPR === true).
+              const showLabel = isFinal || p.labelPR
               return (
                 <g key={i}>
                   <circle
@@ -1121,18 +1176,20 @@ function AnimatedProgressionChart({
                     className={`apc-pr-dot${isFinal ? ' apc-final' : ''}`}
                     data-pidx={i}
                   />
-                  <text
-                    x={cx} y={cy - (isFinal ? 18 : 14)}
-                    textAnchor="middle"
-                    fill="#FFD89C"
-                    fontSize={isFinal ? 15 : 12}
-                    fontFamily="SF Mono, ui-monospace, monospace"
-                    style={{ letterSpacing: '0.02em' }}
-                    className="apc-pr-label"
-                    data-pidx={i}
-                  >
-                    {p.raw}
-                  </text>
+                  {showLabel && (
+                    <text
+                      x={cx} y={cy - (isFinal ? 18 : 14)}
+                      textAnchor="middle"
+                      fill="#FFD89C"
+                      fontSize={isFinal ? 15 : 12}
+                      fontFamily="SF Mono, ui-monospace, monospace"
+                      style={{ letterSpacing: '0.02em' }}
+                      className="apc-pr-label"
+                      data-pidx={i}
+                    >
+                      {p.raw}
+                    </text>
+                  )}
                   {isFinal && (
                     <text
                       x={cx} y={cy - 35}
