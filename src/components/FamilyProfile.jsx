@@ -1158,34 +1158,40 @@ function AnimatedProgressionChart({
           filter="url(#apc-line-glow)"
         />
 
-        {/* Dots + PR labels + final caption */}
+        {/* Dots + PR labels + final caption.
+            Rules:
+            - PR dots: big glowing dot. Label if labelPR===true or it's the final PR.
+            - Final PR: hero size (r=7), "CURRENT BEST" caption, pulse animation.
+            - Last point overall: always gets a visible dot (r=4) + time label,
+              even if it's not a PR. This terminates the line visually so the
+              chart never looks like it cut off mid-data. */}
         <g ref={dotsGroupRef}>
           {pointsWithPRFlag.map((p, i) => {
             const cx = xScale(p.date.getTime())
             const cy = yScale(p.time)
-            const isFinal = i === lastPRIdx
+            const isFinalPR   = i === lastPRIdx
+            const isLastPoint = i === pointsWithPRFlag.length - 1
+
             if (p.isPR) {
-              // The final PR always gets labeled. Earlier PRs only get labeled
-              // if they survived the de-clutter pass (labelPR === true).
-              const showLabel = isFinal || p.labelPR
+              const showLabel = isFinalPR || p.labelPR
               return (
                 <g key={i}>
                   <circle
                     cx={cx} cy={cy}
-                    r={isFinal ? 7 : 5.5}
+                    r={isFinalPR ? 7 : 5.5}
                     fill="#FFD89C"
                     stroke="#D4A853"
                     strokeWidth="1.5"
                     filter="url(#apc-dot-glow)"
-                    className={`apc-pr-dot${isFinal ? ' apc-final' : ''}`}
+                    className={`apc-pr-dot${isFinalPR ? ' apc-final' : ''}`}
                     data-pidx={i}
                   />
                   {showLabel && (
                     <text
-                      x={cx} y={cy - (isFinal ? 18 : 14)}
+                      x={cx} y={cy - (isFinalPR ? 18 : 14)}
                       textAnchor="middle"
                       fill="#FFD89C"
-                      fontSize={isFinal ? 15 : 12}
+                      fontSize={isFinalPR ? 15 : 12}
                       fontFamily="SF Mono, ui-monospace, monospace"
                       style={{ letterSpacing: '0.02em' }}
                       className="apc-pr-label"
@@ -1194,7 +1200,7 @@ function AnimatedProgressionChart({
                       {p.raw}
                     </text>
                   )}
-                  {isFinal && (
+                  {isFinalPR && (
                     <text
                       x={cx} y={cy - 35}
                       textAnchor="middle"
@@ -1211,6 +1217,38 @@ function AnimatedProgressionChart({
                 </g>
               )
             }
+
+            // Non-PR point. If it's the last point in the series, give it a
+            // proper dot + label so the line has a clear visual terminator.
+            if (isLastPoint) {
+              return (
+                <g key={i}>
+                  <circle
+                    cx={cx} cy={cy}
+                    r="4"
+                    fill="rgba(212,168,83,0.7)"
+                    stroke="#D4A853"
+                    strokeWidth="1"
+                    className="apc-small-dot"
+                    data-pidx={i}
+                  />
+                  <text
+                    x={cx} y={cy - 12}
+                    textAnchor="middle"
+                    fill="rgba(212,168,83,0.7)"
+                    fontSize="11"
+                    fontFamily="SF Mono, ui-monospace, monospace"
+                    style={{ letterSpacing: '0.02em' }}
+                    className="apc-small-dot"
+                    data-pidx={i}
+                  >
+                    {p.raw}
+                  </text>
+                </g>
+              )
+            }
+
+            // Regular non-PR, non-last point: small dim dot, no label.
             return (
               <circle
                 key={i}
