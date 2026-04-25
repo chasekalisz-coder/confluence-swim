@@ -638,66 +638,35 @@ function MeetAnalyzerTool({ athlete, onClose }) {
 }
 
 // ============================================================
-// RacePaceTool — placeholder tool page
-// ============================================================
-// Same inline-swap treatment as MeetAnalyzerTool but for the
-// Race Pace Calculator. Preview the form shape; calculation engine
-// ships next.
-// ============================================================
+// RacePaceTool — opens the standalone Race Pace Calculator
 function RacePaceTool({ athlete, onClose }) {
   return (
     <div className="tool-view">
       <button className="back" onClick={onClose}>← Back to Analysis</button>
 
       <div className="tool-header">
-        <div className="tool-tag">Tool · Preview</div>
+        <div className="tool-tag">Tool</div>
         <h1 className="tool-title">Race Pace Calculator</h1>
         <p className="tool-sub">
-          Set a goal time for any event and see the exact splits {athlete.first}
-          needs to swim. Pre-populated with {possessive(athlete)} goal times,
-          built on elite-level race distribution data.
+          Set a goal time for any event and see the exact splits modeled from
+          elite NCAA and World Championship performance data.
         </p>
       </div>
 
-      <div className="tool-banner">
-        <div className="tb-dot" />
-        <div>
-          <div className="tb-title">Coming Soon</div>
-          <div className="tb-sub">
-            The Race Pace Calculator is under active build. This preview shows the
-            input shape — the pace engine with elite-template splits ships next.
-          </div>
-        </div>
+      <div style={{ textAlign: 'center', padding: '40px 0' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
+          Opens in a new tab — enter any goal time and get your target splits instantly.
+        </p>
+        <a
+          href="/pace.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-primary"
+          style={{ fontSize: 15, padding: '12px 32px', textDecoration: 'none', display: 'inline-block' }}
+        >
+          Open Race Pace Calculator →
+        </a>
       </div>
-
-      <div className="tool-form">
-        <div className="tf-grid-2">
-          <div className="tf-section">
-            <label className="tf-label">Event</label>
-            <select className="tf-select" disabled>
-              <option>Select event…</option>
-            </select>
-          </div>
-          <div className="tf-section">
-            <label className="tf-label">Course</label>
-            <select className="tf-select" disabled>
-              <option>SCY</option>
-              <option>LCM</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="tf-section">
-          <label className="tf-label">Goal Time</label>
-          <input className="tf-input" placeholder="m:ss.ss" disabled />
-          <div className="tf-hint">
-            Leave blank to use the goal time saved on {possessive(athlete)} profile.
-          </div>
-        </div>
-
-        <button className="tf-submit disabled" disabled>
-          Calculate pace — coming soon
-        </button>
       </div>
     </div>
   )
