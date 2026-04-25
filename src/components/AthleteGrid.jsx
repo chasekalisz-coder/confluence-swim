@@ -206,6 +206,18 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
             >
               {importing ? 'Importing…' : 'Import progression data'}
             </button>
+            <button
+              className="btn btn-outline"
+              onClick={async () => {
+                const r = await fetch('/api/fix-athlete-ids', { method: 'POST' })
+                const d = await r.json()
+                alert(JSON.stringify(d.results, null, 2))
+                window.location.reload()
+              }}
+              style={{marginLeft:8, fontSize:12}}
+            >
+              Fix athlete IDs (one-time)
+            </button>
 
             {importResult && (
               <div style={{marginTop:14, padding:12, background:'rgba(15,23,42,0.6)', border:'1px solid rgba(148,163,184,0.15)', borderRadius:8, fontSize:12, color:'#cbd5e1'}}>
