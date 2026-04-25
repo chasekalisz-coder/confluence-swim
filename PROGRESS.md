@@ -62,6 +62,14 @@ Each session block captures: what happened, decisions made, things that broke, t
 - New UI in `src/components/AthleteGrid.jsx` — purple "Import progression data" callout with a button that POSTs to the endpoint and shows per-athlete results
 - Confirms before sending, safe to click more than once (idempotent merge)
 
+### First import run — 9 of 11 worked, 2 found a real bug
+- Ben +205, Farris +2, Grace +78, Hannah +73, Jon +282 (Jon already had 22 entries from earlier work, so finalTotal is 304), Kaden +94, Lana +125, Liam +19, Marley +132 — all clean, zero duplicates
+- Mason and Pace skipped: "athlete not found in DB"
+- Root cause: when Chase added Mason / Pace through the admin "Add Athlete" form, the ID generator appended a random base36 timestamp suffix (`ath_mason_l8x7q3`). The progression docs assume clean IDs (`ath_mason`), so the two never matched.
+- Two fixes shipped:
+  1. **Tolerant matching in import**: `import-progression.js` now first tries exact ID match (fast path for seeded athletes), falls back to first-name lookup. So even if Mason is `ath_mason_l8x7q3` in Neon, his record will be found by first name "Mason".
+  2. **Clean ID generation going forward**: `AthleteGrid.jsx` "Add Athlete" no longer appends a random timestamp. New athletes get clean IDs like `ath_mason`, falling back to `ath_mason_2`, `ath_mason_3`, etc. only if the base name is already taken. Old random-suffix athletes still work — the import handles them via the first-name fallback.
+
 ### Things to check next session
 - After Vercel deploys, confirm `recentChanges` returns rows for any athlete edits Chase has done since this commit
 - Confirm new chat does NOT mention Supabase as current (the memory line was the main vector — should be fixed)
