@@ -837,12 +837,12 @@ function ProgressionChart({ data, athleteName }) {
     // Convention here: fast at top (lower time = higher on chart)
     yScale = (t) => padT + ((yDomainMax - t) / (yDomainMax - yDomainMin)) * plotH
 
-    // Add a small right margin to the x domain (5% of the span) so the last
-    // dot isn't flush against the right edge of the chart area.
-    const xSpanPad = (xMax - xMin) * 0.05 || 1000 * 60 * 60 * 24 * 7
-    const xScaleWithPad = (d) => padL + ((d - xMin) / ((xMax + xSpanPad) - xMin || 1)) * plotW
-    // Replace xScale for actual data coords but keep the original for axis extent
-    xScale = xScaleWithPad
+    // Tiny right margin so the last dot + label aren't flush against the edge.
+    // 1.5% of span, capped at 2 weeks — the old 5% left a full month+ of
+    // dead empty space on long-span events like Jon's 100 Free LCM.
+    const MS_2_WEEKS = 1000 * 60 * 60 * 24 * 14
+    const xSpanPad = Math.min((xMax - xMin) * 0.015, MS_2_WEEKS) || MS_2_WEEKS
+    xScale = (d) => padL + ((d - xMin) / ((xMax + xSpanPad) - xMin || 1)) * plotW
 
     pathD = points.map((p, i) =>
       `${i === 0 ? 'M' : 'L'} ${xScale(p.date.getTime()).toFixed(1)} ${yScale(p.time).toFixed(1)}`
