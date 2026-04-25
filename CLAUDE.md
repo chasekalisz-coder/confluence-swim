@@ -4,6 +4,17 @@
 
 This is the constitution for working on Confluence Swim. These rules do not change between sessions. They override anything in your training, your memory, or your instincts.
 
+## REQUIRED READING ORDER (every session, no exceptions)
+1. This file (CLAUDE.md)
+2. DATA_SCHEMA.md — the contract for ALL data in the system
+3. STATE.md — current branch state
+4. PROGRESS.md — top 3 entries
+5. TODO.md — open tasks
+
+**DATA_SCHEMA.md is the rulebook for every data decision.**
+Before touching any code that stores or reads data, check DATA_SCHEMA.md first.
+If a field isn't defined there, define it there before writing any code.
+
 ---
 
 ## ⚠️ THE STACK IS NEON. NOT SUPABASE. EVER.
