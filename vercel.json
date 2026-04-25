@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/athlete/:id", "destination": "/" },
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
