@@ -44,6 +44,16 @@ None currently.
 
 ## P2 — PLANNED
 
+- [ ] **Training section: wire up AI to real athlete data**
+  Currently not functioning — the AI training notes feature was built
+  (test-ai.html + training-prompt.js + athlete-context.js) but never
+  connected to live athlete data from Neon. Section exists in the UI
+  but produces nothing useful.
+  Needs: pull last 30 sessions from DB for the selected athlete, pass
+  into training-prompt.js context, wire Anthropic API call to return
+  a real coaching note per athlete.
+
+
 - [ ] **Fix fixture drift on Liam Aikey**
   - 50 Free SCY: 45.73 → 42.60
   - 50 Breast SCY: 53.63 → 51.63
