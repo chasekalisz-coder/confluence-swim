@@ -19,7 +19,7 @@
 //  • Resources link
 // ============================================================
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
 import { fullName } from '../data/athletes.js'
@@ -809,8 +809,8 @@ function ProgressionChart({ data, athleteName }) {
   }
 
   // Plot dims
-  const W = 700, H = 280
-  const padL = 56, padR = 20, padT = 20, padB = 44
+  const W = 700, H = 300
+  const padL = 64, padR = 28, padT = 28, padB = 52
   const plotW = W - padL - padR
   const plotH = H - padT - padB
 
@@ -821,7 +821,7 @@ function ProgressionChart({ data, athleteName }) {
   const xMax = Math.max(...dates)
   const yMin = Math.min(...times)
   const yMax = Math.max(...times)
-  const yPad = (yMax - yMin) * 0.1 || 1
+  const yPad = (yMax - yMin) * 0.15 || 1
   const yDomainMin = yMin - yPad
   const yDomainMax = yMax + yPad
 
@@ -840,11 +840,23 @@ function ProgressionChart({ data, athleteName }) {
     return { y: yScale(t), label: formatTime(t) }
   })
 
+  // Identify PRs (running min) — these are the only points that get labels
+  // so labels stop colliding when meets are clustered close in time.
+  let runningMin = Infinity
+  const pointsWithPRFlag = points.map(p => {
+    const isPR = p.time < runningMin
+    if (isPR) runningMin = p.time
+    return { ...p, isPR }
+  })
+
   // Drop first point → last point
   const firstPt = points[0]
   const lastPt = points[points.length - 1]
   const dropSec = firstPt.time - lastPt.time
   const dropPct = (dropSec / firstPt.time) * 100
+
+  // Date axis: full month + 4-digit year, never the ambiguous 2-digit.
+  const fmtAxisDate = d => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 
   return (
     <div className="progression-chart">
@@ -868,7 +880,172 @@ function ProgressionChart({ data, athleteName }) {
         </div>
       </div>
 
+      <AnimatedProgressionChart
+        W={W} H={H}
+        padL={padL} padR={padR} padT={padT} padB={padB}
+        yTicks={yTicks}
+        firstPt={firstPt}
+        lastPt={lastPt}
+        midPt={points[Math.floor(points.length / 2)]}
+        xScale={xScale}
+        yScale={yScale}
+        pathD={pathD}
+        pointsWithPRFlag={pointsWithPRFlag}
+        selectedEvent={selectedEvent}
+        fmtAxisDate={fmtAxisDate}
+      />
+    </div>
+  )
+}
+
+// ============================================================
+// AnimatedProgressionChart — the actual animated SVG.
+// ============================================================
+// The line draws itself across the chart over ~4 seconds with a
+// cubic-bezier ease. As the line passes each data point, the dot
+// (and time label, if it's a PR) appears.
+//
+// PR labels only on personal bests so labels never collide.
+// Final PR gets a "CURRENT BEST" caption + a one-time glow pulse.
+// Area fill sweeps in BEHIND the line head, locked to the actual
+// line position (using getPointAtLength) — never gets ahead.
+//
+// Animation re-runs whenever selectedEvent changes.
+// ============================================================
+function AnimatedProgressionChart({
+  W, H, padL, padR, padT, padB,
+  yTicks, firstPt, lastPt, midPt,
+  xScale, yScale, pathD, pointsWithPRFlag,
+  selectedEvent, fmtAxisDate,
+}) {
+  const lineRef     = useRef(null)
+  const revealRef   = useRef(null)
+  const dotsGroupRef = useRef(null)
+
+  // Identify the LAST PR (the current best) so we can give it the
+  // hero treatment — bigger dot, "CURRENT BEST" caption, glow pulse.
+  const lastPRIdx = (() => {
+    for (let i = pointsWithPRFlag.length - 1; i >= 0; i--) {
+      if (pointsWithPRFlag[i].isPR) return i
+    }
+    return -1
+  })()
+
+  // Compute path-distance for each point so we know when the drawing
+  // line has passed it. We do this via a hidden <path> ref measurement
+  // inside the effect — getPointAtLength + binary search would be more
+  // accurate, but cumulative segment length is good enough here and
+  // stays in sync with what the SVG actually renders.
+  useEffect(() => {
+    const lineEl   = lineRef.current
+    const revealEl = revealRef.current
+    if (!lineEl || !revealEl) return
+
+    const totalLength = lineEl.getTotalLength()
+    lineEl.style.strokeDasharray  = String(totalLength)
+    lineEl.style.strokeDashoffset = String(totalLength)
+    revealEl.setAttribute('width', '0')
+
+    // For each point, find the path-distance at which the line head
+    // reaches that point. We walk the line at small increments and
+    // track when getPointAtLength is closest to each point's (x, y).
+    const pointDists = pointsWithPRFlag.map(p => ({
+      x: xScale(p.date.getTime()),
+      y: yScale(p.time),
+      bestDist: 0,
+      bestErr: Infinity,
+    }))
+    const STEPS = 200
+    for (let s = 0; s <= STEPS; s++) {
+      const dist = (s / STEPS) * totalLength
+      const pt = lineEl.getPointAtLength(dist)
+      pointDists.forEach(pd => {
+        const err = (pt.x - pd.x) ** 2 + (pt.y - pd.y) ** 2
+        if (err < pd.bestErr) {
+          pd.bestErr = err
+          pd.bestDist = dist
+        }
+      })
+    }
+
+    // Reset all dot/label/caption visibility before starting.
+    const allShownEls = dotsGroupRef.current?.querySelectorAll('[data-pidx]') || []
+    allShownEls.forEach(el => el.classList.remove('apc-shown'))
+
+    const totalDuration = 4000
+    const easing = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+    let rafId = null
+    const startTime = performance.now()
+
+    function frame(now) {
+      const elapsed = now - startTime
+      const t = Math.min(elapsed / totalDuration, 1)
+      const eased = easing(t)
+      const drawnLength = totalLength * eased
+      lineEl.style.strokeDashoffset = String(totalLength - drawnLength)
+
+      // Lock the area-fill mask to the actual line head x-position.
+      const head = lineEl.getPointAtLength(drawnLength)
+      revealEl.setAttribute('width', String(Math.max(0, head.x)))
+
+      // Reveal each dot/label whose path-distance the line has passed.
+      pointDists.forEach((pd, i) => {
+        if (drawnLength >= pd.bestDist) {
+          dotsGroupRef.current?.querySelectorAll(`[data-pidx="${i}"]`)
+            .forEach(el => el.classList.add('apc-shown'))
+        }
+      })
+
+      if (t < 1) rafId = requestAnimationFrame(frame)
+    }
+    rafId = requestAnimationFrame(frame)
+    return () => { if (rafId) cancelAnimationFrame(rafId) }
+  }, [selectedEvent, pathD]) // restart whenever event (or path) changes
+
+  return (
+    <>
+      <style>{`
+        .apc-pr-dot, .apc-small-dot, .apc-pr-label, .apc-pr-caption {
+          opacity: 0;
+          transition: opacity 0.3s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+          transform-origin: center;
+          transform-box: fill-box;
+        }
+        .apc-pr-dot, .apc-pr-label, .apc-pr-caption { transform: scale(0.6); }
+        .apc-pr-dot.apc-shown, .apc-pr-label.apc-shown, .apc-pr-caption.apc-shown {
+          opacity: 1; transform: scale(1);
+        }
+        .apc-small-dot.apc-shown { opacity: 1; }
+        .apc-pr-dot.apc-final { animation: apcHeroPulse 1.8s ease-out 0.3s; }
+        @keyframes apcHeroPulse {
+          0%   { filter: drop-shadow(0 0 0 rgba(212,168,83,0)); }
+          25%  { filter: drop-shadow(0 0 16px rgba(212,168,83,1)); }
+          100% { filter: drop-shadow(0 0 0 rgba(212,168,83,0)); }
+        }
+      `}</style>
       <svg viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="apc-line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#9C7A2E" />
+            <stop offset="100%" stopColor="#FFD89C" />
+          </linearGradient>
+          <linearGradient id="apc-area-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#D4A853" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="#D4A853" stopOpacity="0" />
+          </linearGradient>
+          <filter id="apc-line-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="apc-dot-glow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="3.5" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <clipPath id="apc-area-clip">
+            <rect ref={revealRef} x="0" y="0" width="0" height={H} />
+          </clipPath>
+        </defs>
+
         {/* Y-axis gridlines + labels */}
         <g>
           {yTicks.map((t, i) => (
@@ -876,16 +1053,15 @@ function ProgressionChart({ data, athleteName }) {
               <line
                 x1={padL} x2={W - padR}
                 y1={t.y} y2={t.y}
-                stroke="rgba(84,84,88,0.2)"
-                strokeWidth="0.5"
+                stroke="rgba(148,163,184,0.06)"
+                strokeWidth="1"
               />
               <text
-                x={padL - 8} y={t.y}
-                textAnchor="end"
-                dominantBaseline="middle"
-                fill="#a1a1a6"
-                fontSize="10"
+                x={padL - 10} y={t.y}
+                textAnchor="end" dominantBaseline="middle"
+                fill="#475569" fontSize="10"
                 fontFamily="SF Mono, ui-monospace, monospace"
+                style={{ letterSpacing: '0.05em' }}
               >
                 {t.label}
               </text>
@@ -893,59 +1069,103 @@ function ProgressionChart({ data, athleteName }) {
           ))}
         </g>
 
-        {/* X-axis date labels — first / middle / last */}
-        <g fill="#a1a1a6" fontSize="10" fontFamily="-apple-system, sans-serif">
-          {[firstPt, points[Math.floor(points.length / 2)], lastPt].map((p, i, a) => (
+        {/* X-axis date labels */}
+        <g fill="#475569" fontSize="10" fontFamily="-apple-system, sans-serif" style={{ letterSpacing: '0.08em' }}>
+          {[firstPt, midPt, lastPt].map((p, i, a) => (
             <text
               key={i}
               x={xScale(p.date.getTime())}
-              y={H - padB + 16}
+              y={H - padB + 22}
               textAnchor={i === 0 ? 'start' : i === a.length - 1 ? 'end' : 'middle'}
             >
-              {p.date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+              {fmtAxisDate(p.date).toUpperCase()}
             </text>
           ))}
         </g>
 
-        {/* The line */}
+        {/* Filled area, clipped by the reveal rect so it sweeps in behind the line head */}
         <path
-          d={pathD}
-          fill="none"
-          stroke="#D4A853"
-          strokeWidth="2"
-          strokeLinejoin="round"
-          strokeLinecap="round"
+          d={`${pathD} L ${xScale(lastPt.date.getTime())} ${H - padB} L ${xScale(firstPt.date.getTime())} ${H - padB} Z`}
+          fill="url(#apc-area-grad)"
+          clipPath="url(#apc-area-clip)"
         />
 
-        {/* Data points */}
-        <g>
-          {points.map((p, i) => (
-            <g key={i}>
+        {/* The animated line */}
+        <path
+          ref={lineRef}
+          d={pathD}
+          fill="none"
+          stroke="url(#apc-line-grad)"
+          strokeWidth="3"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          filter="url(#apc-line-glow)"
+        />
+
+        {/* Dots + PR labels + final caption */}
+        <g ref={dotsGroupRef}>
+          {pointsWithPRFlag.map((p, i) => {
+            const cx = xScale(p.date.getTime())
+            const cy = yScale(p.time)
+            const isFinal = i === lastPRIdx
+            if (p.isPR) {
+              return (
+                <g key={i}>
+                  <circle
+                    cx={cx} cy={cy}
+                    r={isFinal ? 7 : 5.5}
+                    fill="#FFD89C"
+                    stroke="#D4A853"
+                    strokeWidth="1.5"
+                    filter="url(#apc-dot-glow)"
+                    className={`apc-pr-dot${isFinal ? ' apc-final' : ''}`}
+                    data-pidx={i}
+                  />
+                  <text
+                    x={cx} y={cy - (isFinal ? 18 : 14)}
+                    textAnchor="middle"
+                    fill="#FFD89C"
+                    fontSize={isFinal ? 15 : 12}
+                    fontFamily="SF Mono, ui-monospace, monospace"
+                    style={{ letterSpacing: '0.02em' }}
+                    className="apc-pr-label"
+                    data-pidx={i}
+                  >
+                    {p.raw}
+                  </text>
+                  {isFinal && (
+                    <text
+                      x={cx} y={cy - 35}
+                      textAnchor="middle"
+                      fill="#94a3b8"
+                      fontSize="9"
+                      fontFamily="-apple-system, sans-serif"
+                      style={{ letterSpacing: '0.16em' }}
+                      className="apc-pr-caption"
+                      data-pidx={i}
+                    >
+                      CURRENT BEST
+                    </text>
+                  )}
+                </g>
+              )
+            }
+            return (
               <circle
-                cx={xScale(p.date.getTime())}
-                cy={yScale(p.time)}
-                r="4"
-                fill="#D4A853"
-                stroke="#1a1a1c"
-                strokeWidth="1.5"
+                key={i}
+                cx={cx} cy={cy}
+                r="2.5"
+                fill="rgba(212,168,83,0.5)"
+                stroke="transparent"
+                strokeWidth="0"
+                className="apc-small-dot"
+                data-pidx={i}
               />
-              {/* Time label above each point */}
-              <text
-                x={xScale(p.date.getTime())}
-                y={yScale(p.time) - 10}
-                textAnchor="middle"
-                fill="#D4A853"
-                fontSize="10"
-                fontWeight="600"
-                fontFamily="SF Mono, ui-monospace, monospace"
-              >
-                {p.raw}
-              </text>
-            </g>
-          ))}
+            )
+          })}
         </g>
       </svg>
-    </div>
+    </>
   )
 }
 
