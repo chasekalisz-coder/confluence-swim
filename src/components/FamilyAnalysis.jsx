@@ -667,7 +667,6 @@ function RacePaceTool({ athlete, onClose }) {
           Open Race Pace Calculator →
         </a>
       </div>
-      </div>
     </div>
   )
 }
