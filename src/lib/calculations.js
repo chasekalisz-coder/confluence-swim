@@ -403,12 +403,19 @@ export function gapToCut(bestSec, cutSec) {
 // ------------------------------------------------------------
 
 export const STROKE_FAMILIES = [
-  { label: "Freestyle",        stroke: "Free",   distances: [50, 100, 200, 500, 1000, 1650] },
-  { label: "Butterfly",        stroke: "Fly",    distances: [50, 100, 200] },
-  { label: "Backstroke",       stroke: "Back",   distances: [50, 100, 200] },
-  { label: "Breaststroke",     stroke: "Breast", distances: [50, 100, 200] },
-  { label: "Individual Medley", stroke: "IM",    distances: [100, 200, 400] },
+  { label: "Freestyle",         stroke: "Free",   distances: { SCY: [50, 100, 200, 500, 1000, 1650], LCM: [50, 100, 200, 400, 800, 1500] } },
+  { label: "Butterfly",         stroke: "Fly",    distances: { SCY: [50, 100, 200],                  LCM: [50, 100, 200]                 } },
+  { label: "Backstroke",        stroke: "Back",   distances: { SCY: [50, 100, 200],                  LCM: [50, 100, 200]                 } },
+  { label: "Breaststroke",      stroke: "Breast", distances: { SCY: [50, 100, 200],                  LCM: [50, 100, 200]                 } },
+  { label: "Individual Medley", stroke: "IM",     distances: { SCY: [100, 200, 400],                 LCM: [200, 400]                     } },
 ]
+
+// Helper to get distances for a stroke family and course
+export function strokeDistances(fam, course) {
+  const d = fam.distances
+  if (typeof d === 'object' && !Array.isArray(d)) return d[course] || d['SCY'] || []
+  return d // backward compat if any caller passes old flat array shape
+}
 
 // ------------------------------------------------------------
 // DOB / AGE — auto age-up when the birthday passes
