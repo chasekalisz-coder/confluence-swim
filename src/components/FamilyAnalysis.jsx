@@ -71,7 +71,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
       <div className="v2">
         <FamilyNav active="Analysis" onNavigate={onNavigate} />
         <main className="v2-main">
-          <div className="empty-state">No athlete selected.</div>
+          <div style={{ color:"var(--text-muted)", fontSize:13, padding:"20px 0", lineHeight:1.6 }}>No athlete selected.</div>
         </main>
         <FamilyFooter />
       </div>
@@ -358,7 +358,7 @@ function AerobicDevelopmentChart({ athlete }) {
     return (
       <section style={{ margin: '32px 0' }}>
         <h2 className="section-title">Aerobic Development</h2>
-        <div className="empty-state">Loading session data…</div>
+        <div style={{ color:"var(--text-muted)", fontSize:13, padding:"20px 0" }}>Loading session data…</div>
       </section>
     )
   }
@@ -381,11 +381,11 @@ function AerobicDevelopmentChart({ athlete }) {
     <section style={{ margin: '32px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
         <div>
-          <h2 className="section-title" style={{ marginBottom: 2 }}>Aerobic Development</h2>
-          <div style={{ fontSize: 11, color: 'var(--muted)' }}>Each dot = one rep. Down + left = aerobic engine improving.</div>
+          <h2 style={{ fontSize:16, fontWeight:500, color:"var(--text-primary)", margin:"0 0 2px" }}>Aerobic Development</h2>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Each dot = one rep. Down + left = aerobic engine improving.</div>
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 11, color: 'var(--muted)' }}>Distance:</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Distance:</span>
           {[50, 100, 200, 300, 400].map(d => (
             <button
               key={d}
@@ -395,7 +395,7 @@ function AerobicDevelopmentChart({ athlete }) {
                 border: '0.5px solid', cursor: 'pointer',
                 borderColor: activeDists.has(d) ? 'rgba(148,163,184,0.5)' : 'rgba(148,163,184,0.2)',
                 background: activeDists.has(d) ? 'rgba(148,163,184,0.12)' : 'transparent',
-                color: activeDists.has(d) ? 'var(--color-text)' : 'var(--muted)',
+                color: activeDists.has(d) ? 'var(--text-primary)' : 'var(--text-muted)',
                 fontWeight: activeDists.has(d) ? 500 : 400,
               }}
             >{d}</button>
@@ -406,12 +406,12 @@ function AerobicDevelopmentChart({ athlete }) {
       {/* Legend */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 10, flexWrap: 'wrap' }}>
         {[['white', '#a0a09a', '23–25'], ['pink', '#d4698a', '26–27'], ['red', '#e24b4a', '28–29']].map(([z, c, range]) => (
-          <span key={z} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--muted)' }}>
+          <span key={z} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-muted)' }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: c, display: 'inline-block' }} />
             {z.charAt(0).toUpperCase() + z.slice(1)} {range}
           </span>
         ))}
-        <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 4 }}>· Opacity = season phase (faded=early, solid=recent)</span>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 4 }}>· Opacity = season phase (faded=early, solid=recent)</span>
       </div>
 
       <div style={{ position: 'relative' }}>
@@ -512,7 +512,7 @@ function AerobicDevelopmentChart({ athlete }) {
       </div>
 
       {/* Adaptation direction note */}
-      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--muted)', fontStyle: 'italic' }}>
+      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
         Faster pace at lower HR count = aerobic engine developing. Watch the cloud migrate down and left across the season.
       </div>
     </section>
