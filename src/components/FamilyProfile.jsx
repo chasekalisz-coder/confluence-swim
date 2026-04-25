@@ -34,6 +34,7 @@ import {
   classifyTime,
   ageUpProjection,
   STROKE_FAMILIES,
+  strokeDistances,
   parseEventName,
   ageFromDob,
   ageBucket,
@@ -49,7 +50,10 @@ import {
 } from '../lib/championship-standards.js'
 
 export default function FamilyProfile({ athlete, onBack, onNavigate }) {
-  const [course, setCourse] = useState('SCY')
+  const [courseTimesGoals, setCourseTimesGoals] = useState('SCY')
+  const [courseChampionship, setCourseChampionship] = useState('SCY')
+  const [courseAgeUp, setCourseAgeUp] = useState('SCY')
+  const [courseRankings, setCourseRankings] = useState('SCY')
 
   // While the v2 profile is mounted, flip the document body into dark mode
   // so the full viewport (including overscroll) is black — not just the
@@ -103,21 +107,21 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
     [athlete.dob],
   )
 
-  // Next cut across all events
+  // Next cut across all events — uses Times & Goals course as primary
   const nextCut = useMemo(() => pickNextCut({
     age: effectiveAge,
     gender,
-    course,
+    course: courseTimesGoals,
     meetTimes: athlete.meetTimes || [],
-  }), [effectiveAge, gender, course, athlete.meetTimes])
+  }), [effectiveAge, gender, courseTimesGoals, athlete.meetTimes])
 
   // Event power rankings
   const rankings = useMemo(() => eventPowerRankings({
     age: effectiveAge,
     gender,
-    course,
+    course: courseRankings,
     meetTimes: athlete.meetTimes || [],
-  }), [effectiveAge, gender, course, athlete.meetTimes])
+  }), [effectiveAge, gender, courseRankings, athlete.meetTimes])
 
   // Goal times: accept two shapes for backward compatibility.
   //   • Map format: { "50 Free SCY": "25.49", ... } — used by seed data
@@ -200,23 +204,25 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
 
         {/* ============ TIMES & GOALS ============ */}
         <section>
-          <h2 className="section-title">Times & Goals</h2>
+          <div className="section-header-row">
+            <h2 className="section-title">Times & Goals</h2>
+            <div className="section-pill-toggle">
+              <button className={courseTimesGoals === 'SCY' ? 'active' : ''} onClick={() => setCourseTimesGoals('SCY')}>SCY</button>
+              <button className={courseTimesGoals === 'LCM' ? 'active' : ''} onClick={() => setCourseTimesGoals('LCM')}>LCM</button>
+            </div>
+          </div>
           <p className="section-lede">
             Personal bests against USA Swimming motivational time standards.
             <strong> Current</strong> shows the cut level {athlete.first}'s best time earns today.
             <strong> Next</strong> is the cut level we're chasing.
-            The <strong>deltas</strong> are how far {athlete.first}'s best time still needs to drop
+            The <strong>gaps</strong> are how far {athlete.first}'s best time still needs to drop
             to hit the next cut and the goal time.
           </p>
           <ColorLegend />
-          <div className="pill-toggle">
-            <button className={course === 'SCY' ? 'active' : ''} onClick={() => setCourse('SCY')}>SCY</button>
-            <button className={course === 'LCM' ? 'active' : ''} onClick={() => setCourse('LCM')}>LCM</button>
-          </div>
           <TimesTable
             age={effectiveAge}
             gender={gender}
-            course={course}
+            course={courseTimesGoals}
             bestTimes={bestTimes}
             goalTimes={goalTimes}
           />
@@ -227,12 +233,18 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
               these levels. */}
           {athlete.showChampionshipCuts && (
             <div className="championship-standards-block">
-              <div className="cs-heading">Championship Standards</div>
+              <div className="section-header-row">
+                <div className="cs-heading">Championship Standards</div>
+                <div className="section-pill-toggle">
+                  <button className={courseChampionship === 'SCY' ? 'active' : ''} onClick={() => setCourseChampionship('SCY')}>SCY</button>
+                  <button className={courseChampionship === 'LCM' ? 'active' : ''} onClick={() => setCourseChampionship('LCM')}>LCM</button>
+                </div>
+              </div>
               <p className="cs-lede">
                 {effectiveAge <= 14 ? (
                   <>
                     The pathway beyond USA Swimming motivationals.
-                    <strong> TAGS</strong> · <strong>Sectionals</strong> ·
+                    <strong> Sectionals</strong> ·
                     <strong> Futures</strong> · <strong>Jr Nats</strong> ·
                     <strong> Nationals</strong>.
                   </>
@@ -247,7 +259,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
               <ChampionshipTable
                 age={effectiveAge}
                 gender={gender}
-                course={course}
+                course={courseChampionship}
                 bestTimes={bestTimes}
               />
             </div>
@@ -256,7 +268,8 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
           <AgeUpPreview
             age={effectiveAge}
             gender={gender}
-            course={course}
+            course={courseAgeUp}
+            setCourse={setCourseAgeUp}
             primaryEvents={athlete.events || []}
             bestTimes={bestTimes}
           />
@@ -277,7 +290,13 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
 
         {/* ============ EVENT POWER RANKINGS ============ */}
         <section>
-          <h2 className="section-title">Event Power Rankings</h2>
+          <div className="section-header-row">
+            <h2 className="section-title">Event Power Rankings</h2>
+            <div className="section-pill-toggle">
+              <button className={courseRankings === 'SCY' ? 'active' : ''} onClick={() => setCourseRankings('SCY')}>SCY</button>
+              <button className={courseRankings === 'LCM' ? 'active' : ''} onClick={() => setCourseRankings('LCM')}>LCM</button>
+            </div>
+          </div>
           <PowerRankingsList rankings={rankings} />
         </section>
 
@@ -437,7 +456,7 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
       {STROKE_FAMILIES.map(fam => (
         <div key={fam.label}>
           <div className="stroke-family-label">{fam.label}</div>
-          {fam.distances.map(dist => {
+          {strokeDistances(fam, course).map(dist => {
             const baseEvent = `${dist} ${fam.stroke}`
             const eventKey = `${baseEvent} ${course}`
             const best = bestTimes[eventKey]
@@ -545,7 +564,7 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
             >
               <span className="ca-chev">{isOpen ? '▾' : '▸'}</span>
               <span className="ca-family-name">{fam.label}</span>
-              <span className="ca-family-count">{fam.distances.length} events</span>
+              <span className="ca-family-count">{strokeDistances(fam, course).length} events</span>
             </button>
 
             {isOpen && (
@@ -562,7 +581,7 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
                     <div key={tier}>{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
                   ))}
                 </div>
-                {fam.distances.map(dist => {
+                {strokeDistances(fam, course).map(dist => {
                   const baseEvent = `${dist} ${fam.stroke}`
                   const eventKey = `${baseEvent} ${course}`
                   const best = bestTimes[eventKey]
@@ -615,7 +634,7 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
   )
 }
 
-function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
+function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, bestTimes }) {
   // Unified grid — every event gets the same treatment. No accordion,
   // no "primary events get a different layout" split. Dense 6-per-row
   // so the family can scan every event at once without scrolling.
@@ -624,7 +643,7 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
   // reordered to the front — keeps the grid readable and predictable.
   const allEvents = []
   for (const fam of STROKE_FAMILIES) {
-    for (const dist of fam.distances) {
+    for (const dist of strokeDistances(fam, course)) {
       const base = `${dist} ${fam.stroke}`
       if (!allEvents.includes(base)) allEvents.push(base)
     }
@@ -664,10 +683,18 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
 
   return (
     <div className="age-up">
-      <div className="caption">Age-Up Preview</div>
-      <div className="title">
-        Current times in the next age group
-        <span className="age-pill">{nextAgeBucket}</span>
+      <div className="section-header-row">
+        <div>
+          <div className="caption">Age-Up Preview</div>
+          <div className="title">
+            Current times in the next age group
+            <span className="age-pill">{nextAgeBucket}</span>
+          </div>
+        </div>
+        <div className="section-pill-toggle">
+          <button className={course === 'SCY' ? 'active' : ''} onClick={() => setCourse('SCY')}>SCY</button>
+          <button className={course === 'LCM' ? 'active' : ''} onClick={() => setCourse('LCM')}>LCM</button>
+        </div>
       </div>
 
       {/* Unified grid — 6 cards per row, events that exist in next age group only */}

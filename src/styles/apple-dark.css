@@ -337,6 +337,42 @@ body.v2-active #root {
   color: #000;
 }
 
+/* Section header row — title on left, toggle on right */
+.v2 .section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.v2 .section-header-row h2.section-title,
+.v2 .section-header-row .cs-heading {
+  margin-bottom: 0;
+}
+.v2 .section-pill-toggle {
+  display: inline-flex;
+  background: var(--v2-surface-3);
+  border-radius: 980px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+.v2 .section-pill-toggle button {
+  padding: 6px 16px;
+  background: transparent;
+  border: none;
+  color: var(--v2-text-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: 980px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.v2 .section-pill-toggle button.active {
+  background: var(--v2-text);
+  color: #000;
+}
+
 /* ===== STANDARD BADGES ===== */
 .v2 .std {
   font-size: 11px;
