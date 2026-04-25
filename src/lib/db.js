@@ -46,65 +46,44 @@ export async function loadAthletes() {
   try {
     await callDb('setupSchema')
     const { athletes: rows } = await callDb('listAthletes')
+
+    // If DB is empty, seed it from the fixture once, then read back.
+    // After that the fixture is never used again — DB is the only source
+    // of truth for all athletes, seeded or manually added.
     if (!rows || rows.length === 0) {
       await callDb('seedAthletes', { athletes: ATHLETES })
-      return { athletes: ATHLETES, status: 'ok' }
+      const { athletes: seeded } = await callDb('listAthletes')
+      return {
+        athletes: (seeded || []).map(r => normalizeAthlete({ ...makeBlankAthlete({ id: r.id, showChampionshipCuts: true }), ...r.data, id: r.id })),
+        status: 'ok'
+      }
     }
-    const byId = Object.fromEntries(rows.map(r => [r.id, r.data]))
-    // Merge local + DB. Local is source of truth for schema/structure and
-    // the new v2 fields (showChampionshipCuts, mockSessions, upcomingMeets,
-    // pastMeets, gender). DB wins for user-editable fields (meetTimes,
-    // goalTimes, events, age, dob, progression) that the admin may have
-    // updated since the seed. This prevents stale DB records from dropping
-    // fields the local data file has added.
-    //
-    // progression: DB wins when present (even empty [] counts as "DB has
-    // authoritative data for this athlete"). Fixture fallback only fires
-    // if the DB record has no progression key at all — covers athletes
-    // seeded before the progression column was user-writable.
-    const ordered = ATHLETES.map(a => {
-      const dbRec = byId[a.id]
-      if (!dbRec) return normalizeAthlete(a)
+
+    // All athletes — seeded or manually added — go through the exact
+    // same path. No fixture merging, no two-tier system.
+    // Every athlete is: blank shape + DB data on top + id locked to DB row id.
+    // This means: create a profile, enter times, save → performance profile
+    // bloom/cuts/rankings/progression all work immediately. Same as Jon.
+    const athletes = rows.map(r => {
+      const dbRec = r.data || {}
       const dbHasProgression = Array.isArray(dbRec.progression)
       return normalizeAthlete({
-        ...a,           // local wins for new fields
-        ...dbRec,       // DB overrides where both exist
-        // ...then re-assert local for fields we know DB won't have
-        showChampionshipCuts: a.showChampionshipCuts ?? dbRec.showChampionshipCuts,
-        mockSessions:        a.mockSessions        ?? dbRec.mockSessions,
-        upcomingMeets:       a.upcomingMeets       ?? dbRec.upcomingMeets,
-        pastMeets:           a.pastMeets           ?? dbRec.pastMeets,
-        // progression: DB wins if it has an entry (even empty []); fixture
-        // fallback only for un-migrated athletes.
-        progression:         dbHasProgression ? dbRec.progression : a.progression,
-        gender:              a.gender              ?? dbRec.gender,
+        ...makeBlankAthlete({ id: r.id, showChampionshipCuts: true }),
+        ...dbRec,
+        id: r.id, // always use the real DB row id — never let dbRec.id override
+        showChampionshipCuts: dbRec.showChampionshipCuts ?? true,
+        meetTimes:   Array.isArray(dbRec.meetTimes)   ? dbRec.meetTimes   : [],
+        goalTimes:   Array.isArray(dbRec.goalTimes)   ? dbRec.goalTimes   : [],
+        progression: dbHasProgression                 ? dbRec.progression : [],
+        events:      Array.isArray(dbRec.events)      ? dbRec.events      : [],
       })
     })
-    // Manually-added athletes — not in the fixture but exist in DB.
-    // Give them the EXACT same merge treatment as fixture athletes so
-    // their meetTimes, goalTimes, events, age, gender, progression all
-    // flow through to the performance profile identically to Jon etc.
-    rows.forEach(r => {
-      if (!ATHLETES.some(a => a.id === r.id)) {
-        const dbRec = r.data || {}
-        const dbHasProgression = Array.isArray(dbRec.progression)
-        const base = makeBlankAthlete({ id: r.id, showChampionshipCuts: true })
-        ordered.push(normalizeAthlete({
-          ...base,
-          ...dbRec,
-          id: r.id,
-          showChampionshipCuts: dbRec.showChampionshipCuts ?? true,
-          meetTimes:   Array.isArray(dbRec.meetTimes)   ? dbRec.meetTimes   : [],
-          goalTimes:   Array.isArray(dbRec.goalTimes)   ? dbRec.goalTimes   : [],
-          progression: dbHasProgression                 ? dbRec.progression : [],
-          events:      Array.isArray(dbRec.events)      ? dbRec.events      : [],
-        }))
-      }
-    })
-    return { athletes: ordered, status: 'ok' }
+
+    return { athletes, status: 'ok' }
   } catch (e) {
     console.warn('loadAthletes failed:', e.message)
-    return { athletes: ATHLETES, status: 'error', error: e.message }
+    // Fallback to fixture only if DB is completely unreachable
+    return { athletes: ATHLETES.map(a => normalizeAthlete(a)), status: 'error', error: e.message }
   }
 }
 
