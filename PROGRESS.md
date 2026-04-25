@@ -1,5 +1,33 @@
 # PROGRESS.md — Session Log
 
+## Session 9 — 2026-04-25
+
+### Completed
+- Phase 1 data foundation: schema enforcement on save-session.js (schemaVersion:2, enforceRepSchema), DATA_SCHEMA.md written and committed, elite-splits.js extracted from pace.html
+- CLAUDE.md updated: DATA_SCHEMA.md now step 2 in required reading order
+- Merged v2-redesign → main (81 files, 29,529 insertions). confluence-swim.vercel.app is live
+- Race Pace Calculator: wired to Analysis tab as fullscreen iframe overlay. Back to Analysis button returns to app
+- pace.html bar chart: relative scaling (scaleH), white dashed avg line, try/catch around generate(), observer cleanup, safety clamp on scaleH
+- Browser back button: pushState on tab navigation, popstate listener in App.jsx
+- FamilyNav logo click navigates to Profile tab
+- Post-merge audit: session count fix, upcoming meets, progression chart, bloom, resources — all logged to TODO.md
+
+### Current State
+- main branch = production (confluence-swim.vercel.app)
+- v2-redesign = active dev branch
+- All fixes push to v2-redesign then immediately merge to main
+- Race Pace Calculator working across all courses/events without page refresh
+
+### Known Issues / Next Up (P1)
+- Session count fix: counter includes workout builder outputs — filter by noteType
+- Upcoming meets: admin entry field needed (meet name, date, location, events)
+- Progression chart visual improvements
+- Bloom chart modifications
+- Race Pace Calculator avg line position still slightly off — logged, not blocking
+- Swimmer animation on Race Pace Calculator (NYT Olympic style) — future build
+
+
+
 **Newest sessions on top.** Every session appends a block when closing. Never edit old entries — add new ones.
 
 Each session block captures: what happened, decisions made, things that broke, things to check next time. This is the durable record of "the stuff we talked about in the chat."
