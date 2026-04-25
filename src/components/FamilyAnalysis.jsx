@@ -281,7 +281,7 @@ function AerobicDevelopmentChart({ athlete }) {
     const n = sorted.length
     sorted.forEach((s, idx) => {
       const d = s.data || {}
-      if (!['aerobic', 'threshold', 'active_rest'].includes(d.noteType === 'training' ? d.category : s.category)) return
+      if (d.noteType !== 'training') return
       const sets = d.sets || (d.mainSet ? [d.mainSet] : [])
       sets.forEach(set => {
         if (!set?.reps?.length) return
@@ -329,8 +329,8 @@ function AerobicDevelopmentChart({ athlete }) {
   const xMin = 21, xMax = 31
   const xScale = hr => padL + ((hr - xMin) / (xMax - xMin)) * plotW
   // y: lower time = faster = higher on chart (inverted)
-  const yMin = filtered.length ? Math.min(...filtered.map(r => r.time)) - 3 : 25
-  const yMax = filtered.length ? Math.max(...filtered.map(r => r.time)) + 3 : 320
+  const yMin = filtered.length ? Math.min(...filtered.map(r => r.time)) * 0.97 : 25
+  const yMax = filtered.length ? Math.max(...filtered.map(r => r.time)) * 1.03 : 320
   const yScale = t => padT + ((yMax - t) / (yMax - yMin)) * plotH
 
   const zoneColors = { white: '#a0a09a', pink: '#d4698a', red: '#e24b4a' }
