@@ -422,19 +422,16 @@ function NextCutCard({ nextCut }) {
 }
 
 function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
-  // Current age bucket for TX TAGs lookup
-  const bucket = ageBucket(age)
   return (
-    <div className="times-table times-table-with-tags">
+    <div className="times-table times-table-no-tags">
       <div className="times-row header">
         <div>Event</div>
         <div>Best</div>
         <div>Goal</div>
         <div>Current</div>
         <div>Next</div>
-        <div>Δ to Next</div>
-        <div>TX TAGs</div>
-        <div>Δ to Goal</div>
+        <div>Gap to Next</div>
+        <div>Gap to Goal</div>
       </div>
 
       {STROKE_FAMILIES.map(fam => (
@@ -449,12 +446,6 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
               age, gender, course, event: baseEvent,
               bestTime: best, goalTime: goal,
             })
-
-            // TX TAGs lookup + gap
-            const tagsCut = txTagsCut({ gender, ageBucket: bucket, course, event: baseEvent })
-            const tagsGap = (row.bestSec != null && tagsCut != null)
-              ? gapToCut(row.bestSec, tagsCut)
-              : null
 
             return (
               <div className="times-row" key={eventKey}>
@@ -482,19 +473,6 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
                       )}
                     </>
                   ) : '—'}
-                </div>
-                <div className="tags-cell">
-                  {tagsGap?.achieved ? (
-                    <span className="hit-pill">✓ Hit</span>
-                  ) : tagsGap ? (
-                    <div className={`stacked-gap delta-${tagsGap.color || 'neutral'}`}>
-                      <div className="stacked-cut mono">{formatTime(tagsCut)}</div>
-                      <div className="stacked-delta mono">−{tagsGap.deltaSec.toFixed(2)}</div>
-                      <div className="stacked-pct">{tagsGap.pctOff.toFixed(1)}%</div>
-                    </div>
-                  ) : (
-                    <span className="std none">—</span>
-                  )}
                 </div>
                 <div className={`delta mono delta-${row.colorToGoal || 'neutral'}`}>
                   {row.deltaToGoal != null ? (
@@ -572,6 +550,18 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
 
             {isOpen && (
               <div className="ca-family-body">
+                {/* Repeat column headers inside each expanded section so
+                    you always know what column is what when scrolled down */}
+                <div
+                  className="ca-sub-header"
+                  style={{ gridTemplateColumns: `70px 1fr ${'1.2fr '.repeat(tiers.length).trim()}` }}
+                >
+                  <div>Event</div>
+                  <div>Best</div>
+                  {tiers.map(tier => (
+                    <div key={tier}>{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
+                  ))}
+                </div>
                 {fam.distances.map(dist => {
                   const baseEvent = `${dist} ${fam.stroke}`
                   const eventKey = `${baseEvent} ${course}`
@@ -657,8 +647,20 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
     const currentLevel = timeSec != null && currentStds ? classifyTime(timeSec, currentStds) : null
     const proj = ageUpProjection({ currentAge: age, gender, course, event: ev, timeSec })
     const projLevel = proj ? proj.projectedLevel : null
-    return { ev, timeSec, currentLevel, projLevel }
+    // Check if event exists in next age group
+    const nextAge = nextAgeBucket === '9-10' ? 9
+      : nextAgeBucket === '11-12' ? 11
+      : nextAgeBucket === '13-14' ? 13
+      : nextAgeBucket === '15-16' ? 15
+      : nextAgeBucket === '17-18' ? 17
+      : null
+    const nextStds = nextAge != null ? eventStandards({ age: nextAge, gender, course, event: ev }) : null
+    const existsInNextGroup = nextStds != null
+    return { ev, timeSec, currentLevel, projLevel, existsInNextGroup }
   }
+
+  // Only show events that exist in the next age group
+  const displayEvents = allEvents.filter(ev => project(ev).existsInNextGroup)
 
   return (
     <div className="age-up">
@@ -668,9 +670,9 @@ function AgeUpPreview({ age, gender, course, primaryEvents, bestTimes }) {
         <span className="age-pill">{nextAgeBucket}</span>
       </div>
 
-      {/* Unified grid — 6 cards per row, every event the same treatment */}
+      {/* Unified grid — 6 cards per row, events that exist in next age group only */}
       <div className="age-up-grid">
-        {allEvents.map(ev => (
+        {displayEvents.map(ev => (
           <AgeUpCard key={ev} data={project(ev)} />
         ))}
       </div>
@@ -850,30 +852,8 @@ function ProgressionChart({ data, athleteName }) {
       `${i === 0 ? 'M' : 'L'} ${xScale(p.date.getTime()).toFixed(1)} ${yScale(p.time).toFixed(1)}`
     ).join(' ')
 
-    // Build solid + dashed segments split on season gaps (> 90 days).
-    // Solid lines = active season. Dashed = season break connector.
-    const GAP_MS = 90 * 24 * 60 * 60 * 1000
-    let curSeg = []
-    for (let i = 0; i < points.length; i++) {
-      const p = points[i]
-      const px = xScale(p.date.getTime()).toFixed(1)
-      const py = yScale(p.time).toFixed(1)
-      if (i === 0) {
-        curSeg.push(`M ${px} ${py}`)
-      } else {
-        const gap = p.date.getTime() - points[i - 1].date.getTime()
-        if (gap > GAP_MS) {
-          if (curSeg.length >= 1) solidSegments.push(curSeg.join(' '))
-          const prevPx = xScale(points[i - 1].date.getTime()).toFixed(1)
-          const prevPy = yScale(points[i - 1].time).toFixed(1)
-          dashSegments.push(`M ${prevPx} ${prevPy} L ${px} ${py}`)
-          curSeg = [`M ${px} ${py}`]
-        } else {
-          curSeg.push(`L ${px} ${py}`)
-        }
-      }
-    }
-    if (curSeg.length >= 1) solidSegments.push(curSeg.join(' '))
+    // Single continuous line — no solid/dashed split
+    solidSegments = [pathD]
 
     // Y-axis ticks — 4 evenly spaced
     yTicks = [0, 1, 2, 3].map(i => {
@@ -1199,20 +1179,6 @@ function AnimatedProgressionChart({
             strokeLinejoin="round"
             strokeLinecap="round"
             filter="url(#apc-line-glow)"
-            clipPath="url(#apc-area-clip)"
-          />
-        ))}
-
-        {/* Dashed connectors across season breaks (> 90 days) */}
-        {dashSegments.map((d, i) => (
-          <path
-            key={'x'+i}
-            d={d}
-            fill="none"
-            stroke="rgba(212,168,83,0.25)"
-            strokeWidth="1.5"
-            strokeDasharray="5,6"
-            strokeLinecap="round"
             clipPath="url(#apc-area-clip)"
           />
         ))}
