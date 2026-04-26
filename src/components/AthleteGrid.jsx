@@ -13,6 +13,16 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
   const [newAge, setNewAge] = useState('')
   const [newDob, setNewDob] = useState('')
   const [newGender, setNewGender] = useState('')
+  const [search, setSearch] = useState('')
+  const [mobileTab, setMobileTab] = useState('athletes') // 'athletes' | 'tools' | 'settings'
+
+  // Filter athletes by search
+  const filteredAthletes = athletes.filter(a => {
+    if (!search.trim()) return true
+    const q = search.toLowerCase()
+    return fullName(a).toLowerCase().includes(q) ||
+           (primaryEvents(a) || '').toLowerCase().includes(q)
+  })
   const [saving, setSaving] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
@@ -87,13 +97,24 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
   }
 
   return (
-    <div className="page">
-      <div className="page-heading">
+    <div className="page agp">
+      <div className="page-heading agp-heading">
         <h1>Athletes</h1>
         <div className="status-pill">
           <span className="dot" style={{ background: dot.color }} />
           {dot.text}
         </div>
+      </div>
+
+      {/* Mobile-only search bar */}
+      <div className="agp-search-wrap">
+        <input
+          type="text"
+          className="agp-search"
+          placeholder="Search athletes..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
       {athletes.length === 0 && connectionStatus !== 'loading' && (
@@ -102,22 +123,27 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
         </div>
       )}
 
-      <div className="athlete-grid">
-        {athletes.map(a => (
-          <div key={a.id} className="athlete-card">
-            <div className="athlete-card-top">
-              <div className="athlete-avatar">{initials(a)}</div>
-              <div className="athlete-body">
-                <div className="athlete-name">{fullName(a)}</div>
-                <div className="athlete-meta">
-                  Age {a.age}{a.dob ? ` · ${a.dob}` : ''}
+      {/* === ATHLETES TAB (mobile) / always shown (desktop) === */}
+      <div className={`agp-tab-content ${mobileTab === 'athletes' ? 'agp-active' : ''}`}>
+        <div className="athlete-grid">
+          {filteredAthletes.map(a => (
+            <div key={a.id} className="athlete-card">
+              <button className="athlete-card-row-tap" onClick={() => onViewProfile(a)} aria-label={`View ${fullName(a)}`}>
+                <div className="athlete-card-top">
+                  <div className="athlete-avatar">{initials(a)}</div>
+                  <div className="athlete-body">
+                    <div className="athlete-name">{fullName(a)}</div>
+                    <div className="athlete-meta">
+                      Age {a.age}{a.dob ? ` · ${a.dob}` : ''}
+                    </div>
+                    <div className="athlete-events">{primaryEvents(a)}</div>
+                  </div>
+                  <span className="athlete-card-chev" aria-hidden="true">→</span>
                 </div>
-                <div className="athlete-events">{primaryEvents(a)}</div>
-              </div>
-            </div>
-            <div className="athlete-card-actions">
-              <button className="btn btn-outline" onClick={() => onViewProfile(a)}>
-                View Profile
+              </button>
+              <div className="athlete-card-actions">
+                <button className="btn btn-outline" onClick={() => onViewProfile(a)}>
+                  View Profile
               </button>
               <button className="btn btn-primary" onClick={() => onSelect(a)}>
                 Edit Profile
@@ -125,37 +151,48 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
             </div>
           </div>
         ))}
-      </div>
+        </div>
 
-      <div style={{display:'flex', gap:12, marginBottom:8, marginTop:8}}>
-        <button className="tool-card" onClick={() => window.location.href = '/workout.html'} style={{flex:1, padding:'18px 20px', background:'linear-gradient(135deg, rgba(20,28,50,0.9), rgba(15,22,40,0.95))', border:'1px solid rgba(148,163,184,0.1)', borderRadius:12, cursor:'pointer', display:'flex', alignItems:'center', gap:14, transition:'all 0.25s', position:'relative', overflow:'hidden', textAlign:'left'}}>
-          <div style={{width:42, height:42, borderRadius:10, background:'rgba(212,168,83,0.1)', border:'1px solid rgba(212,168,83,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'#d4a853'}}>⚡</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:14, fontWeight:600, color:'#f1f5f9', marginBottom:2}}>Build Workout</div>
-            <div style={{fontSize:11, color:'#64748b'}}>AI-powered workout builder</div>
+        {/* No-results state when searching */}
+        {search.trim() && filteredAthletes.length === 0 && (
+          <div className="agp-no-results">
+            No athletes match "{search}"
           </div>
-          <span style={{color:'#334155', fontSize:18}}>→</span>
-        </button>
-        <button className="tool-card" onClick={() => window.location.href = '/pace.html'} style={{flex:1, padding:'18px 20px', background:'linear-gradient(135deg, rgba(20,28,50,0.9), rgba(15,22,40,0.95))', border:'1px solid rgba(148,163,184,0.1)', borderRadius:12, cursor:'pointer', display:'flex', alignItems:'center', gap:14, transition:'all 0.25s', position:'relative', overflow:'hidden', textAlign:'left'}}>
-          <div style={{width:42, height:42, borderRadius:10, background:'rgba(0,186,230,0.1)', border:'1px solid rgba(0,186,230,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'#00bae6'}}>◎</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:14, fontWeight:600, color:'#f1f5f9', marginBottom:2}}>Race Pace Calculator</div>
-            <div style={{fontSize:11, color:'#64748b'}}>Elite-modeled target splits</div>
-          </div>
-          <span style={{color:'#334155', fontSize:18}}>→</span>
-        </button>
-        <button className="tool-card" onClick={onViewSlotRequests} style={{flex:1, padding:'18px 20px', background:'linear-gradient(135deg, rgba(20,28,50,0.9), rgba(15,22,40,0.95))', border:'1px solid rgba(148,163,184,0.1)', borderRadius:12, cursor:'pointer', display:'flex', alignItems:'center', gap:14, transition:'all 0.25s', position:'relative', overflow:'hidden', textAlign:'left'}}>
-          <div style={{width:42, height:42, borderRadius:10, background:'rgba(110,231,183,0.1)', border:'1px solid rgba(110,231,183,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'#6ee7b7'}}>📅</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:14, fontWeight:600, color:'#f1f5f9', marginBottom:2}}>Slot Requests</div>
-            <div style={{fontSize:11, color:'#64748b'}}>Family scheduling requests</div>
-          </div>
-          <span style={{color:'#334155', fontSize:18}}>→</span>
-        </button>
+        )}
       </div>
+      {/* === END ATHLETES TAB === */}
+
+      {/* === TOOLS TAB === */}
+      <div className={`agp-tab-content agp-tools-tab ${mobileTab === 'tools' ? 'agp-active' : ''}`}>
+        <div className="agp-tools-row">
+          <button className="tool-card" onClick={() => window.location.href = '/workout.html'}>
+            <div className="tool-icon" style={{background:'rgba(212,168,83,0.1)', borderColor:'rgba(212,168,83,0.2)', color:'#d4a853'}}>⚡</div>
+            <div className="tool-text">
+              <div className="tool-title">Build Workout</div>
+              <div className="tool-sub">AI-powered workout builder</div>
+            </div>
+            <span className="tool-chev">→</span>
+          </button>
+          <button className="tool-card" onClick={() => window.location.href = '/pace.html'}>
+            <div className="tool-icon" style={{background:'rgba(0,186,230,0.1)', borderColor:'rgba(0,186,230,0.2)', color:'#00bae6'}}>◎</div>
+            <div className="tool-text">
+              <div className="tool-title">Race Pace Calculator</div>
+              <div className="tool-sub">Elite-modeled target splits</div>
+            </div>
+            <span className="tool-chev">→</span>
+          </button>
+          <button className="tool-card" onClick={onViewSlotRequests}>
+            <div className="tool-icon" style={{background:'rgba(110,231,183,0.1)', borderColor:'rgba(110,231,183,0.2)', color:'#6ee7b7'}}>📅</div>
+            <div className="tool-text">
+              <div className="tool-title">Slot Requests</div>
+              <div className="tool-sub">Family scheduling requests</div>
+            </div>
+            <span className="tool-chev">→</span>
+          </button>
+        </div>
 
       {adding ? (
-        <div style={{maxWidth:400,marginTop:16,padding:20,background:'var(--elevated)',border:'1px solid var(--border)',borderRadius:8}}>
+        <div className="agp-add-form" style={{maxWidth:400,marginTop:16,padding:20,background:'var(--elevated)',border:'1px solid var(--border)',borderRadius:8}}>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
             <input className="edit-input" placeholder="First name" value={newFirst} onChange={e => setNewFirst(e.target.value)} style={{marginBottom:0}} />
             <input className="edit-input" placeholder="Last name" value={newLast} onChange={e => setNewLast(e.target.value)} style={{marginBottom:0}} />
@@ -184,6 +221,12 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
       ) : (
         <button className="add-athlete-btn" onClick={() => setAdding(true)}>+ Add New Athlete</button>
       )}
+
+      </div>
+      {/* === END TOOLS TAB === */}
+
+      {/* === SETTINGS TAB (bulk import lives here) === */}
+      <div className={`agp-tab-content agp-settings-tab ${mobileTab === 'settings' ? 'agp-active' : ''}`}>
 
       {(() => {
         // The bulk-import callout is a one-time setup tool. Once every
@@ -245,6 +288,46 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
           </div>
         )
       })()}
+
+      </div>
+      {/* === END SETTINGS TAB === */}
+
+      {/* === MOBILE-ONLY: Floating Action Button (Add Athlete) === */}
+      {!adding && (
+        <button
+          className="agp-fab"
+          onClick={() => setAdding(true)}
+          aria-label="Add athlete"
+        >
+          +
+        </button>
+      )}
+
+      {/* === MOBILE-ONLY: Bottom Tab Bar === */}
+      <nav className="agp-tabbar">
+        <button
+          className={`agp-tab ${mobileTab === 'athletes' ? 'agp-tab-active' : ''}`}
+          onClick={() => setMobileTab('athletes')}
+        >
+          <span className="agp-tab-icon">👥</span>
+          <span className="agp-tab-label">Athletes</span>
+        </button>
+        <button
+          className={`agp-tab ${mobileTab === 'tools' ? 'agp-tab-active' : ''}`}
+          onClick={() => setMobileTab('tools')}
+        >
+          <span className="agp-tab-icon">⚡</span>
+          <span className="agp-tab-label">Tools</span>
+        </button>
+        <button
+          className={`agp-tab ${mobileTab === 'settings' ? 'agp-tab-active' : ''}`}
+          onClick={() => setMobileTab('settings')}
+        >
+          <span className="agp-tab-icon">⚙</span>
+          <span className="agp-tab-label">Settings</span>
+        </button>
+      </nav>
+
     </div>
   )
 }

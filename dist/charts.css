@@ -1,0 +1,25 @@
+
+/* ═══ CONFLUENCE SWIM CHARTS v2 ═══ */
+.perf-section { border-top: 1px solid #E8E4DD; margin-top: 32px; padding-top: 24px; }
+.perf-header { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.15em; color: #B8956A; font-weight: 600; margin-bottom: 20px; }
+
+.cs-block { margin-bottom: 28px; padding-bottom: 24px; border-bottom: 0.5px solid #E8E4DD; }
+.cs-block:last-of-type { border-bottom: none; }
+.cs-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #B8956A; font-weight: 500; margin-bottom: 4px; }
+.cs-name { font-family: "Fraunces", Georgia, serif; font-size: 15px; font-weight: 500; margin-bottom: 4px; line-height: 1.4; }
+.cs-intent { font-size: 12px; color: #6B6B6B; margin-bottom: 14px; }
+.cs-insight { background: #FAF9F6; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #6B6B6B; border-left: 3px solid #B8956A; margin-top: 10px; line-height: 1.5; }
+
+.cs-summary { flex: 1; background: #FAF9F6; border-radius: 8px; padding: 10px 12px; }
+.cs-sum-label { font-size: 10px; color: #6B6B6B; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; font-weight: 500; }
+.cs-sum-val { font-size: 18px; font-weight: 500; }
+.cs-sum-sub { font-size: 11px; color: #6B6B6B; margin-top: 2px; }
+
+.pacing-tag { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 8px; margin-top: 8px; font-weight: 500; }
+.tag-green { background: #EAF3DE; color: #27500A; }
+.tag-amber { background: #FAEEDA; color: #633806; }
+
+@media print {
+  .perf-section { page-break-inside: avoid; }
+  .cs-block { page-break-inside: avoid; }
+}
