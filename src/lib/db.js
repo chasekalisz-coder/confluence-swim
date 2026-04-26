@@ -119,7 +119,6 @@ export async function updateAthlete(athleteId, data) {
   // has no progression for that athlete.
   const {
     mockSessions,
-    upcomingMeets,
     pastMeets,
     ...cleanData
   } = data
