@@ -718,8 +718,10 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
     <div className="championship-accordion">
       {/* Column headers row — stays visible at the top */}
       <div className="ca-header" style={{ gridTemplateColumns: `70px 1fr ${'1.2fr '.repeat(tiers.length).trim()}` }}>
-        <div className="ca-h-event">Event</div>
-        <div className="ca-h-best">Best</div>
+        <div className="ca-event-best-group">
+          <div className="ca-h-event">Event</div>
+          <div className="ca-h-best">Best</div>
+        </div>
         {tiers.map(tier => (
           <div key={tier} className={`ca-h-tier ca-tier-${tier.toLowerCase()}`}>{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
         ))}
@@ -752,8 +754,10 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
                   className="ca-sub-header"
                   style={{ gridTemplateColumns: `70px 1fr ${'1.2fr '.repeat(tiers.length).trim()}` }}
                 >
-                  <div>Event</div>
-                  <div>Best</div>
+                  <div className="ca-event-best-group">
+                    <div>Event</div>
+                    <div>Best</div>
+                  </div>
                   {tiers.map(tier => (
                     <div key={tier} className={`ca-tier-${tier.toLowerCase()}`}>{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
                   ))}
@@ -774,9 +778,11 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
                       key={eventKey}
                       style={{ gridTemplateColumns: `70px 1fr ${'1.2fr '.repeat(tiers.length).trim()}` }}
                     >
-                      <div className="ca-ev-name">{dist}</div>
-                      <div className="ca-ev-best mono">
-                        {bestSec != null ? formatTime(bestSec) : '—'}
+                      <div className="ca-event-best-group">
+                        <div className="ca-ev-name">{dist}</div>
+                        <div className="ca-ev-best mono">
+                          {bestSec != null ? formatTime(bestSec) : '—'}
+                        </div>
                       </div>
                       {tiers.map(tier => {
                         const cut = championshipCut({

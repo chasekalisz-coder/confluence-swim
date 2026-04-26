@@ -37,7 +37,17 @@ Desktop unchanged.
 
 **Times & Goals — fixed-px grid columns** (1 commit). After v3 + v4-revert, badges/gap-numbers in NEXT/GAP/TX columns weren't lining up vertically across rows. Root cause: grid was using `fr` units, so the BEST column stretched to fit content (varying time string lengths like "30.75" vs "10:57.49 [AAAA]") which dragged every other column to a different X per row. Switched to fixed pixel widths: `28px 110px 70px 64px 64px` with 8px gap. Added `min-width: 0` to every cell so grid never auto-grows from content. Also left-aligned NEXT and GAP cells so their badges/numbers share a left edge (was center-aligned which made wider AAAA badges drift left of narrower AAA). Total width 376px fits 380px viewport. Headers updated to match.
 
-**Championship Standards — drop Pro Swim column on mobile** (1 commit). Live mobile showed the desktop 7-column table (Event/Best/Sectionals/Futures/Pro Swim/Jr Nats/Nationals) overflowing — Jr Nats clipped, Nationals gone, data rows cut off mid-number. Chase: drop Pro Swim, keep the rest. Approach: added `ca-tier-{name}` class to every header/sub-header/data cell rendered per tier, then mobile CSS hides `.ca-tier-pro_swim` and overrides the inline `grid-template-columns` on `.ca-header[style]`/`.ca-sub-header[style]`/`.ca-event-row[style]` to a 6-track layout (`50px 1fr 1.1fr 1.1fr 1.1fr 1.1fr !important` with 6px gap). Desktop unchanged.
+**Championship Standards — drop Pro Swim column on mobile** (1 commit, superseded). Live mobile showed the desktop 7-column table (Event/Best/Sectionals/Futures/Pro Swim/Jr Nats/Nationals) overflowing — Jr Nats clipped, Nationals gone, data rows cut off mid-number. Chase: drop Pro Swim, keep the rest. Approach: added `ca-tier-{name}` class to every header/sub-header/data cell rendered per tier, then mobile CSS hides `.ca-tier-pro_swim` and overrides the inline `grid-template-columns` on `.ca-header[style]`/`.ca-sub-header[style]`/`.ca-event-row[style]` to a 6-track layout. Desktop unchanged. Replaced in next commit.
+
+**Championship Standards — drop Pro Swim + Nationals, stack Event/Time** (1 commit). Chase: drop Nationals too (3 tiers visible on mobile: Sectionals, Futures, Jr Nats), and put best time under event distance with header reading "Event/Time" on mobile.
+- JSX: wrapped `.ca-ev-name` + `.ca-ev-best` in `.ca-event-best-group` div (and same for headers/sub-headers)
+- Desktop CSS: `.ca-event-best-group { display: contents }` so the 2 children remain direct grid items of the 7-track row, preserving desktop layout
+- Mobile CSS: wrapper switches to flex-column, stacking distance over best time
+- Added `.ca-tier-nationals { display: none }` to existing Pro Swim hide rule
+- Mobile grid override: `80px 1fr 1fr 1fr !important` (4 tracks: event-stack + 3 tiers) with 8px gap
+- Mobile header label: hidden "Best" sibling, swapped "Event" text with `::before { content: "Event/Time" }` via `font-size: 0` trick on the original text
+- Best time under distance: 11px font, gold color
+Desktop unchanged.
 
 ### Files changed this session
 - src/styles/apple-dark.css (one mobile-only block added inside existing 720px breakpoint)

@@ -841,16 +841,45 @@ body.v2-active #root {
   /* Stroke family label — tighter spacing */
   .v2 .stroke-family-label { padding: 10px 4px 4px; font-size: 9px; }
 
-  /* ===== Championship Standards — drop Pro Swim column on mobile ===== */
-  /* Hide Pro Swim cells everywhere they appear in the championship table */
+  /* ===== Championship Standards — mobile: drop Pro Swim + Nationals, stack Event/Time ===== */
+  /* Hide Pro Swim and Nationals cells everywhere they appear */
   .v2 .ca-tier-pro_swim { display: none; }
+  .v2 .ca-tier-nationals { display: none; }
+  /* Stack Event over Best on mobile (event-best-group goes from display:contents to flex-column) */
+  .v2 .ca-event-best-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  /* Mobile header label — show "Event/Time" (replace "Event" text via pseudo, hide "Best" sibling).
+     The time appears under the distance number in data rows so the combined header makes sense. */
+  .v2 .ca-header .ca-event-best-group .ca-h-best,
+  .v2 .ca-sub-header .ca-event-best-group > div:nth-child(2) {
+    display: none;
+  }
+  .v2 .ca-header .ca-event-best-group .ca-h-event,
+  .v2 .ca-sub-header .ca-event-best-group > div:nth-child(1) {
+    font-size: 0; /* hide original "Event" text */
+  }
+  .v2 .ca-header .ca-event-best-group .ca-h-event::before,
+  .v2 .ca-sub-header .ca-event-best-group > div:nth-child(1)::before {
+    content: "Event/Time";
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
   /* Override the inline grid-template-columns (set on .ca-header, .ca-sub-header, .ca-event-row)
-     to use 6 tracks instead of 7. Inline style without !important loses to stylesheet !important. */
+     to use 4 tracks instead of 7: event-stack | sectionals | futures | jr-nats */
   .v2 .ca-header[style],
   .v2 .ca-sub-header[style],
   .v2 .ca-event-row[style] {
-    grid-template-columns: 50px 1fr 1.1fr 1.1fr 1.1fr 1.1fr !important;
-    gap: 6px !important;
+    grid-template-columns: 80px 1fr 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  /* Best time under event distance — gold, smaller */
+  .v2 .ca-event-best-group .ca-ev-best {
+    font-size: 11px;
+    color: var(--v2-gold);
+    font-weight: 500;
   }
 }
 
@@ -2875,6 +2904,9 @@ body.v2-active #root {
   flex-direction: column;
   gap: 6px;
 }
+/* Event/Best wrapper: display:contents on desktop so its 2 children become direct grid items
+   of the row's 7-track layout. On mobile (max-width 720px) this becomes flex-column to stack. */
+.v2 .ca-event-best-group { display: contents; }
 .v2 .ca-header {
   display: grid;
   grid-template-columns: 70px 1fr 1fr 1fr 1fr 1fr 1fr;
