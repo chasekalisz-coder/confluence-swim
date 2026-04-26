@@ -541,3 +541,38 @@ export function daysUntilBirthday({ dob, today = new Date() }) {
   return Math.ceil(diffMs / (1000 * 60 * 60 * 24))
 }
 
+
+// Returns top N events closest to their next cut (for rotating Chasing Next card)
+export function topNextCuts({ age, gender, course = "SCY", meetTimes, n = 3 }) {
+  if (!Array.isArray(meetTimes) || !meetTimes.length) return []
+  const candidates = []
+  const seen = new Set()
+  for (const mt of meetTimes) {
+    const parsed = parseEventName(mt.event)
+    if (!parsed) continue
+    if (parsed.course && parsed.course !== course) continue
+    if (seen.has(parsed.base)) continue
+    seen.add(parsed.base)
+    const timeSec = parseTime(mt.time)
+    if (timeSec == null) continue
+    const stds = eventStandards({ age, gender, course, event: parsed.base })
+    if (!stds) continue
+    const next = nextStandard(timeSec, stds)
+    if (!next) continue
+    const currentLevel = classifyTime(timeSec, stds)
+    const closeness = 1 - (next.gap / timeSec)
+    const hasAOrBetter = ['A','AA','AAA','AAAA'].includes(currentLevel)
+    candidates.push({
+      event: parsed.base,
+      timeSec,
+      currentLevel,
+      next,
+      closeness,
+      hasAOrBetter,
+      stds,
+    })
+  }
+  return candidates
+    .sort((a, b) => b.closeness - a.closeness)
+    .slice(0, n)
+}

@@ -28,6 +28,7 @@ import {
   formatTime,
   formatDelta,
   pickNextCut,
+  topNextCuts,
   eventPowerRankings,
   timesTableRow,
   eventStandards,
@@ -110,13 +111,17 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
     [athlete.dob],
   )
 
-  // Next cut across all events — uses Times & Goals course as primary
-  const nextCut = useMemo(() => pickNextCut({
+  // Top 3 events closest to next cut — for rotating Chasing Next card
+  const topCuts = useMemo(() => topNextCuts({
     age: effectiveAge,
     gender,
     course: courseTimesGoals,
     meetTimes: athlete.meetTimes || [],
+    n: 3,
   }), [effectiveAge, gender, courseTimesGoals, athlete.meetTimes])
+
+  // Keep pickNextCut for any legacy usage
+  const nextCut = topCuts[0] || null
 
   // Event power rankings
   const rankings = useMemo(() => eventPowerRankings({
@@ -210,7 +215,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
         </section>
 
         {/* ============ NEXT CUT ============ */}
-        <NextCutCard nextCut={nextCut} />
+        <NextCutCard cuts={topCuts} />
 
         {/* ============ TIMES & GOALS ============ */}
         <section>
@@ -396,55 +401,150 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
 // Sub-components
 // ============================================================
 
-function NextCutCard({ nextCut }) {
-  if (!nextCut) {
+const LEVELS_ORDER = ['B','BB','A','AA','AAA','AAAA']
+
+function NextCutCard({ cuts }) {
+  const [idx, setIdx] = useState(0)
+  const [visible, setVisible] = useState(true)
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    if (!cuts || cuts.length <= 1 || paused) return
+    const timer = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => {
+        setIdx(i => (i + 1) % cuts.length)
+        setVisible(true)
+      }, 350)
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [cuts, paused])
+
+  if (!cuts || !cuts.length) {
     return (
       <section>
         <div className="next-cut empty">
-          <div>
-            <div className="label">Chasing Next</div>
-            <div className="chase">No times on file yet — enter meet times to see cuts.</div>
-          </div>
+          <div className="label">Chasing Next</div>
+          <div className="chase">No times on file yet — enter meet times to see cuts.</div>
         </div>
       </section>
     )
   }
-  // Display pct as 1 decimal so 73.3 doesn't round down to 73 and 99.5
-  // doesn't ever round up to 100 (100% is impossible here by construction).
-  const pctDisplay = nextCut.next.pct.toFixed(1)
-  const pctFillWidth = Math.min(100, nextCut.next.pct)
+
+  const cut = cuts[idx]
+  const pct = Math.min(100, cut.next.pct)
+
+  // Determine tick positions for Option A bar (has A or better)
+  // Map each standard level to a position along the bar (0-100%)
+  // based on proximity to AAAA (top cut)
+  const tickPositions = (() => {
+    if (!cut.hasAOrBetter || !cut.stds) return null
+    const levels = LEVELS_ORDER.filter(l => cut.stds[l] != null)
+    if (levels.length < 2) return null
+    const slowest = cut.stds[levels[0]]   // B cut — slowest (highest seconds)
+    const fastest = cut.stds[levels[levels.length - 1]] // AAAA/top — fastest
+    const range = slowest - fastest
+    if (range === 0) return null
+    return levels.map(l => ({
+      level: l,
+      pos: ((slowest - cut.stds[l]) / range) * 100,
+      achieved: ['A','AA','AAA','AAAA','B','BB'].indexOf(l) <= ['A','AA','AAA','AAAA','B','BB'].indexOf(cut.currentLevel),
+      isNext: l === cut.next.level,
+    }))
+  })()
+
   return (
     <section>
-      <div className="next-cut">
-        <div>
-          <div className="label">Chasing Next</div>
-          <div className="chase">
-            {nextCut.event} — <span className="accent">{nextCut.next.level}</span>
-          </div>
-          <div className="sub">
-            Current {formatTime(nextCut.timeSec)} ·
-            Cut {formatTime(nextCut.next.cutoff)} ·
-            {' '}{pctDisplay}% of the way there
-          </div>
-          <div className="bar-wrap">
-            <div className="bar-fill" style={{ width: `${pctFillWidth}%` }} />
-            <div className="bar-marks">
-              <span style={{ left: '25%' }} />
-              <span style={{ left: '50%' }} />
-              <span style={{ left: '75%' }} />
+      <div
+        className="next-cut-v2"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div className={`nc-inner ${visible ? 'nc-visible' : 'nc-hidden'}`}>
+          <div className="nc-top">
+            <div>
+              <div className="label">Chasing Next</div>
+              <div className="nc-event">{cut.event}</div>
+              <div className="nc-standard">
+                {cut.currentLevel && <span className={`std ${cut.currentLevel}`}>{cut.currentLevel}</span>}
+                <span className="nc-arrow">→</span>
+                <span className={`std ${cut.next.level}`}>{cut.next.level}</span>
+              </div>
+              <div className="nc-sub">
+                Current {formatTime(cut.timeSec)} · Cut {formatTime(cut.next.cutoff)}
+              </div>
+            </div>
+            <div className="nc-right">
+              <div className="nc-gap">−{cut.next.gap.toFixed(2)}<span>s</span></div>
+              <div className="nc-gap-label">to cut</div>
             </div>
           </div>
-          <div className="bar-scale">
-            <span>Previous cut</span>
-            <span className="bar-scale-next">{nextCut.next.level} cut</span>
-          </div>
+
+          {/* BAR — conditional on hasAOrBetter */}
+          {cut.hasAOrBetter && tickPositions ? (
+            // Option A — ticked bar with standard labels
+            <div className="nc-bar-wrap">
+              <div className="nc-ticks-above">
+                {tickPositions.map(t => (
+                  <div
+                    key={t.level}
+                    className={`nc-tick-mark ${t.isNext ? 'next' : ''} ${t.achieved ? 'achieved' : ''}`}
+                    style={{ left: `${t.pos}%` }}
+                  />
+                ))}
+              </div>
+              <div className="nc-bar-track">
+                <div className="nc-bar-fill" style={{ width: `${pct}%` }}>
+                  <div className="nc-pct-label">{pct.toFixed(1)}%</div>
+                </div>
+                {tickPositions.map(t => (
+                  <div
+                    key={t.level}
+                    className="nc-bar-tick"
+                    style={{ left: `${t.pos}%` }}
+                  />
+                ))}
+              </div>
+              <div className="nc-tick-labels">
+                {tickPositions.map(t => (
+                  <div
+                    key={t.level}
+                    className={`nc-tick-label ${t.isNext ? 'next' : ''} ${t.achieved ? 'achieved' : ''}`}
+                    style={{ left: `${t.pos}%` }}
+                  >
+                    {t.level}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            // Simple bar — below A
+            <div className="nc-bar-wrap">
+              <div className="nc-bar-track">
+                <div className="nc-bar-fill" style={{ width: `${pct}%` }}>
+                  <div className="nc-pct-label">{pct.toFixed(1)}%</div>
+                </div>
+              </div>
+              <div className="nc-bar-scale">
+                <span>Previous cut</span>
+                <span>{cut.next.level} cut</span>
+              </div>
+            </div>
+          )}
         </div>
-        <div className="numeric">
-          <div className="gap">
-            −{nextCut.next.gap.toFixed(2)}<span style={{ fontSize: '26px' }}>s</span>
+
+        {/* Dots */}
+        {cuts.length > 1 && (
+          <div className="nc-dots">
+            {cuts.map((_, i) => (
+              <div
+                key={i}
+                className={`nc-dot ${i === idx ? 'active' : ''}`}
+                onClick={() => { setVisible(false); setTimeout(() => { setIdx(i); setVisible(true) }, 350) }}
+              />
+            ))}
           </div>
-          <div className="gap-label">Seconds to Cut</div>
-        </div>
+        )}
       </div>
     </section>
   )
