@@ -1365,23 +1365,55 @@ function AnimatedProgressionChart({
             first or last (small time spans with clustered meets). */}
         <g fill="#475569" fontSize="10" fontFamily="-apple-system, sans-serif" style={{ letterSpacing: '0.08em' }}>
           {(() => {
-            const MIN_DATE_X_GAP = 70 // px
-            const firstX = xScale(firstPt.date.getTime())
-            const lastX  = xScale(lastPt.date.getTime())
-            const midX   = xScale(midPt.date.getTime())
-            const showMid =
-              midPt !== firstPt && midPt !== lastPt &&
-              (midX - firstX) >= MIN_DATE_X_GAP &&
-              (lastX - midX)  >= MIN_DATE_X_GAP
-            const dates = showMid ? [firstPt, midPt, lastPt] : [firstPt, lastPt]
-            return dates.map((p, i, a) => (
+            const xMin = firstPt.date.getTime()
+            const xMax = lastPt.date.getTime()
+            const spanMs = xMax - xMin
+            const spanDays = spanMs / (1000 * 60 * 60 * 24)
+
+            // Pick tick interval based on span
+            let intervalMs
+            if (spanDays <= 90)       intervalMs = 1000 * 60 * 60 * 24 * 14      // 2 weeks
+            else if (spanDays <= 365) intervalMs = 1000 * 60 * 60 * 24 * 60      // 2 months
+            else if (spanDays <= 730) intervalMs = 1000 * 60 * 60 * 24 * 120     // 4 months
+            else                       intervalMs = 1000 * 60 * 60 * 24 * 180     // 6 months
+
+            // Generate tick dates snapped to month boundaries
+            const ticks = []
+            const startDate = new Date(xMin)
+            startDate.setDate(1) // snap to month start
+            let t = startDate.getTime()
+            while (t <= xMax + intervalMs) {
+              if (t >= xMin - intervalMs / 2) ticks.push(t)
+              t += intervalMs
+            }
+
+            // Filter: must be within chart range and have enough pixel spacing
+            const MIN_GAP = 65
+            const filtered = []
+            let lastX = -999
+            for (const tick of ticks) {
+              const x = xScale(Math.max(xMin, Math.min(xMax, tick)))
+              if (x - lastX >= MIN_GAP) {
+                filtered.push({ t: tick, x })
+                lastX = x
+              }
+            }
+
+            // Always include first and last
+            const allLabels = [
+              { t: xMin, x: xScale(xMin), anchor: 'start' },
+              ...filtered.filter(f => f.x > xScale(xMin) + MIN_GAP && f.x < xScale(xMax) - MIN_GAP).map(f => ({ ...f, anchor: 'middle' })),
+              { t: xMax, x: xScale(xMax), anchor: 'end' },
+            ]
+
+            return allLabels.map((item, i) => (
               <text
                 key={i}
-                x={xScale(p.date.getTime())}
+                x={item.x}
                 y={H - padB + 22}
-                textAnchor={i === 0 ? 'start' : i === a.length - 1 ? 'end' : 'middle'}
+                textAnchor={item.anchor}
               >
-                {fmtAxisDate(p.date).toUpperCase()}
+                {fmtAxisDate(new Date(item.t)).toUpperCase()}
               </text>
             ))
           })()}
