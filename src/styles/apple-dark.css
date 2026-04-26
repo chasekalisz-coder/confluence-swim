@@ -614,7 +614,7 @@ body.v2-active #root {
 /* Flip card structure */
 .v2 .au-card-wrap {
   perspective: 700px;
-  height: 120px;
+  height: 135px;
   cursor: pointer;
 }
 .v2 .au-card-inner {
@@ -668,7 +668,7 @@ body.v2-active #root {
   font-size: 11px; font-weight: 600; color: var(--v2-text-2);
 }
 .v2 .au-back-gap {
-  font-size: 10px; font-weight: 500;
+  font-size: 10px; font-weight: 500; display: block; margin-top: 1px;
 }
 .v2 .au-back-gap.delta-green  { color: var(--v2-green); }
 .v2 .au-back-gap.delta-yellow { color: var(--v2-gold); }

@@ -917,13 +917,15 @@ function AgeUpCard({ data }) {
             {backSteps.length ? backSteps.map(step => (
               <div key={step.level} className="au-back-row">
                 <span className={`std ${step.level}`}>{step.level}</span>
-                <span className="au-back-cut mono">{formatTime(step.cut)}</span>
-                {step.gap && !step.gap.achieved && (
-                  <span className={`au-back-gap delta-${gapColor(step.gap.pctOff)}`}>
-                    −{step.gap.deltaSec.toFixed(2)}s · {step.gap.pctOff.toFixed(1)}%
-                  </span>
-                )}
-                {step.gap?.achieved && <span className="hit-pill">✓ Hit</span>}
+                <div>
+                  <span className="au-back-cut mono">{formatTime(step.cut)}</span>
+                  {step.gap && !step.gap.achieved && (
+                    <span className={`au-back-gap delta-${gapColor(step.gap.pctOff)}`}>
+                      −{step.gap.deltaSec.toFixed(2)}s · {step.gap.pctOff.toFixed(1)}%
+                    </span>
+                  )}
+                  {step.gap?.achieved && <span className="hit-pill">✓ Hit</span>}
+                </div>
               </div>
             )) : (
               <div className="au-back-row" style={{color:'#475569', fontSize:'11px'}}>At top standard</div>
