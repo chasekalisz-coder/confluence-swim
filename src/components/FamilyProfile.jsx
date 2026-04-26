@@ -1991,9 +1991,13 @@ function BloomCircle({ label, course, athlete, age, gender }) {
         {/* Center dot — drawn AFTER everything so the center stays crisp */}
         <circle cx={cx} cy={cy} r={innerR * 0.5} fill="#0a0a0b" />
 
-        {/* Distance labels at each spoke — positioned just outside outerR */}
+        {/* Distance labels — only first and last spoke per family to reduce clutter */}
         <g fontFamily="SF Mono, ui-monospace, monospace" fontSize="9" fontWeight="500" fill="rgba(180,180,185,0.7)">
           {spokes.map((spoke, si) => {
+            const boundary = strokeBoundaries.find(b => b.startIdx <= si && b.endIdx >= si)
+            const isFirst = boundary && si === boundary.startIdx
+            const isLast = boundary && si === boundary.endIdx
+            if (!isFirst && !isLast) return null
             const a = spoke.aMid
             const x = cx + distLabelR * Math.cos(a)
             const y = cy + distLabelR * Math.sin(a)
