@@ -1971,7 +1971,7 @@ function BloomCircle({ label, course, athlete, age, gender, visible }) {
           {spokes.map((spoke, si) => {
             const reach = reachBySpoke[si]
             if (reach < 0.03) return null
-            const delay = `${(si / spokes.length) * 1.2}s`
+            const delay = `${(si / spokes.length) * 2.4}s`
             return (
               <path
                 key={si}
@@ -1980,7 +1980,7 @@ function BloomCircle({ label, course, athlete, age, gender, visible }) {
                 stroke="none"
                 style={{
                   transformOrigin: `${cx}px ${cy}px`,
-                  animation: visible ? `bloomGrow 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 0.8}s infinite` : 'none', opacity: visible ? 1 : 0,
+                  animation: visible ? `bloomGrow 1.2s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 1.4}s infinite` : 'none', opacity: visible ? 1 : 0,
                 }}
               />
             )
@@ -1992,7 +1992,7 @@ function BloomCircle({ label, course, athlete, age, gender, visible }) {
           {spokes.map((spoke, si) => {
             const reach = reachBySpoke[si]
             if (reach < 0.03) return null
-            const delay = `${(si / spokes.length) * 1.2}s`
+            const delay = `${(si / spokes.length) * 2.4}s`
             return (
               <path
                 key={si}
@@ -2001,7 +2001,7 @@ function BloomCircle({ label, course, athlete, age, gender, visible }) {
                 stroke="none"
                 style={{
                   transformOrigin: `${cx}px ${cy}px`,
-                  animation: visible ? `bloomGrow 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 0.8}s infinite` : 'none', opacity: visible ? 1 : 0,
+                  animation: visible ? `bloomGrow 1.2s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 1.4}s infinite` : 'none', opacity: visible ? 1 : 0,
                 }}
               />
             )
