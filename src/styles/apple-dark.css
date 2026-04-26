@@ -2424,7 +2424,6 @@ body.v2-active #root {
 .v2 .ca-cell {
   display: flex;
   align-items: center;
-  min-height: 48px;
 }
 @media (max-width: 900px) {
   .v2 .ca-header,
