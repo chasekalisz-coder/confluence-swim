@@ -17,9 +17,10 @@
   --surface: rgba(255, 255, 255, 0.025);
   --surface-input: rgba(255, 255, 255, 0.04);
   --danger: #f87171;
-  --amber: #f59e0b;
-  --amber-bright: #fbbf24;
-  --amber-light: #fcd34d;
+  --sage: #84a98c;
+  --sage-bright: #a3c4ab;
+  --sage-light: #b9d4be;
+  --sage-deep: #5a7e63;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -38,7 +39,18 @@ body::before {
   right: -200px;
   width: 800px;
   height: 800px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.14) 0%, rgba(245, 158, 11, 0.04) 35%, transparent 65%);
+  background: radial-gradient(circle, rgba(132, 169, 140, 0.16) 0%, rgba(132, 169, 140, 0.05) 35%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -250px;
+  left: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(132, 169, 140, 0.08) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -66,83 +78,72 @@ body > * { position: relative; z-index: 1; }
 }
 .topbar .crumb { font-size: 10px; color: var(--muted); letter-spacing: 0.05em; }
 
-.form-container {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 0 24px 60px;
-}
+.page { max-width: 760px; margin: 0 auto; padding: 0; }
 
-.hero {
-  padding: 40px 0 32px;
-}
+.hero { position: relative; padding: 48px 32px 32px; }
+.hero-inner { position: relative; z-index: 1; }
 .beta-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  display: inline-flex; align-items: center; gap: 8px;
   padding: 6px 12px;
-  background: rgba(245, 158, 11, 0.08);
-  border: 0.5px solid rgba(245, 158, 11, 0.25);
+  background: rgba(132, 169, 140, 0.08);
+  border: 0.5px solid rgba(132, 169, 140, 0.3);
   border-radius: 100px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 .beta-pill .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--amber);
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.7);
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--sage-bright);
+  box-shadow: 0 0 12px rgba(132, 169, 140, 0.7);
 }
 .beta-pill .label {
   font-size: 9px;
   letter-spacing: 0.2em;
-  color: var(--amber-light);
+  color: var(--sage-light);
   font-weight: 600;
   text-transform: uppercase;
 }
-.form-title {
+h1 {
   font-family: 'Fraunces', serif;
-  font-size: 40px;
+  font-size: 44px;
   font-weight: 400;
   color: white;
   line-height: 1.05;
   margin-bottom: 12px;
   letter-spacing: -0.02em;
 }
-.form-subtitle {
-  font-size: 13px;
-  color: #94a3b8;
-  max-width: 460px;
-  line-height: 1.6;
-}
-.form-subtitle a { display: none; }
+.hero-sub { font-size: 13px; color: #94a3b8; max-width: 460px; line-height: 1.6; }
 
-.card {
-  background: var(--surface);
-  border: 0.5px solid var(--rule);
-  border-radius: 12px;
-  padding: 22px 24px;
-  margin-bottom: 14px;
+.step { padding: 0 32px 28px; }
+.step-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+.step-num {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  color: rgba(132, 169, 140, 0.4);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
-.card-title {
+.step-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.18em;
   color: var(--gold);
   font-weight: 700;
-  margin-bottom: 16px;
 }
+.step-tag { margin-left: auto; font-size: 10px; color: var(--muted); }
 
-label {
+.field-label, label {
   display: block;
   font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--gold);
+  color: var(--muted);
   margin-bottom: 6px;
-  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .required {
-  color: var(--amber-light);
+  color: var(--sage-light);
   font-weight: 500;
   text-transform: none;
   letter-spacing: 0;
@@ -152,14 +153,13 @@ label {
 
 input, select, textarea {
   width: 100%;
-  padding: 10px 12px;
+  padding: 11px 13px;
   background: var(--surface-input);
   border: 0.5px solid var(--rule-strong);
   border-radius: 8px;
   font-size: 13px;
   color: white;
   font-family: inherit;
-  margin-bottom: 12px;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -172,7 +172,7 @@ select {
 }
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: rgba(245, 158, 11, 0.5);
+  border-color: rgba(132, 169, 140, 0.5);
 }
 input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
 input[type="file"] {
@@ -181,9 +181,9 @@ input[type="file"] {
   font-size: 12px;
 }
 input[type="file"]::-webkit-file-upload-button {
-  background: rgba(245, 158, 11, 0.12);
-  color: var(--amber-light);
-  border: 0.5px solid rgba(245, 158, 11, 0.3);
+  background: rgba(132, 169, 140, 0.12);
+  color: var(--sage-light);
+  border: 0.5px solid rgba(132, 169, 140, 0.3);
   border-radius: 6px;
   padding: 6px 12px;
   font-family: inherit;
@@ -202,9 +202,10 @@ textarea::placeholder, input::placeholder { color: #475569; }
 
 .row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
   gap: 12px;
 }
+.row > div { min-width: 0; }
 
 .pool-toggle {
   display: flex;
@@ -213,11 +214,11 @@ textarea::placeholder, input::placeholder { color: #475569; }
   border: 0.5px solid var(--rule-strong);
   padding: 3px;
   border-radius: 8px;
-  margin-bottom: 4px;
+  max-width: 320px;
 }
 .pool-btn {
   flex: 1;
-  padding: 10px 4px;
+  padding: 9px 4px;
   background: transparent;
   border: 0;
   color: var(--muted);
@@ -230,8 +231,8 @@ textarea::placeholder, input::placeholder { color: #475569; }
   transition: background 0.15s, color 0.15s;
 }
 .pool-btn.active {
-  background: rgba(245, 158, 11, 0.18);
-  color: var(--amber-light);
+  background: rgba(132, 169, 140, 0.2);
+  color: var(--sage-light);
   font-weight: 600;
 }
 
@@ -247,11 +248,31 @@ textarea::placeholder, input::placeholder { color: #475569; }
   font-size: 9px;
   letter-spacing: 0.1em;
   margin-bottom: 5px;
+  margin-top: 10px;
+}
+.topic-block label:first-of-type { margin-top: 0; }
+.topic-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.topic-block-num {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  color: var(--sage-light);
+  font-weight: 500;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(132, 169, 140, 0.18);
+  border: 0.5px solid rgba(132, 169, 140, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 .remove-topic {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   background: rgba(248, 113, 113, 0.08);
   border: 0;
   color: var(--muted);
@@ -259,195 +280,197 @@ textarea::placeholder, input::placeholder { color: #475569; }
   font-size: 13px;
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
+  font-family: inherit;
+  transition: color 0.15s, background 0.15s;
+  padding: 0;
 }
 .remove-topic:hover { color: var(--danger); background: rgba(248, 113, 113, 0.18); }
 
 .topic-select, .category-select {
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .faults-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 10px 0 12px;
+  padding: 4px 0 8px;
 }
 .fault-chip {
-  padding: 6px 12px;
+  padding: 6px 11px;
   background: rgba(255, 255, 255, 0.04);
   border: 0.5px solid var(--rule-strong);
-  border-radius: 14px;
+  color: #94a3b8;
   font-size: 11px;
+  border-radius: 100px;
   cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
   user-select: none;
-  font-weight: 500;
-  color: var(--muted);
-  transition: all 0.15s;
 }
 .fault-chip:hover { color: white; border-color: rgba(255, 255, 255, 0.18); }
 .fault-chip.selected {
-  background: rgba(245, 158, 11, 0.18);
-  color: var(--amber-light);
-  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(132, 169, 140, 0.22);
+  border-color: rgba(132, 169, 140, 0.5);
+  color: var(--sage-light);
+  font-weight: 500;
 }
 .custom-fault-input {
-  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 0.5px solid var(--rule-strong) !important;
+  color: white !important;
+  border-radius: 6px !important;
 }
-
 .what-improved, .what-needs-work {
-  margin-bottom: 8px;
-  min-height: 60px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 0.5px solid var(--rule);
+  margin-top: 4px;
+  margin-bottom: 0;
+  font-size: 12px;
 }
 
 .add-topic-btn {
   width: 100%;
-  padding: 12px;
-  background: rgba(245, 158, 11, 0.04);
-  border: 1px dashed rgba(245, 158, 11, 0.3);
-  color: var(--amber-light);
+  padding: 11px;
+  background: rgba(132, 169, 140, 0.06);
+  border: 0.5px dashed rgba(132, 169, 140, 0.4);
+  color: var(--sage-light);
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  cursor: pointer;
+  font-weight: 500;
   border-radius: 8px;
+  cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s;
 }
-.add-topic-btn:hover {
-  background: rgba(245, 158, 11, 0.08);
-  border-color: rgba(245, 158, 11, 0.5);
-}
+.add-topic-btn:hover { background: rgba(132, 169, 140, 0.12); }
 
+.photo-section { /* hook kept for any specific styling */ }
 .photo-status {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
-  margin-bottom: 8px;
-  padding: 6px 10px;
-  background: var(--surface-input);
-  border-radius: 6px;
-  display: inline-block;
+  margin-bottom: 10px;
 }
 .photo-status.ready {
-  background: rgba(45, 212, 191, 0.1);
-  color: #5eead4;
-  border: 0.5px solid rgba(45, 212, 191, 0.3);
+  color: var(--sage-light);
 }
 .photo-preview {
-  max-width: 200px;
-  max-height: 150px;
+  margin-top: 10px;
+  max-width: 100%;
   border-radius: 8px;
-  margin-top: 12px;
-  display: block;
-}
-.photo-section input[type="file"] {
-  margin-bottom: 8px;
+  border: 0.5px solid var(--rule-strong);
 }
 
 .video-file {
-  margin-bottom: 4px;
-}
-.video-label {
   margin-bottom: 8px;
 }
+.video-label {
+  display: block;
+  font-size: 11px;
+  color: var(--sage-light);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.media-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 0 32px 28px;
+}
+.media-row .step { padding: 0; }
 
 .error {
+  margin: 0 32px 16px;
+  padding: 12px 14px;
   background: rgba(248, 113, 113, 0.08);
   border: 0.5px solid rgba(248, 113, 113, 0.3);
   color: #fca5a5;
-  padding: 12px 16px;
   border-radius: 8px;
-  font-size: 13px;
-  margin-bottom: 16px;
-  white-space: pre-wrap;
-  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
 }
 
+.cta-wrap { padding: 4px 32px 36px; }
 .generate {
   width: 100%;
-  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
-  color: #422006;
+  padding: 15px;
+  background: linear-gradient(180deg, #b9d4be 0%, #84a98c 100%);
+  color: #0f2417;
   border: 0;
-  padding: 16px;
+  border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  border-radius: 10px;
-  font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
-  margin-top: 8px;
-  transition: transform 0.1s, box-shadow 0.2s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.15s, transform 0.05s;
 }
-.generate:hover:not(:disabled) {
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-}
+.generate:hover:not(:disabled) { opacity: 0.92; }
 .generate:active:not(:disabled) { transform: scale(0.99); }
 .generate:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  background: var(--surface-input);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--muted);
-  box-shadow: none;
+  cursor: not-allowed;
+}
+.generate-sub {
+  text-align: center;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 10px;
 }
 
 .loading {
   display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 60px 32px;
   text-align: center;
-  padding: 80px 32px;
-  color: var(--muted);
 }
-.loading.active { display: block; }
+.loading.active { display: flex; }
+.loading > div:last-child { font-size: 13px; color: var(--muted); }
 .spinner {
-  width: 36px;
-  height: 36px;
-  border: 2px solid rgba(245, 158, 11, 0.2);
-  border-top-color: var(--amber-bright);
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(132, 169, 140, 0.2);
+  border-top-color: var(--sage-bright);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
+  animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.loading div:last-child {
-  font-size: 13px;
-  color: #94a3b8;
-}
 
-.note-page {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 32px 24px;
-}
+.note-page { padding: 32px; }
 .action-bar {
   display: flex;
-  gap: 8px;
   justify-content: space-between;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 0.5px solid var(--rule);
+  margin-bottom: 16px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 .action-btn {
-  padding: 10px 18px;
-  background: var(--surface-input);
+  padding: 9px 14px;
+  background: transparent;
   border: 0.5px solid var(--rule-strong);
-  color: white;
+  color: var(--ink);
   font-size: 12px;
-  font-weight: 500;
   cursor: pointer;
   border-radius: 8px;
   font-family: inherit;
 }
 .action-btn:hover { background: rgba(255,255,255,0.06); }
 .action-btn.primary {
-  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+  background: linear-gradient(180deg, #b9d4be 0%, #84a98c 100%);
   border-color: transparent;
-  color: #422006;
+  color: #0f2417;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 4px 12px rgba(132, 169, 140, 0.25);
 }
 
 .note {
@@ -485,7 +508,7 @@ textarea::placeholder, input::placeholder { color: #475569; }
 .athlete-rule {
   width: 40px;
   height: 3px;
-  background: var(--amber);
+  background: var(--sage);
   margin-bottom: 8px;
   border-radius: 2px;
 }
@@ -560,30 +583,35 @@ textarea::placeholder, input::placeholder { color: #475569; }
 @media (max-width: 640px) {
   .topbar { padding: 12px 18px; }
   .topbar .brand img { height: 18px; }
-  .form-container { padding: 0 16px 60px; }
-  .hero { padding: 28px 0 22px; }
-  .form-title { font-size: 28px; }
-  .form-subtitle { font-size: 12px; }
-  .card { padding: 16px 18px; }
-  .row { grid-template-columns: 1fr; gap: 10px; }
+  .hero { padding: 32px 20px 24px; }
+  h1 { font-size: 30px; }
+  .hero-sub { font-size: 12px; }
+  .step { padding: 0 20px 24px; }
+  .step-num { font-size: 22px; }
+  .step-label { font-size: 10px; }
+  .row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .row > div:first-child { grid-column: 1 / -1; }
   .topic-block { padding: 14px; }
+  .media-row { grid-template-columns: 1fr; gap: 0; padding: 0 20px; }
   .note-page { padding: 20px 16px; }
-  .note { padding: 22px 18px; }
   .athlete-name { font-size: 26px; }
+  .note { padding: 22px 18px; }
   .action-bar { flex-direction: column; }
-  .action-btn { width: 100%; }
+  .action-btn { width: 100%; text-align: center; }
+  .cta-wrap { padding: 4px 20px 28px; }
+  .generate { padding: 14px; font-size: 12px; }
 }
 
 @media print {
   @page { size: letter portrait; margin: 0.75in 0.5in; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   body { background: white !important; color: #121212 !important; }
-  body::before, .topbar, .action-bar, .save-toast { display: none !important; }
-  .note { background: white !important; border: none !important; padding: 0 !important; }
-  .athlete-name { color: #121212 !important; }
-  .note p, .note h3 { color: #2c2c2a !important; }
-  .note h3 { color: #121212 !important; }
-  .athlete-rule { background: #f59e0b !important; }
+  body::before, body::after, .topbar, .action-bar, .save-toast { display: none !important; }
+  .note { background: white !important; border: 0 !important; padding: 0 !important; }
+  .athlete-name, .note-logo { color: #121212 !important; }
+  .note p { color: #2c2c2a !important; }
+  .athlete-rule { background: #84a98c !important; }
+  .tech-box { background: #f5f5f0 !important; border: 0.5px solid #d4d4cc !important; }
 }
 </style>
 </head>
@@ -593,51 +621,96 @@ textarea::placeholder, input::placeholder { color: #475569; }
   <div class="crumb">Technique</div>
 </div>
 
-<div id="formView" class="form-container">
+<div class="page">
+<div id="formView">
   <div class="hero">
-    <div class="beta-pill">
-      <span class="dot"></span>
-      <span class="label">Technique Session</span>
+    <div class="hero-inner">
+      <div class="beta-pill">
+        <span class="dot"></span>
+        <span class="label">Technique Session · Beta</span>
+      </div>
+      <h1>Refine the stroke.</h1>
+      <div class="hero-sub">Capture what you saw, what improved, what still needs work. The note writes itself once you've named the focus areas.</div>
     </div>
-    <h1 class="form-title">Refine the stroke.</h1>
-    <div class="form-subtitle">Capture what you saw, what improved, what still needs work. The note writes itself once you've named the focus areas.</div>
   </div>
 
-  <div class="card">
-    <label>Athlete</label>
-    <select id="athleteId">
-    </select>
-    <div class="row">
-      <div><label>Session Date</label><input id="sessionDate" type="date" /></div>
-      <div><label>Duration (minutes)</label><input id="duration" type="number" placeholder="e.g., 60" /></div>
-      <div><label>Session Number (optional)</label><input id="sessionNum" type="number" placeholder="e.g., 12" /></div>
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">01</div>
+      <div class="step-label">Setup</div>
     </div>
-    <label>Pool Type <span class="required">*required</span></label>
-    <div class="pool-toggle">
-      <button type="button" class="pool-btn" data-pool="SCY" onclick="setPool('SCY')">SCY</button>
-      <button type="button" class="pool-btn" data-pool="LCM" onclick="setPool('LCM')">LCM</button>
+    <div class="row">
+      <div>
+        <label class="field-label">Athlete</label>
+        <select id="athleteId"></select>
+      </div>
+      <div>
+        <label class="field-label">Date</label>
+        <input id="sessionDate" type="date" />
+      </div>
+      <div>
+        <label class="field-label">Duration (min)</label>
+        <input id="duration" type="number" placeholder="e.g., 60" />
+      </div>
+      <div>
+        <label class="field-label">Session #</label>
+        <input id="sessionNum" type="number" placeholder="optional" />
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <label class="field-label">Pool Type <span class="required">*required</span></label>
+      <div class="pool-toggle">
+        <button type="button" class="pool-btn" data-pool="SCY" onclick="setPool('SCY')">SCY</button>
+        <button type="button" class="pool-btn" data-pool="LCM" onclick="setPool('LCM')">LCM</button>
+      </div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-title">Technique Topics</div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">02</div>
+      <div class="step-label">Technique Topics</div>
+    </div>
     <div id="topicBlocksContainer"></div>
     <button class="add-topic-btn" onclick="addTopicBlock()">+ Add Topic</button>
   </div>
-  <div class="card photo-section">
-    <label>Session Photo (optional)</label>
-    <div class="photo-status" id="photoStatus">No photo attached</div>
-    <input type="file" accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif" onchange="handlePhoto(event)" />
-    <img id="photoPreview" class="photo-preview" style="display:none" />
+
+  <div class="media-row">
+    <div class="step photo-section">
+      <div class="step-header">
+        <div class="step-num">03</div>
+        <div class="step-label">Session Photo</div>
+        <div class="step-tag">Optional</div>
+      </div>
+      <div class="photo-status" id="photoStatus">No photo attached</div>
+      <input type="file" accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif" onchange="handlePhoto(event)" />
+      <img id="photoPreview" class="photo-preview" style="display:none" />
+    </div>
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">04</div>
+        <div class="step-label">Video References</div>
+        <div class="step-tag">Max 2</div>
+      </div>
+      <div id="videoList"></div>
+      <button type="button" class="add-topic-btn" id="addVideoBtn" onclick="addVideoSlot()" style="margin-top:8px">+ Add Video</button>
+    </div>
   </div>
-  <div class="card">
-    <label>Video References (optional — max 2)</label>
-    <div id="videoList"></div>
-    <button type="button" class="add-topic-btn" id="addVideoBtn" onclick="addVideoSlot()" style="margin-top:8px">+ Add Video</button>
-  </div>
+
   <div class="error" id="errorBox" style="display:none"></div>
-  <button class="generate" id="generateBtn" onclick="generate()" disabled>Generate Technique Note</button>
+  <div class="cta-wrap">
+    <button class="generate" id="generateBtn" onclick="generate()" disabled>
+      <span>Generate Technique Note</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M13 5l7 7-7 7"/>
+      </svg>
+    </button>
+    <div class="generate-sub">Reviews your last 30 technique sessions before answering</div>
+  </div>
 </div>
+
 <div id="loading" class="loading"><div class="spinner"></div><div>Analyzing stroke mechanics...</div></div>
+
 <div id="noteView" class="note-page" style="display:none">
   <div class="action-bar">
     <button class="action-btn" onclick="backToForm()">&larr; New Technique Session</button>
@@ -645,6 +718,7 @@ textarea::placeholder, input::placeholder { color: #475569; }
   </div>
   <div id="saveToast" class="save-toast"></div>
   <div class="note" id="noteRoot"></div>
+</div>
 </div>
 <script>
 const TECHNIQUE_TOPICS = [
