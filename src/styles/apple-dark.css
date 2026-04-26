@@ -695,6 +695,9 @@ body.v2-active #root {
 @media (max-width: 720px) {
   .v2 .age-up-grid { grid-template-columns: repeat(2, 1fr); }
 
+  /* Section spacing — 72px between every section is desktop-scale, too much vertical dead space on a narrow viewport */
+  .v2 section { margin-bottom: 32px; }
+
   /* Chasing Next card — tighter on mobile so event title + gap number share the row cleanly */
   .v2 .next-cut-v2 { padding: 24px 22px 22px; }
   .v2 .nc-top { gap: 16px; margin-bottom: 18px; }

@@ -13,6 +13,8 @@ Section-by-section mobile pass on the Athlete Performance Profile, starting with
 - `.nc-gap` 44px (down from 56px), `.nc-gap span` 18px (down from 22px)
 Desktop layout unchanged — overrides only fire below 720px.
 
+**Section spacing — mobile reduction** (1 commit). The global rule `.v2 section { margin-bottom: 72px; }` was inherited on mobile, creating a noticeable dead band between every section — most visible between the hero (events chips) and the Chasing Next card. Added `.v2 section { margin-bottom: 32px; }` to the same 720px breakpoint. Affects every section break on the v2 profile on mobile only; desktop unchanged.
+
 ### Files changed this session
 - src/styles/apple-dark.css (one mobile-only block added inside existing 720px breakpoint)
 - PROGRESS.md (this entry)
