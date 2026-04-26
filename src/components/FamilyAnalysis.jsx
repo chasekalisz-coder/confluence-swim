@@ -560,12 +560,11 @@ function possessive(athlete) {
 }
 
 // ============================================================
-// MeetAnalyzerTool — placeholder tool page
+// MeetAnalyzerTool — coming soon page
 // ============================================================
-// Inline tool view that swaps in place of the Analysis index when
-// the Meet Analyzer card is clicked. Shows what the eventual UI will
-// look like with disabled inputs — sets the visual shape so families
-// can see what's coming. Comparison math is not yet wired up.
+// Tool isn't built yet. Shows a clean placeholder explaining what's
+// coming and a back button. The full preview shape was removed —
+// disabled inputs were misleading more than informative.
 // ============================================================
 function MeetAnalyzerTool({ athlete, onClose }) {
   return (
@@ -573,7 +572,7 @@ function MeetAnalyzerTool({ athlete, onClose }) {
       <button className="back" onClick={onClose}>← Back to Analysis</button>
 
       <div className="tool-header">
-        <div className="tool-tag">Tool · Preview</div>
+        <div className="tool-tag">Tool</div>
         <h1 className="tool-title">Meet Analyzer</h1>
         <p className="tool-sub">
           Paste {possessive(athlete)} splits from any race and compare them against the
@@ -582,59 +581,12 @@ function MeetAnalyzerTool({ athlete, onClose }) {
         </p>
       </div>
 
-      <div className="tool-banner">
-        <div className="tb-dot" />
-        <div>
-          <div className="tb-title">Coming Soon</div>
-          <div className="tb-sub">
-            The Meet Analyzer is under active build. This preview shows the input
-            shape — the comparison engine and visualizations ship next. Try entering
-            values to see how the form will feel.
-          </div>
+      <div className="coming-soon-card">
+        <div className="cs-tag">Coming Soon</div>
+        <div className="cs-title">Currently in development</div>
+        <div className="cs-sub">
+          The Meet Analyzer ships next. Check back soon.
         </div>
-      </div>
-
-      <div className="tool-form">
-        <div className="tf-section">
-          <label className="tf-label">Event</label>
-          <select className="tf-select" disabled>
-            <option>Select event…</option>
-          </select>
-        </div>
-
-        <div className="tf-grid-2">
-          <div className="tf-section">
-            <label className="tf-label">Course</label>
-            <select className="tf-select" disabled>
-              <option>SCY</option>
-              <option>LCM</option>
-            </select>
-          </div>
-          <div className="tf-section">
-            <label className="tf-label">Meet</label>
-            <input className="tf-input" placeholder="e.g. TAGs Championships" disabled />
-          </div>
-        </div>
-
-        <div className="tf-section">
-          <label className="tf-label">Splits (seconds)</label>
-          <div className="tf-splits-grid">
-            {[1,2,3,4,5,6,7,8].map(i => (
-              <div key={i} className="tf-split-cell">
-                <div className="tf-split-label">Split {i}</div>
-                <input className="tf-input" placeholder="—" disabled />
-              </div>
-            ))}
-          </div>
-          <div className="tf-hint">
-            Splits auto-adjust based on the event distance. Only the relevant cells
-            will be active.
-          </div>
-        </div>
-
-        <button className="tf-submit disabled" disabled>
-          Analyze — coming soon
-        </button>
       </div>
     </div>
   )

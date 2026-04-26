@@ -2817,6 +2817,47 @@ body.v2-active #root {
   line-height: 1.5;
 }
 
+/* Coming Soon — full card placeholder used when a tool isn't built yet */
+.v2 .coming-soon-card {
+  margin-top: 32px;
+  padding: 48px 32px;
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 16px;
+  text-align: center;
+}
+.v2 .coming-soon-card .cs-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(212, 168, 83, 0.12);
+  border: 0.5px solid rgba(212, 168, 83, 0.3);
+  border-radius: 980px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
+  margin-bottom: 20px;
+}
+.v2 .coming-soon-card .cs-title {
+  font-size: 22px; font-weight: 600;
+  color: var(--v2-text);
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+.v2 .coming-soon-card .cs-sub {
+  font-size: 14px;
+  color: var(--v2-text-2);
+  line-height: 1.5;
+  max-width: 420px;
+  margin: 0 auto;
+}
+@media (max-width: 720px) {
+  .v2 .coming-soon-card {
+    padding: 36px 22px;
+  }
+  .v2 .coming-soon-card .cs-title { font-size: 18px; }
+  .v2 .coming-soon-card .cs-sub   { font-size: 13px; }
+}
+
 .v2 .tool-form {
   background: var(--v2-surface);
   border: 0.5px solid var(--v2-border);
