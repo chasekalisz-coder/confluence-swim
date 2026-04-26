@@ -847,10 +847,12 @@ body.v2-active #root {
      and same specificity as our .ca-tier rule, so we need !important to win. */
   .v2 .ca-tier-pro_swim { display: none !important; }
   .v2 .ca-tier-nationals { display: none !important; }
-  /* Stack Event over Best on mobile (event-best-group goes from display:contents to flex-column) */
+  /* Stack Event over Best on mobile (event-best-group goes from display:contents to flex-column).
+     Desktop rule .ca-event-best-group { display: contents } sits later in stylesheet with same
+     specificity, so we need !important here too. */
   .v2 .ca-event-best-group {
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 2px;
   }
   /* Mobile header label — show "Event/Time" (replace "Event" text via pseudo, hide "Best" sibling).
