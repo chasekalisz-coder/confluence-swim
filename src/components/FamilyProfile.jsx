@@ -483,7 +483,7 @@ function NextCutCard({ cuts }) {
                 <span className={`std ${cut.next.level}`}>{cut.next.level}</span>
               </div>
               <div className="nc-sub">
-                Current {formatTime(cut.timeSec)} · Cut {formatTime(cut.next.cutoff)} · {cut.next.pct.toFixed(1)}% of the way there
+                Current {formatTime(cut.timeSec)} · Cut {formatTime(cut.next.cutoff)}
               </div>
             </div>
             <div className="nc-right">
@@ -506,7 +506,9 @@ function NextCutCard({ cuts }) {
                 ))}
               </div>
               <div className="nc-bar-track">
-                <div className="nc-bar-fill" style={{ width: `${pct}%` }} />
+                <div className="nc-bar-fill" style={{ width: `${pct}%` }}>
+                  <div className="nc-pct-label">{cut.next.pct.toFixed(1)}%</div>
+                </div>
                 {tickPositions.map(t => (
                   <div
                     key={t.level}
@@ -531,7 +533,9 @@ function NextCutCard({ cuts }) {
             // Simple bar — below A
             <div className="nc-bar-wrap">
               <div className="nc-bar-track">
-                <div className="nc-bar-fill" style={{ width: `${pct}%` }} />
+                <div className="nc-bar-fill" style={{ width: `${pct}%` }}>
+                  <div className="nc-pct-label">{cut.next.pct.toFixed(1)}%</div>
+                </div>
               </div>
               <div className="nc-bar-scale">
                 <span>Previous cut</span>
