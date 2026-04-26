@@ -118,12 +118,12 @@ export default function App() {
   }
 
   // ---- Browser history support for family-side navigation ----
-  // The popstate listener is registered once on mount and uses the
-  // current hash to determine which view to show. The "current view"
-  // when navigating manually pushes a history entry that the back
-  // button will reverse.
+  // The popstate listener is registered once an athlete is loaded.
+  // Applying hash before the athlete loads would render FamilyProfile
+  // with null data and crash the page.
   useEffect(() => {
     if (!urlAthleteId) return
+    if (!selectedAthlete) return  // Wait for athlete to load
 
     const applyHashToView = () => {
       const h = window.location.hash.replace('#', '')
@@ -150,7 +150,7 @@ export default function App() {
       window.removeEventListener('popstate', applyHashToView)
       window.removeEventListener('hashchange', applyHashToView)
     }
-  }, [urlAthleteId])
+  }, [urlAthleteId, selectedAthlete])
 
   // ---- v2 navigation handler, shared across all v2 pages ----
   // Maps the FamilyNav labels ('profile', 'notes', 'meets', 'analysis',
