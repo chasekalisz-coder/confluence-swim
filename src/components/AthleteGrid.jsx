@@ -1,10 +1,20 @@
 
 
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { fullName, initials, primaryEvents, makeBlankAthlete } from '../data/athletes.js'
 import { addAthlete } from '../lib/db.js'
 import { buildCanonicalTimesList } from '../lib/canonicalEvents.js'
+
+// Reads the URL hash and returns a valid mobileTab value.
+// Allows the standalone tool pages (/sprint.html, etc.) to land on a
+// specific tab when they link back to "/" via "/#tools" or "/#settings".
+function readTabFromHash() {
+  if (typeof window === 'undefined') return 'athletes'
+  const h = window.location.hash.replace('#', '')
+  if (h === 'tools' || h === 'settings') return h
+  return 'athletes'
+}
 
 export default function AthleteGrid({ athletes, onSelect, onViewProfile, connectionStatus, onAthleteAdded, onViewSlotRequests }) {
   const [adding, setAdding] = useState(false)
@@ -14,7 +24,24 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
   const [newDob, setNewDob] = useState('')
   const [newGender, setNewGender] = useState('')
   const [search, setSearch] = useState('')
-  const [mobileTab, setMobileTab] = useState('athletes') // 'athletes' | 'tools' | 'settings'
+  const [mobileTab, setMobileTab] = useState(readTabFromHash) // 'athletes' | 'tools' | 'settings'
+
+  // Keep the URL hash in sync with the active mobile tab so the browser
+  // back button works and external links (e.g. tool-page bottom nav) can
+  // deep-link into a specific tab.
+  useEffect(() => {
+    const onHash = () => setMobileTab(readTabFromHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+  const updateMobileTab = (next) => {
+    setMobileTab(next)
+    const desiredHash = next === 'athletes' ? '' : '#' + next
+    if (window.location.hash !== desiredHash) {
+      // Replace state so we don't pile up history entries when switching tabs
+      window.history.replaceState(null, '', window.location.pathname + window.location.search + desiredHash)
+    }
+  }
 
   // Filter athletes by search
   const filteredAthletes = athletes.filter(a => {
@@ -358,21 +385,21 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
       <nav className="agp-tabbar">
         <button
           className={`agp-tab ${mobileTab === 'athletes' ? 'agp-tab-active' : ''}`}
-          onClick={() => setMobileTab('athletes')}
+          onClick={() => updateMobileTab('athletes')}
         >
           <span className="agp-tab-icon">👥</span>
           <span className="agp-tab-label">Athletes</span>
         </button>
         <button
           className={`agp-tab ${mobileTab === 'tools' ? 'agp-tab-active' : ''}`}
-          onClick={() => setMobileTab('tools')}
+          onClick={() => updateMobileTab('tools')}
         >
           <span className="agp-tab-icon">⚡</span>
           <span className="agp-tab-label">Tools</span>
         </button>
         <button
           className={`agp-tab ${mobileTab === 'settings' ? 'agp-tab-active' : ''}`}
-          onClick={() => setMobileTab('settings')}
+          onClick={() => updateMobileTab('settings')}
         >
           <span className="agp-tab-icon">⚙</span>
           <span className="agp-tab-label">Settings</span>
