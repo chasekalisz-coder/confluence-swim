@@ -375,10 +375,10 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
         {/* ============ SCHEDULING ============ */}
         <section>
           <h2 className="section-title">Scheduling</h2>
-          <div className="sched-card">
+          <div className="sched-card" onClick={() => onNavigate && onNavigate('resources')} style={{cursor:'pointer'}}>
             <div className="sc-title">Request session slots</div>
             <div className="sc-sub">
-              Pick first and second choice for the coming month. Chase confirms within 48 hours.
+              Pick your first-choice slots for the coming month and any backup times that would also work.
             </div>
             <button className="sched-cta">Request Slots →</button>
           </div>
