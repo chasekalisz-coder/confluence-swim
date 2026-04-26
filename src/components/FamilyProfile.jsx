@@ -415,7 +415,7 @@ function NextCutCard({ cuts }) {
       setTimeout(() => {
         setIdx(i => (i + 1) % cuts.length)
         setVisible(true)
-      }, 600)
+      }, 1200)
     }, 5000)
     return () => clearInterval(timer)
   }, [cuts, paused])
@@ -483,7 +483,7 @@ function NextCutCard({ cuts }) {
                 <span className={`std ${cut.next.level}`}>{cut.next.level}</span>
               </div>
               <div className="nc-sub">
-                Current {formatTime(cut.timeSec)} · Cut {formatTime(cut.next.cutoff)}
+                Current {formatTime(cut.timeSec)} · Cut {formatTime(cut.next.cutoff)} · {cut.next.pct.toFixed(1)}% of the way there
               </div>
             </div>
             <div className="nc-right">
@@ -506,9 +506,7 @@ function NextCutCard({ cuts }) {
                 ))}
               </div>
               <div className="nc-bar-track">
-                <div className="nc-bar-fill" style={{ width: `${pct}%` }}>
-                  <div className="nc-pct-label">{pct.toFixed(1)}%</div>
-                </div>
+                <div className="nc-bar-fill" style={{ width: `${pct}%` }} />
                 {tickPositions.map(t => (
                   <div
                     key={t.level}
@@ -533,9 +531,7 @@ function NextCutCard({ cuts }) {
             // Simple bar — below A
             <div className="nc-bar-wrap">
               <div className="nc-bar-track">
-                <div className="nc-bar-fill" style={{ width: `${pct}%` }}>
-                  <div className="nc-pct-label">{pct.toFixed(1)}%</div>
-                </div>
+                <div className="nc-bar-fill" style={{ width: `${pct}%` }} />
               </div>
               <div className="nc-bar-scale">
                 <span>Previous cut</span>
@@ -552,7 +548,7 @@ function NextCutCard({ cuts }) {
               <div
                 key={i}
                 className={`nc-dot ${i === idx ? 'active' : ''}`}
-                onClick={() => { setVisible(false); setTimeout(() => { setIdx(i); setVisible(true) }, 600) }}
+                onClick={() => { setVisible(false); setTimeout(() => { setIdx(i); setVisible(true) }, 1200) }}
               />
             ))}
           </div>
