@@ -749,18 +749,20 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
                         const gap = (bestSec != null && cut != null) ? gapToCut(bestSec, cut) : null
                         return (
                           <div key={tier} className="ca-cell">
-                            {gap?.achieved ? (
-                              <span className="hit-pill">✓ Hit</span>
-                            ) : gap ? (
-                              <div className={`stacked-gap delta-${gap.color || 'neutral'}`}>
-                                <div className="stacked-cut mono">{formatTime(cut)}</div>
-                                <div className="stacked-delta-row">
-                                  <div className="stacked-delta mono">−{gap.deltaSec.toFixed(2)}</div>
-                                  <div className="stacked-pct">{gap.pctOff.toFixed(1)}%</div>
-                                </div>
-                              </div>
-                            ) : (
+                            {cut == null ? (
                               <span className="std none">—</span>
+                            ) : gap?.achieved ? (
+                              <span className="hit-pill">✓ Hit</span>
+                            ) : (
+                              <div className={`stacked-gap delta-${gap?.color || 'neutral'}`}>
+                                <div className="stacked-cut mono">{formatTime(cut)}</div>
+                                {gap && (
+                                  <div className="stacked-delta-row">
+                                    <div className="stacked-delta mono">−{gap.deltaSec.toFixed(2)}</div>
+                                    <div className="stacked-pct">{gap.pctOff.toFixed(1)}%</div>
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
                         )
