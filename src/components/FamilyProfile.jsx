@@ -1643,11 +1643,25 @@ const BLOOM_STROKE_ORDER = [
 ]
 
 function SpecialtyBloom({ athlete, age, gender }) {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect() } },
+      { threshold: 0.2 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <div>
+    <div ref={ref}>
       <div className="bloom-pair">
-        <BloomCircle label="SCY" course="SCY" athlete={athlete} age={age} gender={gender} />
-        <BloomCircle label="LCM" course="LCM" athlete={athlete} age={age} gender={gender} />
+        <BloomCircle label="SCY" course="SCY" athlete={athlete} age={age} gender={gender} visible={visible} />
+        <BloomCircle label="LCM" course="LCM" athlete={athlete} age={age} gender={gender} visible={visible} />
       </div>
       <BloomLegend />
     </div>
@@ -1691,7 +1705,7 @@ function BloomLegend() {
   )
 }
 
-function BloomCircle({ label, course, athlete, age, gender }) {
+function BloomCircle({ label, course, athlete, age, gender, visible }) {
   // -----------------------------------------------------------------
   // SPOKE LAYOUT — each stroke family gets an EQUAL slice of the circle.
   // -----------------------------------------------------------------
@@ -1966,7 +1980,7 @@ function BloomCircle({ label, course, athlete, age, gender }) {
                 stroke="none"
                 style={{
                   transformOrigin: `${cx}px ${cy}px`,
-                  animation: `bloomGrow 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 0.8}s infinite`,
+                  animation: visible ? `bloomGrow 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 0.8}s infinite` : 'none', opacity: visible ? 1 : 0,
                 }}
               />
             )
@@ -1987,7 +2001,7 @@ function BloomCircle({ label, course, athlete, age, gender }) {
                 stroke="none"
                 style={{
                   transformOrigin: `${cx}px ${cy}px`,
-                  animation: `bloomGrow 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 0.8}s infinite`,
+                  animation: visible ? `bloomGrow 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 0.8}s infinite` : 'none', opacity: visible ? 1 : 0,
                 }}
               />
             )
