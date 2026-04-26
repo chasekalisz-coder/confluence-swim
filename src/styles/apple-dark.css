@@ -760,6 +760,19 @@ body.v2-active #root {
   .v2 .rc-show-more:hover { background: var(--v2-surface-3); }
   .v2 .rc-show-more:active { background: var(--v2-surface-3); transform: scale(0.99); }
 
+  /* Session Notes — stats strip becomes 2x2 grid on mobile (was 4-column horizontal) */
+  .v2 .stats-strip {
+    grid-template-columns: repeat(2, 1fr) !important;
+    margin-bottom: 24px;
+  }
+  .v2 .stats-strip .stat { padding: 16px 14px; }
+  .v2 .stats-strip .stat .label {
+    font-size: 9px;
+    margin-bottom: 6px;
+  }
+  .v2 .stats-strip .stat .value { font-size: 22px; }
+  .v2 .stats-strip .stat .value.sm { font-size: 16px; }
+
   /* Chasing Next card — tighter on mobile so event title + gap number share the row cleanly */
   .v2 .next-cut-v2 { padding: 24px 22px 22px; }
   .v2 .nc-top { gap: 16px; margin-bottom: 18px; }
