@@ -1780,8 +1780,13 @@ function BloomCircle({ label, course, athlete, age, gender, visible, bestTimes }
   // -----------------------------------------------------------------
   const bestBySpoke = spokes.map(s => {
     const key = `${s.event} ${course}`
-    const timeStr = bestTimes?.[key]
-    return timeStr ? parseTime(timeStr) : null
+    // Try bestTimes first, then fall back to scanning meetTimes directly
+    const fromBest = bestTimes?.[key]
+    if (fromBest) return parseTime(fromBest)
+    // Fallback: find best (lowest seconds) from meetTimes directly
+    const times = (athlete.meetTimes || []).filter(t => t.event === key).map(t => parseTime(t.time)).filter(Boolean)
+    if (!times.length) return null
+    return Math.min(...times)
   })
 
   function cutFor(tier, event) {
