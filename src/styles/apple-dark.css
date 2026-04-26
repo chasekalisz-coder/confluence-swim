@@ -739,6 +739,27 @@ body.v2-active #root {
   .v2 .progression-chart { padding: 16px 6px; }
   .v2 .progression-chart .pc-head { padding: 0 8px; }
 
+  /* Power Rankings — Show more button (mobile only; not rendered on desktop) */
+  .v2 .rc-show-more {
+    display: block !important;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 16px;
+    background: var(--v2-surface-2);
+    border: 0.5px solid var(--v2-border);
+    border-radius: 10px;
+    color: var(--v2-text);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .v2 .rc-show-more:hover { background: var(--v2-surface-3); }
+  .v2 .rc-show-more:active { background: var(--v2-surface-3); transform: scale(0.99); }
+
   /* Chasing Next card — tighter on mobile so event title + gap number share the row cleanly */
   .v2 .next-cut-v2 { padding: 24px 22px 22px; }
   .v2 .nc-top { gap: 16px; margin-bottom: 18px; }
@@ -3109,6 +3130,7 @@ body.v2-active #root {
 .v2 .rc-pct { color: var(--v2-gold); font-weight: 600; text-align: right; font-size: 13px; }
 
 /* Rankings v2 */
+.v2 .rc-show-more { display: none; }
 .v2 .rc-row-v2 {
   display: grid;
   grid-template-columns: 36px 1fr 44px;

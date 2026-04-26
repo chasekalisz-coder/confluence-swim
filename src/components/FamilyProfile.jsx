@@ -988,27 +988,51 @@ function TexasTagsBadge() {
 }
 
 function PowerRankingsList({ rankings, age, gender, course, bestTimes }) {
+  const [showAll, setShowAll] = useState(false)
+
   if (!rankings.length) {
     return <div className="empty-state">No meet times on file yet.</div>
   }
-  const mid = Math.ceil(rankings.length / 2)
-  const left = rankings.slice(0, mid)
-  const right = rankings.slice(mid)
+
+  // On mobile (single column), default to showing only the top 10 — parents mostly
+  // care about the strongest events. "Show more" expands to the full list.
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 720px)').matches
+  const MOBILE_INITIAL = 10
+  const visibleRankings = (isMobile && !showAll)
+    ? rankings.slice(0, MOBILE_INITIAL)
+    : rankings
+
+  const mid = Math.ceil(visibleRankings.length / 2)
+  const left = visibleRankings.slice(0, mid)
+  const right = visibleRankings.slice(mid)
   const bucket = ageBucket(age)
 
+  const hasMore = isMobile && rankings.length > MOBILE_INITIAL
+
   return (
-    <div className="rankings-compact">
-      <div className="rc-col">
-        {left.map((r, i) => (
-          <PowerRankRow key={r.event} rank={i + 1} r={r} isTop={i < 3} gender={gender} course={course} bucket={bucket} bestTimes={bestTimes} />
-        ))}
+    <>
+      <div className="rankings-compact">
+        <div className="rc-col">
+          {left.map((r, i) => (
+            <PowerRankRow key={r.event} rank={i + 1} r={r} isTop={i < 3} gender={gender} course={course} bucket={bucket} bestTimes={bestTimes} />
+          ))}
+        </div>
+        <div className="rc-col">
+          {right.map((r, i) => (
+            <PowerRankRow key={r.event} rank={mid + i + 1} r={r} isTop={false} gender={gender} course={course} bucket={bucket} bestTimes={bestTimes} />
+          ))}
+        </div>
       </div>
-      <div className="rc-col">
-        {right.map((r, i) => (
-          <PowerRankRow key={r.event} rank={mid + i + 1} r={r} isTop={false} gender={gender} course={course} bucket={bucket} bestTimes={bestTimes} />
-        ))}
-      </div>
-    </div>
+      {hasMore && (
+        <button
+          type="button"
+          className="rc-show-more"
+          onClick={() => setShowAll(prev => !prev)}
+        >
+          {showAll ? 'Show less' : `Show ${rankings.length - MOBILE_INITIAL} more`}
+        </button>
+      )}
+    </>
   )
 }
 
