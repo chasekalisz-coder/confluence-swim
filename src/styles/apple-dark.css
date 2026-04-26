@@ -540,7 +540,7 @@ body.v2-active #root {
 .v2 .times-row {
   display: grid;
   grid-template-columns: 80px 1fr 1fr 1fr 1fr 1fr 1fr;
-  gap: 20px;
+  gap: 14px;
   padding: 4px 8px;
   border-bottom: 0.5px solid var(--v2-border);
   align-items: center;
@@ -573,6 +573,7 @@ body.v2-active #root {
   background: rgba(255, 255, 255, 0.06);
   border-radius: 4px;
 }
+.v2 .stroke-family-label {
   padding: 14px 8px 6px;
   font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
   text-transform: uppercase; color: var(--v2-gold);
