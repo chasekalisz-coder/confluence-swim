@@ -613,60 +613,10 @@ textarea::placeholder, input::placeholder { color: #475569; }
   .athlete-rule { background: #84a98c !important; }
   .tech-box { background: #f5f5f0 !important; border: 0.5px solid #d4d4cc !important; }
 }
-/* ============================================================
-   ADMIN BOTTOM NAV — appended to all standalone tool pages
-   Mirrors the .agp-tabbar styles from src/styles/main.css.
-   Mobile-only (≤640px). Tools tab is pre-active since user
-   is currently using a tool. Links go to "/", "/#tools",
-   "/#settings". AthleteGrid.jsx reads the hash on mount
-   and on hashchange to land on the right tab.
-   ============================================================ */
-@media (max-width: 640px) {
-  .cs-tabbar {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(10, 14, 26, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 0.5px solid rgba(255,255,255,0.08);
-    padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
-    z-index: 40;
-  }
-  .cs-tab {
-    flex: 1;
-    background: none;
-    border: 0;
-    padding: 8px 4px;
-    color: #64748b;
-    font-size: 10px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    font-family: inherit;
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .cs-tab:hover { color: #94a3b8; }
-  .cs-tab-icon { font-size: 18px; line-height: 1; }
-  .cs-tab-label { font-size: 10px; }
-  .cs-tab-active { color: #D4A853; }
-  .cs-tab-active:hover { color: #D4A853; }
-  /* Bottom padding on body so content isn't hidden behind nav */
-  body { padding-bottom: 70px; }
-}
-@media print {
-  .cs-tabbar { display: none !important; }
-}
-
 </style>
+<link rel="stylesheet" href="/agp-tabbar.css" />
 </head>
-<body>
+<body class="has-agp-tabbar">
 <div class="topbar">
   <a href="/" class="brand"><img src="/assets/confluence-swim-white.png" alt="Confluence Swim" /></a>
   <div class="crumb">Technique</div>
@@ -1158,18 +1108,18 @@ function setPdfTitle(name) { if (!name) return; var p = name.split(' '); var f =
   addTopicBlock();
 })();
 </script>
-<nav class="cs-tabbar">
-  <a class="cs-tab" href="/">
-    <span class="cs-tab-icon">👥</span>
-    <span class="cs-tab-label">Athletes</span>
+<nav class="agp-tabbar">
+  <a class="agp-tab" href="/">
+    <span class="agp-tab-icon">👥</span>
+    <span class="agp-tab-label">Athletes</span>
   </a>
-  <a class="cs-tab cs-tab-active" href="/#tools">
-    <span class="cs-tab-icon">⚡</span>
-    <span class="cs-tab-label">Tools</span>
+  <a class="agp-tab agp-tab-active" href="/#tools">
+    <span class="agp-tab-icon">⚡</span>
+    <span class="agp-tab-label">Tools</span>
   </a>
-  <a class="cs-tab" href="/#settings">
-    <span class="cs-tab-icon">⚙</span>
-    <span class="cs-tab-label">Settings</span>
+  <a class="agp-tab" href="/#settings">
+    <span class="agp-tab-icon">⚙</span>
+    <span class="agp-tab-label">Settings</span>
   </a>
 </nav>
 

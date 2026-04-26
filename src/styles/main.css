@@ -1,4 +1,5 @@
-
+/* Shared admin bottom-nav bar — also linked from /public/*.html tool pages */
+@import url('/agp-tabbar.css');
 
 :root {
   /* ============================================================
@@ -1551,40 +1552,7 @@ html, body, #root {
     transform: scale(0.94);
   }
 
-  /* === Bottom tab bar === */
-  .agp-tabbar {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(10, 14, 26, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 0.5px solid rgba(255,255,255,0.08);
-    padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
-    z-index: 40;
-  }
-  .agp-tab {
-    flex: 1;
-    background: none;
-    border: 0;
-    padding: 8px 4px;
-    color: #64748b;
-    font-size: 10px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    font-family: inherit;
-  }
-  .agp-tab-icon { font-size: 18px; line-height: 1; }
-  .agp-tab-label { font-size: 10px; }
-  .agp-tab-active {
-    color: #D4A853;
-  }
+  /* === Bottom tab bar — see /public/agp-tabbar.css for rules === */
 
   /* === Page-level cleanup on mobile === */
   .empty-state {
