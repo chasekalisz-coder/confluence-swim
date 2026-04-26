@@ -585,7 +585,7 @@ function MeetAnalyzerTool({ athlete, onClose }) {
         <div className="cs-tag">Coming Soon</div>
         <div className="cs-title">Currently in development</div>
         <div className="cs-sub">
-          The Meet Analyzer ships next. Check back soon.
+          This tool is still being built.
         </div>
       </div>
     </div>
