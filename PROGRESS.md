@@ -35,6 +35,10 @@ Desktop unchanged.
 
 **Times & Goals table — mobile pass v4 (REVERTED, commit 7deb760).** Tried to use vertical alignment lines so badges in NEXT/CUR top-row aligned with each other and content in GAP/TX bottom-row aligned with goal time. Approach: NEXT flex-row inline + align-self start, GAP flex-row inline + align-self end, TX flex-column space-between. Result on live screenshot was worse — Chase wanted NEXT stacked badge-over--s and GAP stacked -s-over-% and the v4 inlined them both. Reverted to v3.
 
+**Times & Goals — fixed-px grid columns** (1 commit). After v3 + v4-revert, badges/gap-numbers in NEXT/GAP/TX columns weren't lining up vertically across rows. Root cause: grid was using `fr` units, so the BEST column stretched to fit content (varying time string lengths like "30.75" vs "10:57.49 [AAAA]") which dragged every other column to a different X per row. Switched to fixed pixel widths: `28px 110px 70px 64px 64px` with 8px gap. Added `min-width: 0` to every cell so grid never auto-grows from content. Also left-aligned NEXT and GAP cells so their badges/numbers share a left edge (was center-aligned which made wider AAAA badges drift left of narrower AAA). Total width 376px fits 380px viewport. Headers updated to match.
+
+**Championship Standards — drop Pro Swim column on mobile** (1 commit). Live mobile showed the desktop 7-column table (Event/Best/Sectionals/Futures/Pro Swim/Jr Nats/Nationals) overflowing — Jr Nats clipped, Nationals gone, data rows cut off mid-number. Chase: drop Pro Swim, keep the rest. Approach: added `ca-tier-{name}` class to every header/sub-header/data cell rendered per tier, then mobile CSS hides `.ca-tier-pro_swim` and overrides the inline `grid-template-columns` on `.ca-header[style]`/`.ca-sub-header[style]`/`.ca-event-row[style]` to a 6-track layout (`50px 1fr 1.1fr 1.1fr 1.1fr 1.1fr !important` with 6px gap). Desktop unchanged.
+
 ### Files changed this session
 - src/styles/apple-dark.css (one mobile-only block added inside existing 720px breakpoint)
 - PROGRESS.md (this entry)

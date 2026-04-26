@@ -840,6 +840,18 @@ body.v2-active #root {
 
   /* Stroke family label — tighter spacing */
   .v2 .stroke-family-label { padding: 10px 4px 4px; font-size: 9px; }
+
+  /* ===== Championship Standards — drop Pro Swim column on mobile ===== */
+  /* Hide Pro Swim cells everywhere they appear in the championship table */
+  .v2 .ca-tier-pro_swim { display: none; }
+  /* Override the inline grid-template-columns (set on .ca-header, .ca-sub-header, .ca-event-row)
+     to use 6 tracks instead of 7. Inline style without !important loses to stylesheet !important. */
+  .v2 .ca-header[style],
+  .v2 .ca-sub-header[style],
+  .v2 .ca-event-row[style] {
+    grid-template-columns: 50px 1fr 1.1fr 1.1fr 1.1fr 1.1fr !important;
+    gap: 6px !important;
+  }
 }
 
 /* ===== EVENT POWER RANKINGS ===== */

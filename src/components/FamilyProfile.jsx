@@ -721,7 +721,7 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
         <div className="ca-h-event">Event</div>
         <div className="ca-h-best">Best</div>
         {tiers.map(tier => (
-          <div key={tier} className="ca-h-tier">{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
+          <div key={tier} className={`ca-h-tier ca-tier-${tier.toLowerCase()}`}>{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
         ))}
       </div>
 
@@ -755,7 +755,7 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
                   <div>Event</div>
                   <div>Best</div>
                   {tiers.map(tier => (
-                    <div key={tier}>{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
+                    <div key={tier} className={`ca-tier-${tier.toLowerCase()}`}>{CHAMPIONSHIP_TIER_LABELS[tier]}</div>
                   ))}
                 </div>
                 {strokeDistances(fam, course).map(dist => {
@@ -788,7 +788,7 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
                         })
                         const gap = (bestSec != null && cut != null) ? gapToCut(bestSec, cut) : null
                         return (
-                          <div key={tier} className="ca-cell">
+                          <div key={tier} className={`ca-cell ca-tier-${tier.toLowerCase()}`}>
                             {cut == null ? (
                               <span className="std none">—</span>
                             ) : gap?.achieved ? (
