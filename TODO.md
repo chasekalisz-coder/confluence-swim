@@ -15,6 +15,40 @@ None currently.
 
 ## P1 — NEXT UP
 
+- [ ] **SwimCloud rankings integration — Training section replacement (TOMORROW)**
+  Replaces placeholder Training section on Athlete Performance Profile with
+  per-event SwimCloud rankings (LSC, state, national).
+
+  Approach: **Option C — Hybrid scraper with AI fallback.**
+  - Daily Vercel Cron fetches each athlete's SwimCloud profile URL
+  - Primary: Cheerio scraper parses HTML and extracts rankings to JSON
+  - Fallback: if Cheerio returns empty/null, send page content to Claude
+    (cheap text extraction, not vision) to extract same JSON
+  - Cache result in new Neon table `athlete_rankings`
+  - Display on athlete profile in new Rankings section
+
+  **Steps:**
+  1. New Neon table `athlete_rankings` (athlete_id, event, course, time,
+     lsc_rank, state_rank, national_rank, fetched_at)
+  2. Add `swimcloudUrl` field to athlete admin edit form
+  3. Build Cheerio scraper for SwimCloud profile page
+  4. Build Claude fallback extraction (HTML body → JSON via Anthropic API)
+  5. Vercel Cron at 4am daily, loops all athletes with swimcloudUrl set
+  6. Display section on profile (where Training currently is) showing
+     rankings table per event
+  7. Manual "Refresh now" button in admin
+
+  **Risks accepted:**
+  - SwimCloud ToS — low risk at 12 athletes, "ask forgiveness" territory
+  - HTML changes — fallback handles it, manual selector fixes occasional
+  - Vercel IP blocks possible — may need proxy if it happens
+
+  **What I need from Chase to start:**
+  - Jon's SwimCloud profile URL (e.g. swimcloud.com/swimmer/12345)
+  - Confirmation of where on profile it goes (replacing Training section)
+
+  Estimated build time: 2-3 hours focused.
+
 - [ ] **Upcoming meets — admin entry field**
   Meets tab shows placeholder upcoming meets. Need a field in the admin
   athlete edit form where Chase can enter planned/upcoming meets for each
