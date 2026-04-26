@@ -895,9 +895,15 @@ body.v2-active #root {
     font-size: 12px;
     font-weight: 500;
   }
-  /* Cut tier cells — show stacked-cut (cut time) + stacked-delta (-s gap) but hide pct */
+  /* Cut tier cells — show stacked-cut (cut time) + stacked-delta (-s gap) but hide pct.
+     On mobile flip the stack order: gap on top, cut time on bottom — so cut times align
+     horizontally with the athlete time on the same row plane. */
   .v2 .ca-cell { align-items: flex-start; }
-  .v2 .ca-cell .stacked-gap { gap: 1px; }
+  .v2 .ca-cell .stacked-gap {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 1px;
+  }
   .v2 .ca-cell .stacked-cut { font-size: 11px; }
   .v2 .ca-cell .stacked-delta { font-size: 10px; }
   .v2 .ca-cell .stacked-pct { display: none; }
