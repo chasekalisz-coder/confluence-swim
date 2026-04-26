@@ -791,33 +791,46 @@ body.v2-active #root {
   .v2 .header-mobile .next-header-mobile { text-align: center; }
   .v2 .header-mobile .gap-header-mobile { text-align: center; }
 
-  /* NEXT cell — stacked: badge on top, -s below, centered, no pct.
-     Override the React inline style on .delta with !important. */
-  .v2 .times-row .delta[style] {
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 100%;
-    gap: 2px !important;
-    padding-top: 1px;
-    text-align: center;
-  }
-  /* Inside NEXT, hide the inline pct (kept on GAP only) */
-  .v2 .times-row .delta[style] .delta-pct { display: none; }
-  /* GAP keeps pct: display:block under the -s, muted */
-  .v2 .times-row .delta:not([style]) .delta-pct {
-    display: block;
-    margin-left: 0;
-    margin-top: 1px;
-    color: rgba(255,255,255,0.45);
-    font-weight: 500;
-  }
+  /* Cell vertical alignment plan:
+     Every row has 2 conceptual lines. Line 1 = time row + cur badge + NEXT badge/-s + TX time.
+     Line 2 = goal time + GAP -s+% + TX -s.
+     BEST cell is always 2 lines and sets row height. Other cells use align-self
+     to anchor to the right line. */
 
-  /* GAP cell — stacked (-s over %) */
+  /* NEXT cell — single line, badge + -s inline, top-aligned with the time line.
+     Override the React inline style with !important. */
+  .v2 .times-row .delta[style] {
+    flex-direction: row !important;
+    align-items: center !important;
+    align-self: start;
+    width: 100%;
+    gap: 5px !important;
+    padding-top: 2px;
+    justify-content: center;
+  }
+  /* Inside NEXT, the second span holds -s + nested pct. Keep -s, hide pct. */
+  .v2 .times-row .delta[style] > span:not(.std) {
+    display: inline;
+  }
+  .v2 .times-row .delta[style] .delta-pct { display: none; }
+
+  /* GAP cell — single line, -s + % inline, bottom-aligned with the goal-time line. */
   .v2 .times-table-no-tags .times-row > .delta:not([style]) {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    align-items: baseline;
+    align-self: end;
+    justify-content: center;
     text-align: center;
+    gap: 4px;
+    padding-bottom: 1px;
+  }
+  .v2 .times-row .delta:not([style]) .delta-pct {
+    display: inline;
+    margin-left: 0;
+    color: rgba(255,255,255,0.45);
+    font-weight: 500;
+    font-size: 9px;
   }
 
   /* Empty NEXT placeholder ("—" inside .std.none) — render blank on mobile */
@@ -826,9 +839,21 @@ body.v2-active #root {
   /* Smaller fonts overall */
   .v2 .times-row .delta { font-size: 11px; }
 
-  /* TX TAGs cell — show stacked time + -s; hide % per Chase request.
-     Drop the desktop min-height since the stack is shorter here. */
-  .v2 .tags-cell { min-height: 0; }
+  /* TX TAGs cell — 2 lines: time (top, aligns w/ BEST time) + -s (bottom, aligns w/ goal).
+     Stretch the cell so the time/delta rows sit on their proper lines via space-between. */
+  .v2 .tags-cell {
+    min-height: 0;
+    align-self: stretch;
+    display: flex;
+    align-items: stretch;
+  }
+  .v2 .tags-cell .stacked-gap {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .v2 .tags-cell .hit-pill { align-self: center; }
   .v2 .stacked-gap .stacked-cut { font-size: 11px; }
   .v2 .stacked-gap .stacked-pct { display: none; }
   .v2 .stacked-gap .stacked-delta { display: inline; font-size: 10px; }
