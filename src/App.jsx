@@ -25,12 +25,13 @@ export default function App() {
 
   // Check URL on load — if /athlete/:id, go directly to family profile.
   // This is the family entry point. Families get a URL like
-  // confluence-swim.vercel.app/athlete/ath_jon and land directly on
-  // their kid's profile, never touching the admin grid.
-  const urlAthleteId = (() => {
+  // Check INITIAL URL on first load — if /athlete/:id, the user came in
+  // as a family. We capture this once at mount and never recompute, so
+  // admin-driven URL changes (pushState) don't flip the family flag.
+  const [urlAthleteId] = useState(() => {
     const match = window.location.pathname.match(/^\/athlete\/([^/]+)/)
     return match ? match[1] : null
-  })()
+  })
 
   useEffect(() => {
     loadAthletes().then(({ athletes, status, error }) => {
