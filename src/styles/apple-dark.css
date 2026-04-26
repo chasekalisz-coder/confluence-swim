@@ -594,6 +594,17 @@ body.v2-active #root {
 }
 .v2 .stroke-family-label:first-child { padding-top: 6px; }
 
+/* Best/Goal/Current group wrapper: display:contents on desktop so its 3 children
+   become direct grid items of the .times-row 7-column layout (preserves desktop look).
+   On mobile (max-width 720px) this wrapper switches to flex-column, stacking the
+   time + goal + current badge into a single grid cell. */
+.v2 .times-row .best-group { display: contents; }
+/* Mobile-only elements hidden on desktop */
+.v2 .header-mobile { display: none; }
+.v2 .times-row .cur-inline-mobile { display: none; }
+.v2 .times-row .goal .goal-marker { display: none; }
+.v2 .header-mobile .goal-marker { display: inline; }
+
 /* ===== AGE-UP ===== */
 .v2 .age-up {
   margin-top: 32px;
@@ -705,50 +716,127 @@ body.v2-active #root {
   .v2 .nc-gap { font-size: 44px; }
   .v2 .nc-gap span { font-size: 18px; }
 
-  /* ===== Times & Goals table — mobile pass =====
-     Goal: keep all 7 columns, every cell on a single line, all 7 cells horizontally aligned.
+  /* ===== Times & Goals table — mobile pass v2 =====
+     Goal: stacked layout. BEST cell holds time + current badge inline + goal time
+     below with bullseye marker. NEXT/GAP/TX cells stack -s over %.
      Strategy:
-       - Drop % values inside NEXT, GAP TO GOAL, TX TAGs
-       - NEXT cell forces inline (badge + gap on one row)
-       - TX TAGs cell shows just the cut time (or "Hit ✓"); gap+% sub-row hidden
-       - Empty NEXT placeholder ("—") rendered blank
-       - Tighter row padding, smaller fonts, recalibrated grid widths */
+       - .best-group becomes flex-column inside its grid slot (was display:contents on desktop)
+       - Hide desktop's separate .goal and .cur-cell inside the row (now rendered inside best-group above)
+       - Wait — actually .best-group includes them. So .goal and .cur-cell render INSIDE the flex-column.
+       - Hide standalone .cur-cell (the dedicated current column) since current is now inline with time
+       - Show .goal-marker bullseye inside .goal cell (hidden on desktop)
+       - Show .cur-inline-mobile badge next to time (hidden on desktop)
+       - Swap header rows: .header-desktop hidden, .header-mobile shown
+       - 5-column grid: Ev / Best (stacked) / Next (badge+stacked) / Gap (stacked) / TX */
+
+  /* Header swap */
+  .v2 .header-desktop { display: none; }
+  .v2 .header-mobile { display: grid; }
+
+  /* Row grid — 5 columns instead of 7 */
   .v2 .times-table-no-tags .times-row {
-    grid-template-columns: 32px 0.95fr 0.75fr 38px 1.05fr 0.7fr 0.8fr;
-    gap: 6px;
-    padding: 6px 4px;
+    grid-template-columns: 24px 1.05fr 1fr 0.85fr 0.7fr;
+    gap: 12px;
+    padding: 8px 4px;
+    align-items: flex-start;
   }
   .v2 .times-row.header {
-    padding: 10px 4px;
+    padding: 8px 4px 6px;
     font-size: 9px;
     letter-spacing: 0.06em;
   }
-  .v2 .times-row .event { font-size: 11px; }
-  .v2 .times-row .time { font-size: 13px; }
-  .v2 .times-row .goal { font-size: 12px; }
-  .v2 .times-row .delta { font-size: 11px; }
+  .v2 .times-row .event { font-size: 11px; padding-top: 1px; }
 
-  /* NEXT cell — flatten to single row (overrides inline style; needs !important) */
+  /* Best-group: switch from display:contents (desktop) to flex column (mobile).
+     Now the 3 children stack inside one grid cell. */
+  .v2 .times-row .best-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-left: 14px; /* room for bullseye on goal line to hang into negative margin */
+  }
+  /* Time line — keep same color, drop size to 12px so it pairs cleanly with goal underneath */
+  .v2 .times-row .best-group .time {
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  /* Current badge inline next to time on mobile */
+  .v2 .times-row .cur-inline-mobile { display: inline-flex; }
+  /* Goal line — bullseye marker visible, sits in negative margin so digits left-align with time */
+  .v2 .times-row .best-group .goal {
+    font-size: 11px;
+    font-weight: 600;
+    color: #E6C178;
+    margin-left: -14px;
+  }
+  .v2 .times-row .best-group .goal .goal-marker {
+    display: inline;
+    margin-right: 4px;
+    color: #E6C178;
+  }
+  /* Hide the standalone current-column cell since current is now inline with time */
+  .v2 .times-row .best-group .cur-cell { display: none; }
+
+  /* Best-header-mobile — Time / divider / ◎ Goal Time stack */
+  .v2 .header-mobile .best-header-mobile { padding-left: 14px; }
+  .v2 .header-mobile .best-header-mobile .best-header-divider {
+    border-top: 0.5px solid rgba(255,255,255,0.18);
+    margin: 3px 0;
+  }
+  .v2 .header-mobile .best-header-mobile .best-header-goal { margin-left: -14px; }
+  .v2 .header-mobile .best-header-mobile .goal-marker { color: #E6C178; margin-right: 4px; }
+  .v2 .header-mobile .next-header-mobile { text-align: center; }
+  .v2 .header-mobile .gap-header-mobile { text-align: center; }
+
+  /* NEXT cell — flex row, badge + stacked (-s over %).
+     Override the React inline style on .delta with !important. */
   .v2 .times-row .delta[style] {
     flex-direction: row !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     gap: 5px !important;
+    padding-top: 1px;
+    justify-content: center;
+  }
+  /* Inside NEXT, the second <span> holds -s with .delta-pct nested.
+     Force vertical stack: -s on top, % below. */
+  .v2 .times-row .delta[style] > span:not(.std) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .v2 .times-row .delta .delta-pct {
+    display: block;
+    margin-left: 0;
+    margin-top: 1px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 500;
   }
 
-  /* Hide all percentages on mobile */
-  .v2 .times-table .delta .delta-pct { display: none; }
-  .v2 .stacked-gap .stacked-pct { display: none; }
-  .v2 .stacked-gap .stacked-delta { display: none; }
-  .v2 .stacked-gap .stacked-delta-row { display: none; }
+  /* GAP cell — stacked (-s over %) */
+  .v2 .times-table-no-tags .times-row > .delta:not([style]) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
 
   /* Empty NEXT placeholder ("—" inside .std.none) — render blank on mobile */
   .v2 .times-row .delta .std.none { visibility: hidden; }
 
-  /* TX TAGs cell — drop the desktop min-height since gap+% sub-row is hidden */
-  .v2 .tags-cell { min-height: 0; }
-  .v2 .stacked-gap .stacked-cut { font-size: 12px; }
+  /* Smaller fonts overall */
+  .v2 .times-row .delta { font-size: 11px; }
 
-  /* Stroke family label — tighter spacing too */
+  /* TX TAGs cell — bring back the stacked sub-row (was hidden in v1 mobile pass).
+     Drop the desktop min-height since the stack is shorter here. */
+  .v2 .tags-cell { min-height: 0; }
+  .v2 .stacked-gap .stacked-cut { font-size: 11px; }
+  .v2 .stacked-gap .stacked-pct { display: inline; }
+  .v2 .stacked-gap .stacked-delta { display: inline; }
+  .v2 .stacked-gap .stacked-delta-row { display: flex; gap: 4px; }
+
+  /* Stroke family label — tighter spacing */
   .v2 .stroke-family-label { padding: 10px 4px 4px; font-size: 9px; }
 }
 

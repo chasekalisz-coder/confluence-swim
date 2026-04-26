@@ -573,7 +573,8 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
   const bucket = ageBucket(age)
   return (
     <div className="times-table times-table-no-tags">
-      <div className="times-row header">
+      {/* Desktop header — 7 separate columns */}
+      <div className="times-row header header-desktop">
         <div>Event</div>
         <div>Best</div>
         <div>Goal</div>
@@ -581,6 +582,18 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
         <div>Next</div>
         <div>Gap to Goal</div>
         <div>TX TAGs</div>
+      </div>
+      {/* Mobile header — 5 columns; Best/Goal/Current merge into a stacked Best cell */}
+      <div className="times-row header header-mobile">
+        <div>Ev</div>
+        <div className="best-header-mobile">
+          <div>Time</div>
+          <div className="best-header-divider"></div>
+          <div className="best-header-goal"><span className="goal-marker">◎</span>Goal Time</div>
+        </div>
+        <div className="next-header-mobile">Next<br/>Standard</div>
+        <div className="gap-header-mobile">Gap to<br/>Goal</div>
+        <div>TX<br/>TAGs</div>
       </div>
 
       {STROKE_FAMILIES.map(fam => (
@@ -605,14 +618,24 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
             return (
               <div className="times-row" key={eventKey}>
                 <div className="event">{dist}</div>
-                <div className="time mono">{best ? formatTime(row.bestSec) : '—'}</div>
-                <div className={`goal mono ${!goal ? 'empty' : ''}`}>
-                  {goal ? formatTime(row.goalSec) : '—'}
-                </div>
-                <div>
-                  {row.currentLevel
-                    ? <span className={`std ${row.currentLevel}`}>{row.currentLevel}</span>
-                    : <span className="std none">—</span>}
+                {/* Best/Goal/Current — wrapper uses display:contents on desktop (3 separate cells) and flex column on mobile (one stacked cell) */}
+                <div className="best-group">
+                  <div className="time mono">
+                    {best ? formatTime(row.bestSec) : '—'}
+                    {/* Mobile-only: current badge sits inline next to time */}
+                    {row.currentLevel && (
+                      <span className={`std ${row.currentLevel} cur-inline-mobile`}>{row.currentLevel}</span>
+                    )}
+                  </div>
+                  <div className={`goal mono ${!goal ? 'empty' : ''}`}>
+                    <span className="goal-marker">◎</span>
+                    {goal ? formatTime(row.goalSec) : '—'}
+                  </div>
+                  <div className="cur-cell">
+                    {row.currentLevel
+                      ? <span className={`std ${row.currentLevel}`}>{row.currentLevel}</span>
+                      : <span className="std none">—</span>}
+                  </div>
                 </div>
                 {/* Next — combined: standard badge + gap seconds + % */}
                 <div className={`delta mono delta-${row.colorToNext || 'neutral'}`} style={{display:'flex', flexDirection:'column', gap:'2px', alignItems:'flex-start'}}>

@@ -15,15 +15,17 @@ Desktop layout unchanged — overrides only fire below 720px.
 
 **Section spacing — mobile reduction** (1 commit). The global rule `.v2 section { margin-bottom: 72px; }` was inherited on mobile, creating a noticeable dead band between every section — most visible between the hero (events chips) and the Chasing Next card. Added `.v2 section { margin-bottom: 32px; }` to the same 720px breakpoint. Affects every section break on the v2 profile on mobile only; desktop unchanged.
 
-**Times & Goals table — mobile pass** (1 commit). Mobile was inheriting the desktop 7-column grid at full size — column headers wrapped ("GAP TO GOAL" became 3 lines), TX TAGs clipped on the right, NEXT cell stacked badge+gap+% three-deep which floated the badge high relative to single-line cells like BEST and GOAL. Strategy: keep all 7 columns, every cell single-line, drop % values on mobile only.
-- Recalibrated grid: `grid-template-columns: 32px 0.95fr 0.75fr 38px 1.05fr 0.7fr 0.8fr` with 6px gap and 6px×4px padding
-- Smaller fonts: header 9px, event 11px, time 13px, goal 12px, delta 11px
-- NEXT cell: overrode the inline `flex-direction: column` (with `!important` since it's a React inline style) to flatten badge+gap onto one row
-- Hidden on mobile: `.delta-pct` (NEXT/GAP percentages), `.stacked-pct` + `.stacked-delta` + `.stacked-delta-row` (TX TAGs gap-and-pct sub-row, leaving just the cut time)
-- Empty NEXT placeholder ("—" via `.std.none`): rendered blank with `visibility: hidden`
-- TX TAGs cell: dropped 52px min-height since the sub-row is hidden
-- Stroke family label: tighter padding/size to match
-Decision process before coding: walked through stacked vs inline, drop-CURRENT vs keep-it, drop-pct vs keep-pct, horizontal-scroll vs cards. Final call: keep all 7 columns, drop pct on mobile, every cell single-line. Mobile parity matters since most users are on mobile. Desktop layout unchanged.
+**Times & Goals table — mobile pass v1** (1 commit, superseded). Mobile was inheriting the desktop 7-column grid at full size — column headers wrapped ("GAP TO GOAL" became 3 lines), TX TAGs clipped on the right, NEXT cell stacked badge+gap+% three-deep which floated the badge high relative to single-line cells like BEST and GOAL. Strategy: keep all 7 columns, every cell single-line, drop % values on mobile only. Pure CSS. Worked but felt cluttered, and Chase wanted % values back. Replaced in next commit.
+
+**Times & Goals table — mobile pass v2** (1 commit). Reworked to a 5-column stacked layout. BEST cell holds time + current badge inline + goal time below with bullseye marker. NEXT cell: badge + (-s stacked over %). GAP cell: -s stacked over %. TX cell: time over -s and %, or "Hit ✓". Header swap: separate desktop 7-col header and mobile 5-col header (mobile splits BEST into "Time / divider / ◎ Goal Time").
+
+JSX changes: wrapped existing `time` / `goal` / current cells in a `.best-group` div. On desktop this wrapper uses `display: contents` so its 3 kids become direct grid items — desktop 7-column layout preserved 1:1. On mobile the wrapper switches to `flex column` so the 3 kids stack inside one grid slot. Added `.cur-inline-mobile` badge inside `.time` (hidden on desktop). Added `.goal-marker` bullseye span inside `.goal` (hidden on desktop). Added second `.times-row.header.header-mobile` block; existing header marked `.header-desktop`. CSS toggles which header shows.
+
+CSS overrides for NEXT cell: it has a React inline `style="..."` attribute (`flexDirection: column`) which CSS can't override without `!important`. Used `.delta[style]` selector + `!important` to force `flex-direction: row` on mobile. Inside the cell, the second span (with -s and inline pct) gets its own flex-column to stack -s over %.
+
+Bullseye marker (◎) appears before the goal time in both header and data rows. Goal-time digit columns left-align with the time digits above (negative `margin-left: -14px` plus `padding-left: 14px` on `.best-group` so the bullseye hangs into the padding).
+
+Decision walk: started single-line + drop-%, then bullseye-on-goal-time, then header-divider on BEST col only, then equal spacing on NEXT/GAP/TX. Final structure ships above. Desktop unchanged throughout.
 
 ### Files changed this session
 - src/styles/apple-dark.css (one mobile-only block added inside existing 720px breakpoint)
