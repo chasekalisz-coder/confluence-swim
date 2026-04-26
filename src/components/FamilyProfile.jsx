@@ -1816,9 +1816,6 @@ function BloomCircle({ label, course, athlete, age, gender, visible, bestTimes }
   // headroom at the top.
   const reachBySpoke = spokes.map((spoke, si) => {
     const best = bestBySpoke[si]
-    if (typeof window !== 'undefined' && course === 'SCY') {
-      console.log(`[bloom ${course}] ${spoke.event}: best=${best}`)
-    }
     if (best == null) return 0
 
     let highestAchievedIdx = -1
