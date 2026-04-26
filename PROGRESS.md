@@ -49,12 +49,56 @@ Desktop unchanged.
 - Best time under distance: 11px font, gold color
 Desktop unchanged.
 
+**Championship Standards — final mobile polish** (3 commits). Chase: time should be white (not gold), brighter, slightly bigger. Then visible row separators. Then flip the cut-cell stack so cut times line up with athlete time on the same plane.
+- `.ca-ev-best` color → `var(--v2-text)` (white), font-size 13px, weight 600, letter-spacing -0.01em
+- `.ca-event-row` border-bottom → 0.5px solid rgba(255,255,255,0.08) `!important`, padding 10px top/bottom
+- `.ca-cell .stacked-gap { flex-direction: column-reverse }` so cut time sits on bottom line aligned with athlete time, and gap -s sits on top
+Plus 3 specificity bug-fixes earlier (Pro Swim hide, Nationals hide, event-best-group flex-column) — all needed `!important` because desktop rules (`.ca-cell { display: flex }`, `.ca-event-best-group { display: contents }`) sit later in stylesheet at same specificity.
+
+**Age-Up Preview — pill swap + tighter cards** (1 commit). Chase: move age-bucket pill (e.g. "13-14") from below the subtitle up to the right of the AGE-UP PREVIEW caption on mobile; tighten cards (less vertical stretch).
+- JSX: render age-pill twice — `.age-pill-mobile` next to caption, `.age-pill-desktop` next to title text
+- Desktop CSS: `.age-pill-mobile { display: none }` (default)
+- Mobile CSS: `.age-pill-desktop { display: none }`, `.au-caption-row` becomes flex row so pill sits next to caption text
+- Cards: height 135px → 105px, padding 11/12 → 9/10, time font 17px → 15px
+
+**Progression chart — taller on mobile, brighter axis** (3 commits). Chase: chart's too small in its box; text should be white and bigger; spread chart further to box edges.
+- Used `window.matchMedia('(max-width: 720px)').matches` at render time as `isMobile` flag
+- Mobile viewBox: `W=480 H=360` (was 900x320 desktop) — taller aspect for narrow viewport
+- Mobile padding: padL 40, padR 30 (left for axis labels, right wider so last data label like "2:18.61" doesn't clip)
+- Y-axis tick color: `#475569` → `#94a3b8`, fontSize 10 → 11
+- X-axis date labels: same color/size bump
+- CSS: `.progression-chart` padding 24/28 → 16/6 on mobile; `.pc-head` gets restored `0 8px` inner padding so selector + summary aren't flush
+
+**Event Power Rankings — top 10 + Show More on mobile** (1 commit). 18 events stacked is a long scroll past on mobile; parents care about top events. Added `useState(false)` for showAll. On mobile (matchMedia 720px), slice to first 10. Button "Show N more" / "Show less" toggles. Desktop unchanged (still shows all in two columns).
+
+**Last Race / Meet Analyzer card — stack vertically on mobile** (2 commits). Desktop grid `1fr auto` was squeezing the title column on mobile so each word wrapped to its own line. First commit set mobile single-column; didn't take effect because desktop rule sits later in stylesheet at same specificity (same source-order specificity bug pattern). Second commit added `!important` to `grid-template-columns`, gap, padding, and az-title/az-insight/az-cta sizes.
+Final: title block stacks above full-width button. az-title 19px line-height 1.25, az-insight 13px, az-cta full-width with centered text.
+
+**Upcoming Meets — top 3 + Show More (both desktop and mobile)** (1 commit). Chase: limit to 3 by default, button to expand. Same on both — no breakpoint. UpcomingMeetsList uses showAll state. Slices to first 3, "Show N more" button below toggles. Button styled with top border separating it from the last meet row.
+
+**Session Notes stats strip — 4-col → 2x2 grid on mobile** (1 commit). 4 stat cards in a single row was clipping content (LAS SES, 4 da ag) at narrow viewport. Switched to 2x2 with reduced padding and font sizes. `grid-template-columns: repeat(2, 1fr) !important`, padding 22/24 → 16/14, label 10px → 9px, value 28px → 22px, value.sm 22px → 16px. Mobile only.
+
+**Session Notes — exclude workouts from stats** (1 commit, both platforms). Stats (Total Sessions, This Month, Most Common, Last Session) were computed from full normalized list which includes workout-builder outputs. Workouts are planned sets, not actual training sessions. Filter to `noteTypeKey !== 'workout'` before counting. Same exclusion logic as the 'all' filter chip already uses.
+
+**Analysis tab — tool cards stack on mobile** (2 commits). First commit: 2-col grid → 1-col with `!important`. Result on live still showed icon-on-left + content-on-right inside each card. Investigation found the actual bug: `src/styles/main.css` line 1288 has a global `.tool-card { display: flex; align-items: center }` rule meant for AthleteGrid's mobile tools tab, leaking into FamilyAnalysis cards (which use different children: `.icon-ring` + `.tc-name` + `.tc-desc` + `.tc-meta` + `.arrow`). Fix: explicit `display: block` in `.v2 .tool-card` to override the global flex within v2 scope. Now icon → name → full-width description → meta stacks naturally.
+
+**Race Pace Calculator — route Analysis tile to /pace.html** (1 commit). Two implementations existed: `RacePaceCalculator.jsx` (264-line stripped React component, rendered inline when Analysis tile clicked) and `public/pace.html` (1,353-line standalone, fully designed for desktop+mobile, what AthleteGrid links to). Mobile screenshot showed the stripped React version. Changed Analysis tile click handler from `setView('pace')` to `window.location.href = '/pace.html'`. Single source of truth now. The React component still exists in the codebase but unrendered.
+
+**Meet Analyzer — clean Coming Soon page** (2 commits). Was rendering a half-built preview with disabled inputs (event select, course/meet, splits grid, disabled submit) plus a Coming Soon banner buried between header and form. Misleading. Replaced with a single centered Coming Soon card. First copy iteration said "ships next" — Chase flagged that as a fake timeline promise I made up, not something he authorized. Fixed copy to "This tool is still being built."
+
 ### Files changed this session
-- src/styles/apple-dark.css (one mobile-only block added inside existing 720px breakpoint)
+- src/components/FamilyProfile.jsx (TimesTable, ChampionshipTable, AgeUpPreview, ProgressionChart, AnimatedProgressionChart, PowerRankingsList, UpcomingMeetsList)
+- src/components/FamilyNotes.jsx (stats useMemo: filter out workouts)
+- src/components/FamilyAnalysis.jsx (Race Pace tile → /pace.html, Meet Analyzer placeholder simplified)
+- src/styles/apple-dark.css (mobile rules added/modified inside existing `@media (max-width: 720px)`; new desktop helpers; `.coming-soon-card` styles)
 - PROGRESS.md (this entry)
+- STATE.md (Session 13 marker, mobile sweep status)
+
+### Recurring lesson learned this session
+**CSS source-order specificity bug pattern.** Same-specificity rules → later one wins. Hit it five times this session: `.ca-tier-pro_swim` and `.ca-tier-nationals` (vs later `.ca-cell { display: flex }`), `.ca-event-best-group` flex-column (vs later `display: contents`), `.rc-show-more` display:block (vs later hide), `.analyzer-card` grid-template-columns (vs later `1fr auto`), and the `.tool-card` global flex from main.css. All required `!important` on the mobile/v2-scoped rule. Pattern to remember: when a mobile rule "doesn't take effect" but the selector is right, check for a same-specificity rule later in the stylesheet.
 
 ### Next up
-Continue mobile sweep — Chase will send the next pair of desktop/mobile screenshots for the next section.
+Phase 3 (TODO.md cleanup): P1 items still open — Scheduling request flow, Meet Analyzer build itself, SwimCloud rankings, Upcoming meets admin entry, Session count fix.
 
 ---
 

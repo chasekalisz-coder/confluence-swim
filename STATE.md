@@ -1,13 +1,13 @@
 # STATE.md — Current Branch State
 
-Last updated: 2026-04-26 (Session 12)
+Last updated: 2026-04-26 (Session 13)
 
 ## Active branch: v2-redesign
 ## Production branch: main
 ## Live URL: confluence-swim.vercel.app
 
 ## Last commit on main
-Training Note + Technique tweaks: stronger olive wash on Training, mobile setup reordered to Athlete|Date / Category|Stroke / Session#|Duration, Technique duration field default value=75 (editable).
+Meet Analyzer placeholder: clean Coming Soon card (no fake disabled form, no timeline promise).
 
 ## Workflow
 All fixes go to v2-redesign first, then immediately pushed to main.
@@ -18,11 +18,19 @@ Push command: git push [PAT] HEAD:main
 - Athlete data: DB only, single source of truth, fixture is seed-only
 - Sessions: enforced schema (schemaVersion:2), hr normalized to null with warning
 - AI context: athlete-locked, pool-type-locked, last 8 training sessions
-- Race Pace Calculator: standalone /pace.html (Tools tab) + React component (RacePaceCalculator.jsx) inside Analysis tab — both have updated math (range-based bar scaling, avg line at true average), pace.html has full v2 design pass
+- Race Pace Calculator: single source — `/pace.html`. Both Athlete Performance Profile (AthleteGrid) AND Family Analysis tab now route to it. The old inline React `RacePaceCalculator.jsx` component still exists in the codebase but is no longer rendered (Session 13).
+- Meet Analyzer: shows a clean "Coming Soon" placeholder. Disabled-input preview removed. Tool itself not yet built.
 - Browser back button: pushState on tab nav, popstate + hashchange listeners
-- Admin tab hash-aware: /#tools and /#settings deep-link to those tabs (added Session 12)
+- Admin tab hash-aware: /#tools and /#settings deep-link to those tabs
 - DATA_SCHEMA.md: committed to repo root — READ IT before touching any data code
 - elite-splits.js: src/data/elite-splits.js — shared data source
+
+## Mobile design pass (Session 13)
+Mobile sweep complete on Profile, Session Notes, and Analysis tabs.
+Phase 2 mobile sweep on the Athlete Performance Profile is now complete top-to-bottom:
+- Chasing Next, Times & Goals (fixed-px grid), Championship Standards (4 visible tiers, Event/Time stacked, gap-over-time), Age-Up Preview, Progression chart (taller mobile viewBox, brighter axis), Event Power Rankings (top 10 + show more), Last Race / Meet Analyzer card (stacked), Upcoming Meets (top 3 + show more, both mobile and desktop).
+Session Notes: 4-card stats strip → 2x2 grid on mobile; workouts now excluded from Total/This Month/Most Common/Last Session counts everywhere.
+Analysis: tool cards stack on mobile (was leaking display:flex from main.css global rule).
 
 ## Athletes on DB (all confirmed loaded)
 ath_jon, ath_lana, ath_ben, ath_kaden, ath_grace, ath_hannah,
