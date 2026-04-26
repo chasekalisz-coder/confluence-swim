@@ -15,6 +15,28 @@ None currently.
 
 ## P1 — NEXT UP
 
+- [ ] **Scheduling request flow — Resources page block (TOMORROW)**
+  Built: May 2026 slot data is in `src/data/may-2026-slots.json` (160 slots).
+  Profile Scheduling card already links to Resources page with updated copy.
+
+  **Still to build:**
+  - **Family side (on Resources page, block sized slightly bigger than About):**
+    - Calendar view for the month with all available slots shown
+    - Family clicks slots to mark as PRIMARY picks (slots they really want)
+    - Then marks SECONDARY/backup picks (slots that would also work)
+    - Submit button — saves request to DB
+  - **Coach side (admin):**
+    - Per-family view: see one family's primary + secondary picks
+    - Combined view: ALL families' requests overlaid on same calendar
+    - Print/export option
+  - **Phase 2 (later):** AI optimizer that takes all requests + assigns slots,
+    maximizing primary picks first, falling back to secondary, balanced
+
+  **Open design decisions:**
+  - How many primary picks per family per month? (cap or open?)
+  - How does coach mark a slot as "scheduled in Acuity" so it disappears from view?
+  - New Neon table `slot_requests` schema (athlete_id, slot_id, priority, requested_at)?
+
 - [ ] **Meet Analyzer / Last Race section — decide direction (TOMORROW)**
   Currently a placeholder section on Athlete Performance Profile. Original
   vision was a race-by-race meet recap with splits, narrative, time drops,
