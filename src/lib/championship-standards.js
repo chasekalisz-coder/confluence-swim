@@ -365,6 +365,94 @@ export const CHAMPIONSHIP_STANDARDS = {
       },
     },
   },
+
+  // 2026 TYR Pro Swim Series — 18 & Under qualifying standards
+  // Source: USA Swimming 2026 TYR Pro Swim Series Time Standards PDF
+  // Note: Pro Swim has no age-group brackets — these are the 18 & Under cuts.
+  // Single cut per event (no age bucket), gender-split, SCY + LCM.
+  PRO_SWIM: {
+    M: {
+      SCY: {
+        "50 Free":   20.49,
+        "100 Free":  44.89,
+        "200 Free":  98.39,
+        "500 Free":  268.79,
+        "1000 Free": 562.69,
+        "1650 Free": 940.39,
+        "50 Back":   22.49,
+        "100 Back":  49.19,
+        "200 Back":  107.79,
+        "50 Breast": 25.29,
+        "100 Breast": 55.49,
+        "200 Breast": 121.59,
+        "50 Fly":    21.99,
+        "100 Fly":   48.69,
+        "200 Fly":   109.09,
+        "200 IM":    109.59,
+        "400 IM":    236.49,
+      },
+      LCM: {
+        "50 Free":   22.49,
+        "100 Free":  49.19,
+        "200 Free":  107.99,
+        "400 Free":  228.79,
+        "800 Free":  472.69,
+        "1500 Free": 913.79,
+        "50 Back":   25.39,
+        "100 Back":  55.49,
+        "200 Back":  121.79,
+        "50 Breast": 28.79,
+        "100 Breast": 63.59,
+        "200 Breast": 139.69,
+        "50 Fly":    24.69,
+        "100 Fly":   53.89,
+        "200 Fly":   119.59,
+        "200 IM":    121.09,
+        "400 IM":    258.29,
+      },
+    },
+    F: {
+      SCY: {
+        "50 Free":   23.39,
+        "100 Free":  50.39,
+        "200 Free":  109.09,
+        "500 Free":  293.59,
+        "1000 Free": 611.49,
+        "1650 Free": 1022.19,
+        "50 Back":   25.19,
+        "100 Back":  55.09,
+        "200 Back":  119.39,
+        "50 Breast": 28.79,
+        "100 Breast": 63.09,
+        "200 Breast": 137.19,
+        "50 Fly":    24.69,
+        "100 Fly":   54.69,
+        "200 Fly":   121.69,
+        "200 IM":    122.19,
+        "400 IM":    261.69,
+      },
+      LCM: {
+        "50 Free":   26.89,
+        "100 Free":  58.19,
+        "200 Free":  124.99,
+        "400 Free":  266.69,
+        "800 Free":  546.79,
+        "1500 Free": 1046.79,
+        "50 Back":   29.79,
+        "100 Back":  64.79,
+        "200 Back":  139.59,
+        "50 Breast": 33.69,
+        "100 Breast": 73.79,
+        "200 Breast": 159.59,
+        "50 Fly":    28.39,
+        "100 Fly":   62.69,
+        "200 Fly":   138.39,
+        "200 IM":    142.09,
+        "400 IM":    300.29,
+      },
+    },
+  },
+
 }
 
 // 2026 Texas Age Group Swimming (TAGS) Championship qualifying standards
@@ -590,13 +678,14 @@ export const TX_TAGS = {
 //
 // TAGS is ONLY shown for athletes aged 14 and under. The table renderer
 // checks the athlete's age bucket and hides the TAGS column for 15+.
-export const CHAMPIONSHIP_TIERS = ['SECTIONALS', 'FUTURES', 'JR_NATS', 'NATIONALS']
+export const CHAMPIONSHIP_TIERS = ["SECTIONALS", "FUTURES", "JR_NATS", "NATIONALS", "PRO_SWIM"]
 export const CHAMPIONSHIP_TIER_LABELS = {
   TAGS: 'TAGS',
   SECTIONALS: 'Sectionals',
   FUTURES: 'Futures',
   JR_NATS: 'Jr Nats',
   NATIONALS: 'Nationals',
+  PRO_SWIM: 'Pro Swim',
 }
 
 // The age buckets TAGS applies to. 15-16 and 17-18 swimmers age out of
