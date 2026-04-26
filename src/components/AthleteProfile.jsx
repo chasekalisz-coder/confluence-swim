@@ -128,6 +128,8 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
       dob: athlete.dob || '',
       gender: athlete.gender || '',
       showChampionshipCuts: athlete.showChampionshipCuts ?? true,
+      programType: athlete.programType || '',
+      programLevel: athlete.programLevel || '',
       events: [...(athlete.events || [])],
       // Canonical expansion — every athlete's edit form shows the same
       // 35 events in the same order. Existing times are preserved; missing
@@ -154,6 +156,8 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
         age,
         gender: editData.gender || null,
         showChampionshipCuts: editData.showChampionshipCuts,
+        programType: editData.programType || null,
+        programLevel: editData.programLevel ? parseInt(editData.programLevel) : null,
         events: editData.events,
         meetTimes: editData.meetTimes,
         goalTimes: editData.goalTimes,
@@ -253,6 +257,39 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
                   <option value="F">Female</option>
                 </select>
               </div>
+
+              {/* Program type + level */}
+              <div style={{marginBottom:16}}>
+                <label className="edit-label">Program Type</label>
+                <select
+                  className="edit-input"
+                  value={editData.programType}
+                  onChange={e => setEditData({...editData, programType: e.target.value, programLevel: ''})}
+                >
+                  <option value="">— None —</option>
+                  <option value="Gold Development">Gold Development</option>
+                  <option value="Silver High Performance">Silver High Performance</option>
+                  <option value="Bronze Competition">Bronze Competition</option>
+                  <option value="Skills Package">Skills Package</option>
+                  <option value="Single Lesson">Single Lesson</option>
+                </select>
+              </div>
+
+              {editData.programType && (
+                <div style={{marginBottom:16}}>
+                  <label className="edit-label">Program Number</label>
+                  <select
+                    className="edit-input"
+                    value={editData.programLevel}
+                    onChange={e => setEditData({...editData, programLevel: e.target.value})}
+                  >
+                    <option value="">— Select number —</option>
+                    {[1,2,3,4,5,6,7,8,9,10].map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Championship toggle. */}
               <div style={{marginBottom:16}}>

@@ -176,8 +176,45 @@ body.v2-active #root {
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 0.95;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   color: var(--v2-text);
+}
+.v2 .program-badge-wrap {
+  margin-bottom: 16px;
+}
+.v2 .program-badge {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 7px 16px;
+  border-radius: 6px;
+}
+.v2 .program-badge-gold {
+  color: #D4A853;
+  background: rgba(212,168,83,0.12);
+  border: 0.5px solid rgba(212,168,83,0.3);
+}
+.v2 .program-badge-silver {
+  color: #94a3b8;
+  background: rgba(148,163,184,0.1);
+  border: 0.5px solid rgba(148,163,184,0.3);
+}
+.v2 .program-badge-bronze {
+  color: #b87333;
+  background: rgba(184,115,51,0.1);
+  border: 0.5px solid rgba(184,115,51,0.3);
+}
+.v2 .program-badge-skills {
+  color: #64748b;
+  background: rgba(100,116,139,0.1);
+  border: 0.5px solid rgba(100,116,139,0.25);
+}
+.v2 .program-badge-single {
+  color: #475569;
+  background: rgba(71,85,105,0.08);
+  border: 0.5px solid rgba(71,85,105,0.2);
 }
 .v2 .hero .meta {
   display: flex;

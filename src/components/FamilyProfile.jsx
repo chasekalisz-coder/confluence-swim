@@ -49,6 +49,9 @@ import {
   txTagsCut,
 } from '../lib/championship-standards.js'
 
+const ROMAN = ['','I','II','III','IV','V','VI','VII','VIII','IX','X']
+const toRoman = (n) => ROMAN[parseInt(n)] || String(n)
+
 export default function FamilyProfile({ athlete, onBack, onNavigate }) {
   const [courseTimesGoals, setCourseTimesGoals] = useState('SCY')
   const [courseChampionship, setCourseChampionship] = useState('SCY')
@@ -163,6 +166,13 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
           <div className="name">
             {fullName(athlete)}
           </div>
+          {athlete.programType && (
+            <div className="program-badge-wrap">
+              <span className={`program-badge program-badge-${(athlete.programType || '').split(' ')[0].toLowerCase()}`}>
+                {athlete.programType}{athlete.programLevel ? ` · ${toRoman(athlete.programLevel)}` : ''}
+              </span>
+            </div>
+          )}
           <div className="meta">
             <span className="age">{effectiveAge} years old</span>
             {currentBucket && <>
