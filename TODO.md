@@ -15,6 +15,24 @@ None currently.
 
 ## P1 — NEXT UP
 
+- [ ] **Meet Analyzer / Last Race section — decide direction (TOMORROW)**
+  Currently a placeholder section on Athlete Performance Profile. Original
+  vision was a race-by-race meet recap with splits, narrative, time drops,
+  goal comparison. Stalled because:
+  - Splits data not automatically imported
+  - Coach narrative requires manual write-up per meet/athlete
+  - Without splits, "analysis" is duplicate of Times & Goals data
+
+  **Options to consider tomorrow:**
+  1. Remove entirely
+  2. Keep placeholder — revisit AFTER SwimCloud integration is done
+     (SwimCloud has splits + meet-level data we could pull)
+  3. Simplify to "Recent Meets" card — last 3 meets with date, location,
+     events count, PR count. No deep analysis, just recap.
+
+  Decision deferred — likely tied to SwimCloud rankings work since both
+  benefit from same data pipeline.
+
 - [ ] **SwimCloud rankings integration — Training section replacement (TOMORROW)**
   Replaces placeholder Training section on Athlete Performance Profile with
   per-event SwimCloud rankings (LSC, state, national).
