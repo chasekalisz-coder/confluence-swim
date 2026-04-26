@@ -1580,6 +1580,179 @@ body.v2-active #root {
 }
 .v2 .about-block .ab-body p + p { margin-top: 14px; }
 
+/* Scheduling block */
+.v2 .sched-block {
+  background: var(--v2-surface);
+  border: 0.5px solid var(--v2-border);
+  border-radius: 20px;
+  padding: 40px 44px;
+  margin-bottom: 56px;
+}
+.v2 .sb-header { margin-bottom: 24px; }
+.v2 .sb-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--v2-gold);
+  margin-bottom: 14px;
+}
+.v2 .sb-title {
+  font-size: 26px; font-weight: 600;
+  letter-spacing: -0.02em; line-height: 1.2;
+  margin-bottom: 14px;
+  color: var(--v2-text);
+}
+.v2 .sb-sub {
+  font-size: 13px; color: var(--v2-text-2);
+  line-height: 1.6;
+  max-width: 720px;
+}
+.v2 .sb-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+}
+.v2 .sb-pill.primary { background: rgba(212, 168, 83, 0.18); color: #D4A853; border: 0.5px solid rgba(212, 168, 83, 0.35); }
+.v2 .sb-pill.secondary { background: rgba(180, 180, 200, 0.12); color: #b4b4c8; border: 0.5px solid rgba(180, 180, 200, 0.25); }
+
+.v2 .sb-counts {
+  display: flex; gap: 24px;
+  font-size: 12px; color: var(--v2-text-2);
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 0.5px solid var(--v2-border);
+}
+.v2 .sb-counts > div { display: flex; align-items: center; gap: 8px; }
+.v2 .sb-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block;
+}
+.v2 .sb-dot.primary { background: #D4A853; }
+.v2 .sb-dot.secondary { background: #94a3b8; }
+
+/* Calendar grid */
+.v2 .sb-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 20px;
+}
+.v2 .sb-cal-weekday {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--v2-text-3);
+  text-align: center;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--v2-border);
+}
+.v2 .sb-cal-cell {
+  min-height: 130px;
+  background: rgba(255,255,255,0.02);
+  border: 0.5px solid rgba(255,255,255,0.04);
+  border-radius: 8px;
+  padding: 6px 5px 5px 5px;
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.v2 .sb-cal-cell.empty {
+  background: transparent; border-color: transparent;
+}
+.v2 .sb-cal-date {
+  font-size: 11px; font-weight: 600;
+  color: var(--v2-text-3);
+  margin-bottom: 2px;
+  padding: 0 2px;
+}
+.v2 .sb-cal-slots {
+  display: flex; flex-direction: column;
+  gap: 3px;
+}
+.v2 .sb-slot {
+  appearance: none;
+  background: rgba(255,255,255,0.05);
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 3px 5px;
+  font-size: 10px;
+  color: var(--v2-text-2);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--v2-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  transition: all 0.12s ease;
+}
+.v2 .sb-slot:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.16);
+}
+.v2 .sb-slot.primary {
+  background: rgba(212, 168, 83, 0.18);
+  border-color: rgba(212, 168, 83, 0.5);
+  color: #D4A853;
+  font-weight: 600;
+}
+.v2 .sb-slot.secondary {
+  background: rgba(148, 163, 184, 0.14);
+  border-color: rgba(148, 163, 184, 0.4);
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+/* Action bar */
+.v2 .sb-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 0.5px solid var(--v2-border);
+}
+.v2 .sb-summary {
+  font-size: 13px; color: var(--v2-text-2);
+}
+.v2 .sb-btns { display: flex; gap: 10px; }
+.v2 .sb-btn-clear {
+  appearance: none;
+  background: transparent;
+  border: 0.5px solid rgba(255,255,255,0.15);
+  color: var(--v2-text-2);
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.v2 .sb-btn-clear:hover { background: rgba(255,255,255,0.04); }
+.v2 .sb-btn-submit {
+  appearance: none;
+  background: #D4A853;
+  border: 0;
+  color: #1a1410;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.v2 .sb-btn-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.v2 .sb-btn-submit:not(:disabled):hover {
+  background: #e0b664;
+}
+.v2 .sb-success {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 13px; color: #6ee7b7;
+}
+.v2 .sb-link {
+  appearance: none; background: none; border: 0;
+  color: var(--v2-text-2);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.v2 .sb-link:hover { color: var(--v2-text); }
+
 /* Playbook grid */
 .v2 .resource-grid {
   display: grid;
