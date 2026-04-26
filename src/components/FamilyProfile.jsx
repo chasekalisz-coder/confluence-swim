@@ -638,8 +638,10 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
                   ) : tagsGap ? (
                     <div className={`stacked-gap delta-${tagsGap.color || 'neutral'}`}>
                       <div className="stacked-cut mono">{formatTime(tagsCut)}</div>
-                      <div className="stacked-delta mono">−{tagsGap.deltaSec.toFixed(2)}</div>
-                      <div className="stacked-pct">{tagsGap.pctOff.toFixed(1)}%</div>
+                      <div className="stacked-delta-row">
+                        <div className="stacked-delta mono">−{tagsGap.deltaSec.toFixed(2)}</div>
+                        <div className="stacked-pct">{tagsGap.pctOff.toFixed(1)}%</div>
+                      </div>
                     </div>
                   ) : (
                     <span className="std none">—</span>

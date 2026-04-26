@@ -567,7 +567,7 @@ body.v2-active #root {
 .v2 .times-row .delta { font-size: 13px; font-weight: 500; color: var(--v2-text-2); }
 .v2 .times-row .delta.delta-green    { color: var(--v2-green);  }
 .v2 .times-row .delta.delta-yellow   { color: var(--v2-gold);   }
-.v2 .times-row .delta.delta-red      { color: var(--v2-red);    }
+.v2 .times-row .delta.delta-red      { color: var(--v2-orange); }
 .v2 .times-row .delta.delta-neutral  { color: var(--v2-text-2); }
 .v2 .stroke-family-label {
   padding: 28px 8px 12px;
@@ -1684,7 +1684,7 @@ body.v2-active #root {
 }
 .v2 .color-legend .legend-green  { color: var(--v2-green);  }
 .v2 .color-legend .legend-yellow { color: var(--v2-gold);   }
-.v2 .color-legend .legend-red    { color: var(--v2-red);    }
+.v2 .color-legend .legend-red    { color: var(--v2-orange); }
 
 /* ============================================================
    STACKED GAP CELL — cut time / delta / percent
@@ -1699,17 +1699,19 @@ body.v2-active #root {
 .v2 .stacked-gap {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   line-height: 1.2;
 }
-/* Cut time is the hero — the cell is a STANDARDS table, so show the
-   standard as the prominent information. Delta and pct are context
-   below, not the headline. */
 .v2 .stacked-gap .stacked-cut {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--v2-text);
   letter-spacing: -0.01em;
+}
+.v2 .stacked-gap .stacked-delta-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 .v2 .stacked-gap .stacked-delta {
   font-size: 10px;
@@ -1722,13 +1724,12 @@ body.v2-active #root {
   font-weight: 500;
   opacity: 0.75;
 }
-/* Color the delta + pct using unified palette; cut stays hero/white */
 .v2 .stacked-gap.delta-green   .stacked-delta,
 .v2 .stacked-gap.delta-green   .stacked-pct   { color: var(--v2-green); }
 .v2 .stacked-gap.delta-yellow  .stacked-delta,
 .v2 .stacked-gap.delta-yellow  .stacked-pct   { color: var(--v2-gold);  }
 .v2 .stacked-gap.delta-red     .stacked-delta,
-.v2 .stacked-gap.delta-red     .stacked-pct   { color: var(--v2-red);   }
+.v2 .stacked-gap.delta-red     .stacked-pct   { color: var(--v2-orange); }
 .v2 .stacked-gap.delta-neutral .stacked-delta,
 .v2 .stacked-gap.delta-neutral .stacked-pct   { color: var(--v2-text-2);}
 
