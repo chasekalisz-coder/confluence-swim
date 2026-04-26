@@ -2965,12 +2965,19 @@ body.v2-active #root {
   .v2 main {
     padding-bottom: 80px;
   }
-  /* Hide the desktop top nav on mobile — tab bar replaces it */
-  .v2 .topnav .links {
-    display: none;
+  /* Hide the desktop top nav on mobile — tab bar replaces it.
+     Use !important to beat the desktop nav.topnav specificity. */
+  .v2 nav.topnav .links {
+    display: none !important;
   }
-  .v2 .topnav {
+  .v2 nav.topnav {
     justify-content: space-between;
     padding: 12px 16px;
+  }
+  /* "← Back" link in family pages is redundant on mobile — bottom tab
+     bar handles navigation, and the Confluence logo also acts as a
+     home button. Hide on mobile to reduce visual noise. */
+  .v2 .back {
+    display: none !important;
   }
 }
