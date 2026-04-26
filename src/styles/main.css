@@ -1354,6 +1354,7 @@ html, body, #root {
   font-family: inherit;
 }
 .athlete-card-chev { display: none; }
+.athlete-card-edit-pencil { display: none; }
 
 /* On desktop, tab content is always visible (tabs do nothing) */
 .agp-tab-content { display: block; }
@@ -1460,6 +1461,32 @@ html, body, #root {
     font-size: 16px;
     margin-left: auto;
     flex-shrink: 0;
+  }
+  .athlete-card-edit-pencil {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-left: auto;
+    padding: 0;
+    background: rgba(212, 168, 83, 0.08);
+    border: 0.5px solid rgba(212, 168, 83, 0.3);
+    border-radius: 8px;
+    color: #D4A853;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .athlete-card-edit-pencil:active {
+    background: rgba(212, 168, 83, 0.18);
+    transform: scale(0.94);
+  }
+  /* When pencil is present, the chev moves OFF auto-margin so they
+     sit next to each other naturally */
+  .athlete-card-edit-pencil + .athlete-card-chev {
+    margin-left: 6px;
   }
   .athlete-name {
     font-size: 15px !important;
