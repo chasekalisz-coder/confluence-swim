@@ -1326,12 +1326,13 @@ html, body, #root {
 .tool-chev { color: #334155; font-size: 18px; }
 
 .agp-tools-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
   margin-bottom: 8px;
   margin-top: 8px;
 }
-.agp-tools-row .tool-card { flex: 1; }
+.agp-tools-row .tool-card { width: 100%; }
 
 /* Mobile-only elements — hidden on desktop */
 .agp-search-wrap,
