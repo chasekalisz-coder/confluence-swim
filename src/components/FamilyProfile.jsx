@@ -152,7 +152,11 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
   const bestTimes = useMemo(() => {
     const out = {}
     for (const mt of (athlete.meetTimes || [])) {
-      out[mt.event] = mt.time
+      const sec = parseTime(mt.time)
+      if (sec == null) continue
+      if (out[mt.event] == null || sec < parseTime(out[mt.event])) {
+        out[mt.event] = mt.time
+      }
     }
     return out
   }, [athlete.meetTimes])
