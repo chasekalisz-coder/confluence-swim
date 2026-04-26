@@ -849,7 +849,7 @@ body.v2-active #root {
   .v2 .ca-event-best-group {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
   }
   /* Mobile header label — show "Event/Time" (replace "Event" text via pseudo, hide "Best" sibling).
      The time appears under the distance number in data rows so the combined header makes sense. */
@@ -864,23 +864,38 @@ body.v2-active #root {
   .v2 .ca-header .ca-event-best-group .ca-h-event::before,
   .v2 .ca-sub-header .ca-event-best-group > div:nth-child(1)::before {
     content: "Event/Time";
-    font-size: 11px;
+    font-size: 9px;
     letter-spacing: 0.06em;
   }
   /* Override the inline grid-template-columns (set on .ca-header, .ca-sub-header, .ca-event-row)
-     to use 4 tracks instead of 7: event-stack | sectionals | futures | jr-nats */
+     to use 4 tracks: event-stack | sectionals | futures | jr-nats.
+     Also override the @media (max-width: 900px) rule above which uses 6 cols without !important. */
   .v2 .ca-header[style],
   .v2 .ca-sub-header[style],
   .v2 .ca-event-row[style] {
-    grid-template-columns: 80px 1fr 1fr 1fr !important;
-    gap: 8px !important;
+    grid-template-columns: 70px 1fr 1fr 1fr !important;
+    gap: 10px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    align-items: flex-start !important;
   }
-  /* Best time under event distance — gold, smaller */
+  /* Best time under event distance — white (matches the cut times in tier columns), small */
   .v2 .ca-event-best-group .ca-ev-best {
     font-size: 11px;
-    color: var(--v2-gold);
+    color: var(--v2-text);
     font-weight: 500;
   }
+  /* Distance number — slightly larger so it leads */
+  .v2 .ca-event-best-group .ca-ev-name {
+    font-size: 12px;
+    font-weight: 500;
+  }
+  /* Cut tier cells — show stacked-cut (cut time) + stacked-delta (-s gap) but hide pct */
+  .v2 .ca-cell { align-items: flex-start; }
+  .v2 .ca-cell .stacked-gap { gap: 1px; }
+  .v2 .ca-cell .stacked-cut { font-size: 11px; }
+  .v2 .ca-cell .stacked-delta { font-size: 10px; }
+  .v2 .ca-cell .stacked-pct { display: none; }
 }
 
 /* ===== EVENT POWER RANKINGS ===== */
