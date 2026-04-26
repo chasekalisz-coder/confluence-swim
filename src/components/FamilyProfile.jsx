@@ -1901,8 +1901,9 @@ function BloomCircle({ label, course, athlete, age, gender, visible, bestTimes }
     const rMax = innerR + reach * (outerR - innerR)
     const aMid = (a0 + a1) / 2
     const halfSlice = (a1 - a0) / 2
-    // Max petal half-width (angular) — expanded so adjacent petals overlap
-    const maxHalfWidth = halfSlice * 1.8
+    // Petal half-width — narrower than slice so neighbors have a visible gap.
+    // 0.85 = 85% of slice = 7.5% gap on each side between petals.
+    const maxHalfWidth = halfSlice * 0.85
 
     // Sample the petal outline — N points along the LEFT edge going out,
     // then N points along the RIGHT edge coming back. Half-width at each
