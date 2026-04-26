@@ -767,6 +767,30 @@ body.v2-active #root {
   .v2 .nc-gap { font-size: 44px; }
   .v2 .nc-gap span { font-size: 18px; }
 
+  /* Meet Analyzer / Last Race card — stack vertically on mobile.
+     Desktop uses grid 1fr auto (title left, button right) which squeezes the title
+     column on a narrow viewport, wrapping every word to its own line. */
+  .v2 .analyzer-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 22px;
+  }
+  .v2 .analyzer-card .az-title {
+    font-size: 19px;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+  .v2 .analyzer-card .az-insight {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .v2 .analyzer-card .az-cta {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+    text-align: center;
+  }
+
   /* ===== Times & Goals table — mobile pass v2 =====
      Goal: stacked layout. BEST cell holds time + current badge inline + goal time
      below with bullseye marker. NEXT/GAP/TX cells stack -s over %.
