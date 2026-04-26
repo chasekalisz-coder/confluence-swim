@@ -705,7 +705,12 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
             >
               <span className="ca-chev">{isOpen ? '▾' : '▸'}</span>
               <span className="ca-family-name">{fam.label}</span>
-              <span className="ca-family-count">{strokeDistances(fam, course).length} events</span>
+              <span className="ca-family-count">
+                {strokeDistances(fam, course).filter(dist => {
+                  const baseEvent = `${dist} ${fam.stroke}`
+                  return tiers.some(tier => championshipCut({ tier, gender, course, event: baseEvent, ageBucket: bucket }) != null)
+                }).length} events
+              </span>
             </button>
 
             {isOpen && (
