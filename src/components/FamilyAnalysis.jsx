@@ -157,7 +157,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
 
           <div
             className="tool-card pace"
-            onClick={() => { setView('pace'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+            onClick={() => { window.location.href = '/pace.html' }}
           >
             <div className="icon-ring">
               <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
