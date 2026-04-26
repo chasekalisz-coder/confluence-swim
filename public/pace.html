@@ -1030,8 +1030,12 @@ function generate() {
     html+=`</div>`;
 
     // Chart — split into two rows if more than 10 bars
+    const range = maxP - minP;
+    const safeRange = range < 0.01 ? 1 : range;
+    const minH = 25;
+    const span = 105;
     const avgPct = 100 / splits.length;
-    const avgH = 30+(avgPct/maxP)*105;
+    const avgH = range < 0.01 ? minH + span/2 : minH + ((avgPct - minP) / safeRange) * span;
     const twoRows = splits.length > 10;
     const halfIdx = twoRows ? Math.ceil(splits.length / 2) : splits.length;
     
@@ -1041,7 +1045,7 @@ function generate() {
     html+=`<div class="chart-bars" style="position:relative">`;
     html+=`<div style="position:absolute;left:0;right:0;bottom:${avgH}px;border-top:2px dashed rgba(0,186,230,0.45);z-index:2;pointer-events:none"><span style="position:absolute;right:0;top:-16px;font-size:9px;color:rgba(0,186,230,0.7);font-weight:600;font-family:'JetBrains Mono',monospace">AVG</span></div>`;
     splits.slice(0, halfIdx).forEach((s,i)=>{
-      const h=30+(s.pct/maxP)*105;
+      const h = range < 0.01 ? minH + span/2 : minH + ((s.pct - minP) / safeRange) * span;
       const c=barColor(s.pct,minP,maxP,i,splits.length);
       const fontSize = twoRows ? 8 : 10;
       const labelSize = twoRows ? 7 : 8;
@@ -1059,7 +1063,7 @@ function generate() {
       html+=`<div class="chart-bars" style="position:relative;margin-top:20px">`;
       html+=`<div style="position:absolute;left:0;right:0;bottom:${avgH}px;border-top:2px dashed rgba(0,186,230,0.45);z-index:2;pointer-events:none"></div>`;
       splits.slice(halfIdx).forEach((s,i)=>{
-        const h=30+(s.pct/maxP)*105;
+        const h = range < 0.01 ? minH + span/2 : minH + ((s.pct - minP) / safeRange) * span;
         const c=barColor(s.pct,minP,maxP,i+halfIdx,splits.length);
         const shadow=c.replace(/[\d.]+\)$/,'0.2)');
         html+=`<div class="chart-bar-col">

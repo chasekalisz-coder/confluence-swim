@@ -177,13 +177,22 @@ function Results({ result }) {
           return `rgba(${Math.round(180 + ratio * 75)},${Math.round(210 - ratio * 50)},${Math.round(240 - ratio * 120)},0.85)`
         }
 
+        const range = maxP - minP
+        const safeRange = range < 0.01 ? 1 : range
+        const minH = 20
+        const span = 85
+        const avgPct = arr.reduce((s, p) => s + p, 0) / arr.length
+        const avgH = range < 0.01 ? minH + span/2 : minH + ((avgPct - minP) / safeRange) * span
+
         const renderBars = (slice, startIdx) => (
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 140, position: 'relative' }}>
-            <div style={{ position: 'absolute', left: 0, right: 0, bottom: (30 + (1 / maxP) * 105) + 'px', borderTop: '2px dashed rgba(0,186,230,0.35)', zIndex: 2, pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', left: 0, right: 0, bottom: avgH + 'px', borderTop: '2px dashed rgba(0,186,230,0.45)', zIndex: 2, pointerEvents: 'none' }}>
+              <span style={{ position: 'absolute', right: 0, top: -16, fontSize: 9, color: 'rgba(0,186,230,0.7)', fontWeight: 600, fontFamily: 'monospace' }}>AVG</span>
+            </div>
             {slice.map((v, i) => {
               const idx = startIdx + i
               const p = arr[idx]
-              const h = 30 + (p / maxP) * 105
+              const h = range < 0.01 ? minH + span/2 : minH + ((p - minP) / safeRange) * span
               const col = barColor(p, idx)
               return (
                 <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
