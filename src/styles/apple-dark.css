@@ -388,7 +388,7 @@ body.v2-active #root {
   text-transform: uppercase; color: var(--v2-text-3);
 }
 /* Bar shared */
-.v2 .nc-bar-wrap { position: relative; padding-bottom: 4px; padding-top: 24px; }
+.v2 .nc-bar-wrap { position: relative; padding-bottom: 4px; padding-top: 32px; }
 .v2 .nc-bar-track {
   position: relative; height: 8px;
   background: rgba(255,255,255,0.06);
@@ -401,7 +401,7 @@ body.v2-active #root {
   transition: width 0.4s ease;
 }
 .v2 .nc-pct-label {
-  position: absolute; right: -2px; top: -22px;
+  position: absolute; right: -2px; top: -26px;
   font-size: 11px; font-weight: 700; color: #D4A853;
   white-space: nowrap;
 }
