@@ -1492,7 +1492,7 @@ function AnimatedProgressionChart({
                 <g key={i}>
                   <circle
                     cx={cx} cy={cy}
-                    r={isFinalPR ? 7 : 5.5}
+                    r={isFinalPR ? 7 : 4.5}
                     fill="#FFD89C"
                     stroke="#D4A853"
                     strokeWidth="1.5"
@@ -1536,30 +1536,16 @@ function AnimatedProgressionChart({
 
             if (isLastPoint) {
               return (
-                <g key={i}>
-                  <circle
-                    cx={cx} cy={cy}
-                    r="4"
-                    fill="rgba(212,168,83,0.7)"
-                    stroke="#D4A853"
-                    strokeWidth="1"
-                    className="apc-small-dot"
-                    data-pidx={i}
-                  />
-                  <text
-                    x={cx} y={labelY(labelOffset, 14)}
-                    textAnchor="middle"
-                    dominantBaseline={labelOffset > 0 ? 'hanging' : 'auto'}
-                    fill="rgba(212,168,83,0.7)"
-                    fontSize="11"
-                    fontFamily="SF Mono, ui-monospace, monospace"
-                    style={{ letterSpacing: '0.02em' }}
-                    className="apc-small-dot"
-                    data-pidx={i}
-                  >
-                    {p.raw}
-                  </text>
-                </g>
+                <circle
+                  key={i}
+                  cx={cx} cy={cy}
+                  r="4.5"
+                  fill="rgba(212,168,83,0.7)"
+                  stroke="#D4A853"
+                  strokeWidth="1"
+                  className="apc-small-dot"
+                  data-pidx={i}
+                />
               )
             }
 
@@ -1568,7 +1554,7 @@ function AnimatedProgressionChart({
               <circle
                 key={i}
                 cx={cx} cy={cy}
-                r="2.5"
+                r="4.5"
                 fill="rgba(212,168,83,0.5)"
                 stroke="transparent"
                 strokeWidth="0"
