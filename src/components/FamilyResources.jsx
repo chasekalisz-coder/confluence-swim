@@ -18,6 +18,7 @@ import { useState, useMemo, useEffect } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
 import maySlots from '../data/may-2026-slots.json'
+import { saveSlotRequest, getSlotRequest } from '../lib/db.js'
 
 const RESOURCES = [
   {
@@ -299,8 +300,38 @@ function SchedulingBlock({ athlete, slotData }) {
   // picks: { [slotId]: 'primary' | 'secondary' }
   const [picks, setPicks] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [note, setNote] = useState('')
+  const [lastSubmittedAt, setLastSubmittedAt] = useState(null)
+
+  const athleteId = athlete?.id
+
+  // Load existing request on mount
+  useEffect(() => {
+    let active = true
+    if (!athleteId) { setLoading(false); return }
+    setLoading(true)
+    getSlotRequest(athleteId, slotData.month)
+      .then(req => {
+        if (!active) return
+        if (req && req.picks) {
+          setPicks(req.picks)
+          setNote(req.note || '')
+          setLastSubmittedAt(req.submitted_at)
+          setSubmitted(true)
+        }
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error('[SchedulingBlock] failed to load existing request:', err)
+        if (active) setLoading(false)
+      })
+    return () => { active = false }
+  }, [athleteId, slotData.month])
 
   const cyclePick = (slotId) => {
+    if (submitted) setSubmitted(false) // Edit mode if they touch a slot post-submit
     setPicks(prev => {
       const cur = prev[slotId]
       const next = { ...prev }
@@ -314,14 +345,27 @@ function SchedulingBlock({ athlete, slotData }) {
   const primaryCount = Object.values(picks).filter(v => v === 'primary').length
   const secondaryCount = Object.values(picks).filter(v => v === 'secondary').length
 
-  const handleSubmit = () => {
-    // TODO: wire up DB save in next pass
-    console.log('Submitting picks:', picks)
-    setSubmitted(true)
+  const handleSubmit = async () => {
+    if (!athleteId) {
+      alert('Cannot submit — no athlete selected.')
+      return
+    }
+    setSaving(true)
+    try {
+      await saveSlotRequest(athleteId, slotData.month, picks, note.trim() || null)
+      setSubmitted(true)
+      setLastSubmittedAt(new Date().toISOString())
+    } catch (err) {
+      console.error('[SchedulingBlock] save failed:', err)
+      alert('Save failed: ' + err.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleReset = () => {
     setPicks({})
+    setNote('')
     setSubmitted(false)
   }
 
@@ -397,12 +441,28 @@ function SchedulingBlock({ athlete, slotData }) {
         ))}
       </div>
 
+      {/* Optional note */}
+      {!submitted && !loading && (primaryCount + secondaryCount > 0) && (
+        <div className="sb-note-wrap">
+          <label className="sb-note-label">Anything Chase should know? (optional)</label>
+          <textarea
+            className="sb-note"
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            placeholder="e.g. We'd prefer two sessions per week, ideally back-to-back days..."
+            rows={2}
+          />
+        </div>
+      )}
+
       {/* Action bar */}
       <div className="sb-actions">
-        {submitted ? (
+        {loading ? (
+          <div className="sb-summary">Loading your request...</div>
+        ) : submitted ? (
           <div className="sb-success">
-            ✓ Request submitted. Chase will be in touch to confirm your sessions.
-            <button className="sb-link" onClick={handleReset}>Edit my picks</button>
+            <span>✓ Request submitted{lastSubmittedAt ? ` (${new Date(lastSubmittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })})` : ''}. Chase will be in touch.</span>
+            <button className="sb-link" onClick={handleReset}>Start over</button>
           </div>
         ) : (
           <>
@@ -413,14 +473,14 @@ function SchedulingBlock({ athlete, slotData }) {
             </div>
             <div className="sb-btns">
               {(primaryCount + secondaryCount > 0) && (
-                <button className="sb-btn-clear" onClick={handleReset}>Clear all</button>
+                <button className="sb-btn-clear" onClick={handleReset} disabled={saving}>Clear all</button>
               )}
               <button
                 className="sb-btn-submit"
                 onClick={handleSubmit}
-                disabled={primaryCount + secondaryCount === 0}
+                disabled={primaryCount + secondaryCount === 0 || saving}
               >
-                Submit Request
+                {saving ? 'Submitting...' : (lastSubmittedAt ? 'Update Request' : 'Submit Request')}
               </button>
             </div>
           </>

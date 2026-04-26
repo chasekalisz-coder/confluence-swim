@@ -195,3 +195,25 @@ export async function addAthlete(athlete) {
 export async function deleteAthlete(athleteId) {
   return callDb('deleteAthlete', { athleteId })
 }
+
+// ============================================================
+// Slot Requests — family-side scheduling request flow
+// ============================================================
+// Family submits picks for a given month. Coach reads them back
+// to organize and then schedule in Acuity.
+// One request per athlete per month — re-submitting overwrites.
+// ============================================================
+
+export async function saveSlotRequest(athleteId, month, picks, note) {
+  return callDb('saveSlotRequest', { athleteId, month, picks, note })
+}
+
+export async function getSlotRequest(athleteId, month) {
+  const { request } = await callDb('getSlotRequest', { athleteId, month })
+  return request
+}
+
+export async function listSlotRequests(month) {
+  const { requests } = await callDb('listSlotRequests', { month })
+  return requests || []
+}

@@ -61,6 +61,19 @@ export default async function handler(req, res) {
           )
         `
         await sql`CREATE INDEX IF NOT EXISTS change_log_created_at_idx ON change_log(created_at DESC)`
+        await sql`
+          CREATE TABLE IF NOT EXISTS slot_requests (
+            id bigserial PRIMARY KEY,
+            athlete_id text NOT NULL,
+            month text NOT NULL,
+            picks jsonb NOT NULL,
+            note text,
+            submitted_at timestamptz DEFAULT now(),
+            UNIQUE (athlete_id, month)
+          )
+        `
+        await sql`CREATE INDEX IF NOT EXISTS slot_requests_month_idx ON slot_requests(month)`
+        await sql`CREATE INDEX IF NOT EXISTS slot_requests_athlete_idx ON slot_requests(athlete_id)`
         return res.status(200).json({ ok: true })
       }
 
@@ -218,6 +231,59 @@ export default async function handler(req, res) {
           LIMIT ${max}
         `
         return res.status(200).json({ ok: true, changes: rows })
+      }
+
+      case 'saveSlotRequest': {
+        const { athleteId, month, picks, note } = params
+        if (!athleteId || !month || !picks) {
+          return res.status(400).json({ error: 'athleteId, month, picks required' })
+        }
+        // Ensure table exists (defensive — in case setupSchema hasn't run)
+        await sql`
+          CREATE TABLE IF NOT EXISTS slot_requests (
+            id bigserial PRIMARY KEY,
+            athlete_id text NOT NULL,
+            month text NOT NULL,
+            picks jsonb NOT NULL,
+            note text,
+            submitted_at timestamptz DEFAULT now(),
+            UNIQUE (athlete_id, month)
+          )
+        `
+        // Upsert: one request per athlete per month, latest wins
+        await sql`
+          INSERT INTO slot_requests (athlete_id, month, picks, note, submitted_at)
+          VALUES (${athleteId}, ${month}, ${JSON.stringify(picks)}::jsonb, ${note || null}, now())
+          ON CONFLICT (athlete_id, month)
+          DO UPDATE SET picks = EXCLUDED.picks, note = EXCLUDED.note, submitted_at = now()
+        `
+        return res.status(200).json({ ok: true })
+      }
+
+      case 'getSlotRequest': {
+        const { athleteId, month } = params
+        if (!athleteId || !month) {
+          return res.status(400).json({ error: 'athleteId, month required' })
+        }
+        const rows = await sql`
+          SELECT athlete_id, month, picks, note, submitted_at
+          FROM slot_requests
+          WHERE athlete_id = ${athleteId} AND month = ${month}
+          LIMIT 1
+        `
+        return res.status(200).json({ ok: true, request: rows[0] || null })
+      }
+
+      case 'listSlotRequests': {
+        const { month } = params
+        if (!month) return res.status(400).json({ error: 'month required' })
+        const rows = await sql`
+          SELECT athlete_id, month, picks, note, submitted_at
+          FROM slot_requests
+          WHERE month = ${month}
+          ORDER BY submitted_at DESC
+        `
+        return res.status(200).json({ ok: true, requests: rows })
       }
 
       default:

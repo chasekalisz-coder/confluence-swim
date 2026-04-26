@@ -1699,6 +1699,33 @@ body.v2-active #root {
 }
 
 /* Action bar */
+.v2 .sb-note-wrap {
+  display: flex; flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.v2 .sb-note-label {
+  font-size: 11px;
+  color: var(--v2-text-3);
+  font-weight: 500;
+}
+.v2 .sb-note {
+  appearance: none;
+  background: rgba(255,255,255,0.04);
+  border: 0.5px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--v2-text);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 50px;
+}
+.v2 .sb-note:focus {
+  outline: none;
+  border-color: rgba(212, 168, 83, 0.4);
+  background: rgba(255,255,255,0.06);
+}
 .v2 .sb-actions {
   display: flex;
   justify-content: space-between;
