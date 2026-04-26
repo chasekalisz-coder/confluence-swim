@@ -545,9 +545,9 @@ body.v2-active #root {
   border-bottom: 0.5px solid var(--v2-border);
   align-items: center;
 }
-/* Main Times & Goals — 7 cols (no TX TAGs) */
+/* Main Times & Goals — 7 cols (Event/Best/Goal/Current/Next combined/Gap to Goal/TAGS) */
 .v2 .times-table-no-tags .times-row {
-  grid-template-columns: 70px 1fr 0.9fr 0.85fr 0.85fr 1.1fr 1.1fr;
+  grid-template-columns: 60px 1fr 0.9fr 0.8fr 1.3fr 1.1fr 1.2fr;
   gap: 14px;
 }
 /* Championship table: Event + Best + 4 tier columns */
