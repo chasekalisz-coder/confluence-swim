@@ -754,8 +754,10 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
                             ) : gap ? (
                               <div className={`stacked-gap delta-${gap.color || 'neutral'}`}>
                                 <div className="stacked-cut mono">{formatTime(cut)}</div>
-                                <div className="stacked-delta mono">−{gap.deltaSec.toFixed(2)}</div>
-                                <div className="stacked-pct">{gap.pctOff.toFixed(1)}%</div>
+                                <div className="stacked-delta-row">
+                                  <div className="stacked-delta mono">−{gap.deltaSec.toFixed(2)}</div>
+                                  <div className="stacked-pct">{gap.pctOff.toFixed(1)}%</div>
+                                </div>
                               </div>
                             ) : (
                               <span className="std none">—</span>
