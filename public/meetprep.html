@@ -166,7 +166,12 @@ input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: rgba(244, 114, 182, 0.5);
 }
+input[type="date"] {
+  min-height: 41px;
+  -webkit-min-logical-width: 100%;
+}
 input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 input[type="file"] { padding: 10px; cursor: pointer; font-size: 12px; }
 input[type="file"]::-webkit-file-upload-button {
   background: rgba(244, 114, 182, 0.12);
