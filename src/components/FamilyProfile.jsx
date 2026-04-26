@@ -1535,17 +1535,34 @@ function AnimatedProgressionChart({
             }
 
             if (isLastPoint) {
+              // Last point always gets a dot and label — unless it's already the final PR (already rendered above)
+              if (i === lastPRIdx) return null
               return (
-                <circle
-                  key={i}
-                  cx={cx} cy={cy}
-                  r="4.5"
-                  fill="rgba(212,168,83,0.7)"
-                  stroke="#D4A853"
-                  strokeWidth="1"
-                  className="apc-small-dot"
-                  data-pidx={i}
-                />
+                <g key={i}>
+                  <circle
+                    cx={cx} cy={cy}
+                    r="5.5"
+                    fill="#FFD89C"
+                    stroke="#D4A853"
+                    strokeWidth="1.5"
+                    filter="url(#apc-dot-glow)"
+                    className="apc-small-dot"
+                    data-pidx={i}
+                  />
+                  <text
+                    x={cx} y={labelY(labelOffset, 16)}
+                    textAnchor="middle"
+                    dominantBaseline={labelOffset > 0 ? 'hanging' : 'auto'}
+                    fill="#FFD89C"
+                    fontSize="12"
+                    fontFamily="SF Mono, ui-monospace, monospace"
+                    style={{ letterSpacing: '0.02em' }}
+                    className="apc-small-dot"
+                    data-pidx={i}
+                  >
+                    {p.raw}
+                  </text>
+                </g>
               )
             }
 
@@ -1554,10 +1571,10 @@ function AnimatedProgressionChart({
               <circle
                 key={i}
                 cx={cx} cy={cy}
-                r="4.5"
-                fill="rgba(212,168,83,0.5)"
-                stroke="transparent"
-                strokeWidth="0"
+                r="5.5"
+                fill="rgba(212,168,83,0.4)"
+                stroke="#D4A853"
+                strokeWidth="1"
                 className="apc-small-dot"
                 data-pidx={i}
               />
