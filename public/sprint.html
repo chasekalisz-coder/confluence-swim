@@ -55,11 +55,16 @@ body > * { position: relative; z-index: 1; }
   background: rgba(0, 0, 0, 0.4);
 }
 .topbar .brand {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  color: white;
+  display: flex;
+  align-items: center;
   text-decoration: none;
+  transition: opacity 0.15s;
+}
+.topbar .brand:hover { opacity: 0.85; }
+.topbar .brand img {
+  height: 22px;
+  width: auto;
+  display: block;
 }
 .topbar .crumb {
   font-size: 10px;
@@ -420,7 +425,7 @@ textarea:focus { outline: none; }
 .toast.error { border-color: rgba(248, 113, 113, 0.4); color: #fca5a5; }
 @media (max-width: 640px) {
   .topbar { padding: 12px 18px; }
-  .topbar .brand { font-size: 12px; }
+  .topbar .brand img { height: 18px; }
   .hero { padding: 28px 20px 22px; }
   h1 { font-size: 30px; }
   .hero-sub { font-size: 12px; }
@@ -456,7 +461,7 @@ textarea:focus { outline: none; }
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="brand">CONFLUENCE</a>
+  <a href="/" class="brand"><img src="/assets/confluence-swim-white.png" alt="Confluence Swim" /></a>
   <div class="crumb">Sprint Lab</div>
 </div>
 

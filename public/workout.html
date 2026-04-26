@@ -53,11 +53,16 @@ body > * { position: relative; z-index: 1; }
   background: rgba(0, 0, 0, 0.4);
 }
 .topbar .brand {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  color: white;
+  display: flex;
+  align-items: center;
   text-decoration: none;
+  transition: opacity 0.15s;
+}
+.topbar .brand:hover { opacity: 0.85; }
+.topbar .brand img {
+  height: 22px;
+  width: auto;
+  display: block;
 }
 .topbar .crumb { font-size: 10px; color: var(--muted); letter-spacing: 0.05em; }
 
@@ -479,7 +484,7 @@ input::placeholder { color: #475569; }
 
 @media (max-width: 640px) {
   .topbar { padding: 12px 18px; }
-  .topbar .brand { font-size: 12px; }
+  .topbar .brand img { height: 18px; }
   .builder { padding: 20px 16px 80px; }
   h1.page-title { font-size: 28px; }
   .hero-sub { font-size: 12px; }
@@ -498,7 +503,7 @@ input::placeholder { color: #475569; }
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="brand">CONFLUENCE</a>
+  <a href="/" class="brand"><img src="/assets/confluence-swim-white.png" alt="Confluence Swim" /></a>
   <div class="crumb">Workout Builder</div>
 </div>
 
