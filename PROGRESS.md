@@ -1,5 +1,27 @@
 # PROGRESS.md — Session Log
 
+## Session 13 — 2026-04-26 (Phase 2 mobile sweep — Athlete Performance Profile)
+
+### Approach
+Section-by-section mobile pass on the Athlete Performance Profile, starting with the Profile tab. Working from live mobile screenshots Chase sends, paired against desktop. Desktop is locked — only mobile breakpoints touched. Scope of each fix is approved before code is written.
+
+### Done
+**Chasing Next card — mobile sizing pass** (1 commit). On mobile (`max-width: 720px`), the desktop card was using its desktop padding (36px 44px 28px), 40px column gap, 36px event title, and 56px gap-number. Result: the event label "200 Back" wrapped to two lines while "−1.01s" sat against it, the card felt cramped, and there was wasted internal whitespace. Added a mobile-only block in `src/styles/apple-dark.css` (inside the existing `@media (max-width: 720px)` at line 695):
+- `.next-cut-v2` padding 24px 22px 22px
+- `.nc-top` gap 16px, margin-bottom 18px
+- `.nc-event` 26px (down from 36px)
+- `.nc-gap` 44px (down from 56px), `.nc-gap span` 18px (down from 22px)
+Desktop layout unchanged — overrides only fire below 720px.
+
+### Files changed this session
+- src/styles/apple-dark.css (one mobile-only block added inside existing 720px breakpoint)
+- PROGRESS.md (this entry)
+
+### Next up
+Continue mobile sweep — Chase will send the next pair of desktop/mobile screenshots for the next section.
+
+---
+
 ## Session 12 — 2026-04-26 (Phase 1 tool redesigns finished + bottom nav)
 
 ### Approach

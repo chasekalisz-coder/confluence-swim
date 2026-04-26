@@ -694,6 +694,13 @@ body.v2-active #root {
 }
 @media (max-width: 720px) {
   .v2 .age-up-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Chasing Next card — tighter on mobile so event title + gap number share the row cleanly */
+  .v2 .next-cut-v2 { padding: 24px 22px 22px; }
+  .v2 .nc-top { gap: 16px; margin-bottom: 18px; }
+  .v2 .nc-event { font-size: 26px; margin-bottom: 8px; }
+  .v2 .nc-gap { font-size: 44px; }
+  .v2 .nc-gap span { font-size: 18px; }
 }
 
 /* ===== EVENT POWER RANKINGS ===== */
