@@ -607,17 +607,17 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
                     : <span className="std none">—</span>}
                 </div>
                 {/* Next — combined: standard badge + gap seconds + % */}
-                <div className={`delta mono delta-${row.colorToNext || 'neutral'}`}>
+                <div className={`delta mono delta-${row.colorToNext || 'neutral'}`} style={{display:'flex', flexDirection:'column', gap:'2px', alignItems:'flex-start'}}>
                   {row.nextLevel
-                    ? <span className={`std ${row.nextLevel}`} style={{marginBottom:4,display:'block'}}>{row.nextLevel}</span>
+                    ? <span className={`std ${row.nextLevel}`}>{row.nextLevel}</span>
                     : <span className="std none">—</span>}
                   {row.deltaToNext != null && (
-                    <>
+                    <span>
                       {formatDelta(-row.deltaToNext)}
                       {row.pctToNext != null && (
                         <span className="delta-pct">{row.pctToNext.toFixed(1)}%</span>
                       )}
-                    </>
+                    </span>
                   )}
                 </div>
                 {/* Gap to Goal */}

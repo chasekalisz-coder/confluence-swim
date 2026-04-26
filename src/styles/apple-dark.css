@@ -541,7 +541,7 @@ body.v2-active #root {
   display: grid;
   grid-template-columns: 80px 1fr 1fr 1fr 1fr 1fr 1fr;
   gap: 20px;
-  padding: 12px 8px;
+  padding: 10px 8px;
   border-bottom: 0.5px solid var(--v2-border);
   align-items: center;
 }
