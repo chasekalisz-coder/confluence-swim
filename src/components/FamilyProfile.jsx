@@ -728,6 +728,10 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
                   const best = bestTimes[eventKey]
                   const bestSec = best ? parseTime(best) : null
 
+                  // Skip events with no cuts in any tier (e.g. 100 IM)
+                  const hasAnyCut = tiers.some(tier => championshipCut({ tier, gender, course, event: baseEvent, ageBucket: bucket }) != null)
+                  if (!hasAnyCut) return null
+
                   return (
                     <div
                       className="ca-event-row"
