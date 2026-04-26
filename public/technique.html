@@ -202,8 +202,8 @@ textarea::placeholder, input::placeholder { color: #475569; }
 
 .row {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
 }
 .row > div { min-width: 0; }
 
@@ -214,7 +214,7 @@ textarea::placeholder, input::placeholder { color: #475569; }
   border: 0.5px solid var(--rule-strong);
   padding: 3px;
   border-radius: 8px;
-  max-width: 320px;
+  width: 100%;
 }
 .pool-btn {
   flex: 1;
@@ -379,17 +379,16 @@ textarea::placeholder, input::placeholder { color: #475569; }
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   padding: 0 32px 28px;
+  align-items: stretch;
 }
-.media-row .step { padding: 0; }
+.media-row .step { padding: 0; display: flex; flex-direction: column; }
 
 /* Pool toggle: center label + buttons under the setup row */
 .pool-wrap { text-align: center; }
 .pool-wrap .field-label { text-align: center; }
-.pool-wrap .pool-toggle { margin: 0 auto; }
 
-/* Photo picker: match the visual weight of the +Add Video button so the
-   two columns in .media-row have equal-height surfaces. Centers the
-   "No photo attached" status text and the native file input. */
+/* Photo picker: matches the +Add Video block exactly so the two
+   .media-row columns are identical surfaces. */
 .photo-picker {
   background: rgba(132, 169, 140, 0.06);
   border: 0.5px dashed rgba(132, 169, 140, 0.4);
@@ -397,6 +396,12 @@ textarea::placeholder, input::placeholder { color: #475569; }
   padding: 14px;
   text-align: center;
   margin-top: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
 }
 .photo-picker .photo-status {
   margin-bottom: 10px;
@@ -414,12 +419,13 @@ textarea::placeholder, input::placeholder { color: #475569; }
   display: block;
   margin: 12px auto 0;
 }
-/* Equalize the two media blocks visually — photo-section adds the same
-   bottom margin so its height matches the video column when the video
-   column has just the +Add Video button. */
-.media-row .step { display: flex; flex-direction: column; }
-.media-row .photo-section .photo-picker { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-.media-row #addVideoBtn { margin-top: auto; }
+/* The +Add Video button matches photo-picker's surface dimensions */
+.media-row #addVideoBtn {
+  margin-top: 8px;
+  flex: 1;
+  min-height: 56px;
+  padding: 14px;
+}
 
 .error {
   margin: 0 32px 16px;
