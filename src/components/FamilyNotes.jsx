@@ -199,13 +199,16 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
     return groups
   }, [visible])
 
-  // Stats strip
+  // Stats strip — counts EXCLUDE workouts. Workouts are workout-builder
+  // outputs (planned sets), not actual training sessions, and shouldn't
+  // inflate the session count.
   const stats = useMemo(() => {
-    const total = normalized.length
-    const thisMonth = countThisMonth(normalized)
-    const mostCommon = findMostCommon(normalized) || '—'
-    const lastSession = normalized[0]?.dateObj
-      ? relativeDate(normalized[0].dateObj)
+    const sessionsOnly = normalized.filter(n => n.noteTypeKey !== 'workout')
+    const total = sessionsOnly.length
+    const thisMonth = countThisMonth(sessionsOnly)
+    const mostCommon = findMostCommon(sessionsOnly) || '—'
+    const lastSession = sessionsOnly[0]?.dateObj
+      ? relativeDate(sessionsOnly[0].dateObj)
       : '—'
     return { total, thisMonth, mostCommon, lastSession }
   }, [normalized])
