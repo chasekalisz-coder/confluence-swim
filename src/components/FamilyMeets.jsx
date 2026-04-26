@@ -18,6 +18,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
+import FamilyTabBar from './FamilyTabBar.jsx'
 import { formatTime, parseTime, formatDelta } from '../lib/calculations.js'
 
 export default function FamilyMeets({ athlete, onBack, onNavigate }) {
@@ -204,6 +205,7 @@ export default function FamilyMeets({ athlete, onBack, onNavigate }) {
         )}
       </main>
       <FamilyFooter />
+      <FamilyTabBar active="meets" onNavigate={onNavigate} />
     </div>
   )
 }

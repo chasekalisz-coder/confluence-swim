@@ -12,6 +12,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
+import FamilyTabBar from './FamilyTabBar.jsx'
 import { loadAthleteSessions } from '../lib/db.js'
 
 // How each stored session.category maps to a family-facing label + color key.
@@ -323,6 +324,7 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
         )}
       </main>
       <FamilyFooter />
+      <FamilyTabBar active="notes" onNavigate={onNavigate} />
     </div>
   )
 }

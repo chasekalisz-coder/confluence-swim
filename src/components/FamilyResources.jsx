@@ -17,6 +17,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
+import FamilyTabBar from './FamilyTabBar.jsx'
 import maySlots from '../data/may-2026-slots.json'
 import { saveSlotRequest, getSlotRequest } from '../lib/db.js'
 
@@ -284,6 +285,7 @@ export default function FamilyResources({ athlete, onBack, onNavigate }) {
         )}
       </main>
       <FamilyFooter />
+      <FamilyTabBar active="resources" onNavigate={onNavigate} />
     </div>
   )
 }

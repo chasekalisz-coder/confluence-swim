@@ -22,6 +22,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
+import FamilyTabBar from './FamilyTabBar.jsx'
 import { fullName } from '../data/athletes.js'
 import {
   parseTime,
@@ -398,6 +399,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
       </main>
 
       <FamilyFooter />
+      <FamilyTabBar active="profile" onNavigate={onNavigate} />
     </div>
   )
 }

@@ -17,6 +17,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
+import FamilyTabBar from './FamilyTabBar.jsx'
 import RacePaceCalculator from './RacePaceCalculator.jsx'
 import {
   pickNextCut,
@@ -213,6 +214,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
         )}
       </main>
       <FamilyFooter />
+      <FamilyTabBar active="analysis" onNavigate={onNavigate} />
     </div>
   )
 }
