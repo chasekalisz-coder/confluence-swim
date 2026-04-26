@@ -98,6 +98,7 @@ Chase Kalisz — Olympic gold medalist (200m IM, Tokyo 2020), elite private yout
 8. **Chase never pushes from his CLI.** Claude pushes from `/tmp/push-attempt/repo` using the PAT above. This is the only correct workflow.
 9. **Don't pre-add event sections, placeholders, or "probably next" content.** Let docs stay short. Only write what Chase has explicitly provided.
 10. **No preambles.** No "Great question!", no "Let me help with that", no over-apologizing. One acknowledgment, then forward.
+11. **Never run `npm install` or `npx vite build` without first verifying `.gitignore` exists and excludes `node_modules/` and `dist/`.** If `.gitignore` is missing or incomplete, fix it BEFORE running build commands. After running any build command, always run `git status` and visually scan for unexpected files (`node_modules/`, `dist/`, `.vite/`, lockfiles) before staging. Never use `git add -A` blindly — confirm the staged file list first. Past Claude committed 756,091 lines of node_modules to the repo by skipping this check.
 
 ---
 
