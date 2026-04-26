@@ -733,10 +733,11 @@ body.v2-active #root {
   .v2 .header-desktop { display: none; }
   .v2 .header-mobile { display: grid; }
 
-  /* Row grid — 5 columns instead of 7 */
+  /* Row grid — 5 columns. Fixed pixel widths so every row's columns
+     line up vertically regardless of content width. */
   .v2 .times-table-no-tags .times-row {
-    grid-template-columns: 24px 1.05fr 1fr 0.85fr 0.7fr;
-    gap: 12px;
+    grid-template-columns: 28px 100px 78px 70px 70px;
+    gap: 10px;
     padding: 8px 4px;
     align-items: flex-start;
   }
