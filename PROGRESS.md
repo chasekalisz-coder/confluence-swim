@@ -21,12 +21,16 @@ Desktop layout unchanged — overrides only fire below 720px.
 
 JSX changes: wrapped existing `time` / `goal` / current cells in a `.best-group` div. On desktop this wrapper uses `display: contents` so its 3 kids become direct grid items — desktop 7-column layout preserved 1:1. On mobile the wrapper switches to `flex column` so the 3 kids stack inside one grid slot. Added `.cur-inline-mobile` badge inside `.time` (hidden on desktop). Added `.goal-marker` bullseye span inside `.goal` (hidden on desktop). Added second `.times-row.header.header-mobile` block; existing header marked `.header-desktop`. CSS toggles which header shows.
 
-**Times & Goals table — mobile pass v4** (1 commit, CSS-only). Live screenshot of v3 showed badges and content in NEXT/GAP/TX columns weren't visually aligned with each other or with the BEST cell's two lines. Reworked vertical alignment so every row reads on two horizontal lines:
-- Line 1 (top): time + cur badge in BEST, badge + -s in NEXT, time in TX
-- Line 2 (bottom): ◎ goal time in BEST, -s + % in GAP, -s in TX
-- NEXT cell: flex-row inline (badge + -s on one line), `align-self: start` to anchor top
-- GAP cell: flex-row inline (-s + % on one line), `align-self: end` to anchor bottom on the goal-time row
-- TX cell: flex-column with `justify-content: space-between` so time sits on top, -s sits on bottom of the row
+**Times & Goals table — mobile pass v3** (1 commit, CSS-only). Live screenshot showed the v2 layout was visually too busy. Chase requested:
+- NEXT cell: badge on top, -s below (stacked column instead of flex-row), no %
+- GAP cell: keep -s with % under it (only column with %)
+- TX cell: time on top, -s below, no %
+- BEST header divider: shorter (~50px) and brighter (1px solid rgba 0.4 instead of 0.5px solid rgba 0.18)
+Changes inside the existing `@media (max-width: 720px)` block:
+- `.delta[style]` flipped from `flex-direction: row` → `column` with `align-items: center`, gap 2px
+- Hide `.delta-pct` inside `.delta[style]` (NEXT only)
+- Hide `.stacked-pct` in TX TAGs cell
+- Header divider rule updated
 Desktop unchanged.
 
 ### Files changed this session
