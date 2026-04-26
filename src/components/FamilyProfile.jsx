@@ -45,7 +45,6 @@ import {
 import {
   CHAMPIONSHIP_TIERS,
   CHAMPIONSHIP_TIER_LABELS,
-  TAGS_ELIGIBLE_BUCKETS,
   championshipCut,
   txTagsCut,
 } from '../lib/championship-standards.js'
@@ -659,10 +658,7 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
   // in the 15-16 or 17-18 brackets gets the TAGS column filtered out
   // entirely (not just rendered as "—" cells).
   const bucket = ageBucket(age)
-  const tiers = CHAMPIONSHIP_TIERS.filter(t => {
-    if (t === 'TAGS' && !TAGS_ELIGIBLE_BUCKETS.has(bucket)) return false
-    return true
-  })
+  const tiers = CHAMPIONSHIP_TIERS
 
   return (
     <div className="championship-accordion">
