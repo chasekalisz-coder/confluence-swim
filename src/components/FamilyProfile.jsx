@@ -1827,9 +1827,9 @@ function BloomCircle({ label, course, athlete, age, gender }) {
   const cx = size / 2
   const cy = size / 2
   const innerR = 12
-  const outerR = 180              // reach radius for the bloom itself
-  const distLabelR = outerR + 18  // distance numbers
-  const familyLabelR = outerR + 62 // family labels outside everything
+  const outerR = 210              // extended closer to edges
+  const distLabelR = outerR + 16  // distance numbers
+  const familyLabelR = outerR + 52 // family labels outside everything
 
   // -----------------------------------------------------------------
   // HEAT PALETTE — reach position → color
@@ -1952,37 +1952,43 @@ function BloomCircle({ label, course, athlete, age, gender }) {
           <circle cx={cx} cy={cy} r={outerR} />
         </g>
 
-        {/* HALO LAYER — heavily blurred, low opacity. Sits underneath
-            and provides the soft color bleed/glow between neighbors.
-            Does the "clouds" work. */}
+        {/* HALO LAYER — heavily blurred, low opacity. */}
         <g filter={`url(#bloom-blur-${course})`} opacity="0.55">
           {spokes.map((spoke, si) => {
             const reach = reachBySpoke[si]
             if (reach < 0.03) return null
+            const delay = `${(si / spokes.length) * 1.2}s`
             return (
               <path
                 key={si}
                 d={wedgeShape(spoke.a0, spoke.a1, reach)}
                 fill={heatAt(reach)}
                 stroke="none"
+                style={{
+                  transformOrigin: `${cx}px ${cy}px`,
+                  animation: `bloomGrow 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 0.8}s infinite`,
+                }}
               />
             )
           })}
         </g>
 
-        {/* CORE LAYER — barely blurred, full color. Sits on top and
-            provides the visible, vibrant shape. This is what makes the
-            bloom feel alive instead of frosted-glass. */}
+        {/* CORE LAYER — barely blurred, full color. */}
         <g filter={`url(#bloom-core-blur-${course})`} opacity="0.95">
           {spokes.map((spoke, si) => {
             const reach = reachBySpoke[si]
             if (reach < 0.03) return null
+            const delay = `${(si / spokes.length) * 1.2}s`
             return (
               <path
                 key={si}
                 d={wedgeShape(spoke.a0, spoke.a1, reach)}
                 fill={heatAt(reach)}
                 stroke="none"
+                style={{
+                  transformOrigin: `${cx}px ${cy}px`,
+                  animation: `bloomGrow 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay} both, bloomPulse 3s ease-in-out ${parseFloat(delay) + 0.8}s infinite`,
+                }}
               />
             )
           })}

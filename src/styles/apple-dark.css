@@ -2306,6 +2306,16 @@ body.v2-active #root {
 /* ============================================================
    BLOOM LEGEND — tier ring order + heat gradient key
    ============================================================ */
+@keyframes bloomGrow {
+  0%   { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes bloomPulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
 .v2 .bloom-legend {
   margin-top: 16px;
   padding: 18px 22px;
