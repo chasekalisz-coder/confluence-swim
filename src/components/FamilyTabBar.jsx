@@ -16,8 +16,8 @@ export default function FamilyTabBar({ active = 'profile', onNavigate }) {
   const tabs = [
     { id: 'profile',   label: 'Profile',   icon: ProfileIcon },
     { id: 'notes',     label: 'Sessions',  icon: SessionsIcon },
-    { id: 'meets',     label: 'Meets',     icon: MeetsIcon },
     { id: 'analysis',  label: 'Analysis',  icon: AnalysisIcon },
+    { id: 'meets',     label: 'Meets',     icon: MeetsIcon },
     { id: 'resources', label: 'Resources', icon: ResourcesIcon },
   ]
 

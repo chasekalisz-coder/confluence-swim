@@ -84,6 +84,20 @@ body.v2-active #root {
   height: 100%;
   flex: 0 0 auto;
 }
+.v2 nav.topnav .brand-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+.v2 nav.topnav .brand-button:hover img {
+  opacity: 0.85;
+}
+.v2 nav.topnav .brand-button:active {
+  transform: scale(0.97);
+}
 .v2 nav.topnav .brand img {
   height: 26px;
   width: auto;

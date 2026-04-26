@@ -117,11 +117,45 @@ export default function App() {
     alert(`${type} sessions coming soon.`)
   }
 
+  // ---- Browser history support for family-side navigation ----
+  // On mount, restore from URL hash if present. After this, every
+  // family-page navigation pushes a history entry, and the browser
+  // back/forward buttons update the view via popstate.
+  useEffect(() => {
+    if (!urlAthleteId) return
+
+    // On first load, if there's a hash, apply it
+    const hashView = window.location.hash.replace('#', '')
+    if (hashView && ['profile', 'notes', 'meets', 'analysis', 'resources'].includes(hashView)) {
+      setView('family-' + hashView)
+    }
+
+    const handlePopState = () => {
+      const h = window.location.hash.replace('#', '')
+      if (!h || h === 'profile') {
+        setView('family-profile')
+      } else if (['notes', 'meets', 'analysis', 'resources'].includes(h)) {
+        setView('family-' + h)
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [urlAthleteId])
+
   // ---- v2 navigation handler, shared across all v2 pages ----
   // Maps the FamilyNav labels ('profile', 'notes', 'meets', 'analysis',
-  // 'resources') to the corresponding view states. Pages not yet built
-  // show a placeholder alert.
+  // 'resources') to the corresponding view states. Each navigation
+  // pushes a history entry so the browser back button works naturally.
   const handleV2Navigate = (nextView) => {
+    const validViews = ['profile', 'notes', 'meets', 'analysis', 'resources']
+    if (!validViews.includes(nextView)) return
+
+    // Push history entry only if hash differs (don't double-push on same page)
+    const currentHash = window.location.hash.replace('#', '')
+    if (currentHash !== nextView) {
+      window.history.pushState({ view: nextView }, '', '#' + nextView)
+    }
+
     switch (nextView) {
       case 'profile':
         setView('family-profile'); return

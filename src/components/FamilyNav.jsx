@@ -7,8 +7,8 @@ export default function FamilyNav({ active = 'Profile', athleteInitials = '', on
   const links = [
     { label: 'Profile', view: 'profile' },
     { label: 'Session Notes', view: 'notes' },
-    { label: 'Meets', view: 'meets' },
     { label: 'Analysis', view: 'analysis' },
+    { label: 'Meets', view: 'meets' },
     { label: 'Resources', view: 'resources' },
   ]
 
@@ -19,9 +19,14 @@ export default function FamilyNav({ active = 'Profile', athleteInitials = '', on
 
   return (
     <nav className="topnav">
-      <div className="brand">
+      <button
+        type="button"
+        className="brand brand-button"
+        onClick={() => onNavigate && onNavigate('profile')}
+        aria-label="Go to profile"
+      >
         <img src={SWIM_LOGO} alt="Confluence Swim" />
-      </div>
+      </button>
       <div className="links">
         {links.map(l => (
           <a
