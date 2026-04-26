@@ -2492,6 +2492,7 @@ body.v2-active #root {
 .v2 .rankings-compact .rc-col {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 .v2 .rc-row {
   display: grid;
@@ -2515,19 +2516,51 @@ body.v2-active #root {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.v2 .rc-std {
-  text-align: center;
+.v2 .rc-std { text-align: center; }
+.v2 .rc-gap { color: var(--v2-text-2); font-size: 12px; text-align: right; }
+.v2 .rc-pct { color: var(--v2-gold); font-weight: 600; text-align: right; font-size: 13px; }
+
+/* Rankings v2 */
+.v2 .rc-row-v2 {
+  display: grid;
+  grid-template-columns: 36px 1fr 44px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 2px;
 }
-.v2 .rc-gap {
+.v2 .rc-row-v2.top3 {
+  background: rgba(212,168,83,0.06);
+  border: 0.5px solid rgba(212,168,83,0.15);
+}
+.v2 .rc-rank-v2 {
+  font-size: 16px; font-weight: 800;
+  color: #1e293b;
+  font-family: 'SF Mono', ui-monospace, monospace;
+  letter-spacing: -0.02em;
+}
+.v2 .rc-rank-v2.top { color: #D4A853; }
+.v2 .rc-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.v2 .rc-top-line {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 6px;
+}
+.v2 .rc-event-v2 {
+  font-size: 13px; font-weight: 600;
   color: var(--v2-text-2);
-  font-size: 12px;
-  text-align: right;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.v2 .rc-pct {
-  color: var(--v2-gold);
-  font-weight: 600;
+.v2 .rc-event-v2.top { color: var(--v2-text); }
+.v2 .rc-badges { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.v2 .rc-bar-wrap {
+  height: 3px; background: #1e293b; border-radius: 980px; overflow: hidden;
+}
+.v2 .rc-bar-fill { height: 3px; border-radius: 980px; transition: width 0.3s ease; }
+.v2 .rc-pct-v2 {
+  font-size: 12px; font-weight: 700;
+  font-family: 'SF Mono', ui-monospace, monospace;
   text-align: right;
-  font-size: 13px;
 }
 @media (max-width: 720px) {
   .v2 .rankings-compact { grid-template-columns: 1fr; gap: 0; }

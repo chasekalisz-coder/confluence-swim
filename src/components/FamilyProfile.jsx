@@ -312,7 +312,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
               <button className={courseRankings === 'LCM' ? 'active' : ''} onClick={() => setCourseRankings('LCM')}>LCM</button>
             </div>
           </div>
-          <PowerRankingsList rankings={rankings} />
+          <PowerRankingsList rankings={rankings} age={effectiveAge} gender={gender} course={courseRankings} bestTimes={bestTimes} />
         </section>
 
         {/* ============ SPECIALTY — radial heat bloom ============ */}
@@ -937,48 +937,66 @@ function AgeUpCard({ data }) {
   )
 }
 
-function PowerRankingsList({ rankings }) {
+const TEXAS_PATH = "M 10,97 L 5,90 L 14,87 L 46,87 L 56,86 L 56,7 L 64,5 L 95,5 L 101,15 L 104,41 L 113,44 L 130,49 L 148,52 L 170,52 L 177,55 L 188,64 L 187,75 L 191,94 L 195,102 L 192,120 L 191,128 L 182,131 L 170,142 L 158,150 L 145,161 L 142,180 L 139,195 L 124,189 L 112,180 L 108,168 L 99,157 L 92,142 L 85,133 L 74,128 L 60,137 L 46,137 L 39,132 L 32,118 L 21,107 L 16,101 Z"
+
+function TexasTagsBadge() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
+      <path d={TEXAS_PATH} fill="#166534" stroke="#22c55e" strokeWidth="4" strokeLinejoin="round"/>
+      <text x="125" y="105" textAnchor="middle" dominantBaseline="middle" fontSize="38" fontWeight="900" fill="white" fontFamily="-apple-system,sans-serif" letterSpacing="0.5">TAGS</text>
+    </svg>
+  )
+}
+
+function PowerRankingsList({ rankings, age, gender, course, bestTimes }) {
   if (!rankings.length) {
     return <div className="empty-state">No meet times on file yet.</div>
   }
-  // Two-column layout — split the rankings in half so 15 events render as
-  // ~8 rows instead of 15. Compact rows: rank / event / std / gap / %.
-  // No progress bar — the bars were all 92-99% filled which carried zero
-  // visual information. Percentages and standard badges carry the signal.
   const mid = Math.ceil(rankings.length / 2)
   const left = rankings.slice(0, mid)
   const right = rankings.slice(mid)
+  const bucket = ageBucket(age)
 
   return (
     <div className="rankings-compact">
       <div className="rc-col">
         {left.map((r, i) => (
-          <PowerRankRow key={r.event} rank={i + 1} r={r} />
+          <PowerRankRow key={r.event} rank={i + 1} r={r} isTop={i < 3} gender={gender} course={course} bucket={bucket} bestTimes={bestTimes} />
         ))}
       </div>
       <div className="rc-col">
         {right.map((r, i) => (
-          <PowerRankRow key={r.event} rank={mid + i + 1} r={r} />
+          <PowerRankRow key={r.event} rank={mid + i + 1} r={r} isTop={false} gender={gender} course={course} bucket={bucket} bestTimes={bestTimes} />
         ))}
       </div>
     </div>
   )
 }
 
-function PowerRankRow({ rank, r }) {
+function PowerRankRow({ rank, r, isTop, gender, course, bucket, bestTimes }) {
+  const tagsCut = txTagsCut({ gender, ageBucket: bucket, course, event: r.event })
+  const bestTime = bestTimes?.[`${r.event} ${course}`]
+  const bestSec = bestTime ? parseTime(bestTime) : null
+  const hasTagsCut = tagsCut != null && bestSec != null && bestSec <= tagsCut
+
   return (
-    <div className="rc-row">
-      <div className="rc-rank mono">{String(rank).padStart(2, '0')}</div>
-      <div className="rc-event">{r.event}</div>
-      <div className="rc-std">
-        {r.currentLevel
-          ? <span className={`std ${r.currentLevel}`}>{r.currentLevel}</span>
-          : <span className="std none">—</span>}
+    <div className={`rc-row-v2 ${isTop ? 'top3' : ''}`}>
+      <div className={`rc-rank-v2 ${isTop ? 'top' : ''}`}>{String(rank).padStart(2, '0')}</div>
+      <div className="rc-body">
+        <div className="rc-top-line">
+          <span className={`rc-event-v2 ${isTop ? 'top' : ''}`}>{r.event}</span>
+          <div className="rc-badges">
+            {hasTagsCut && <TexasTagsBadge />}
+            {r.currentLevel
+              ? <span className={`std ${r.currentLevel}`}>{r.currentLevel}</span>
+              : <span className="std none">—</span>}
+          </div>
+        </div>
+        <div className="rc-bar-wrap">
+          <div className="rc-bar-fill" style={{width: `${r.pct}%`, background: isTop ? '#D4A853' : '#334155'}} />
+        </div>
       </div>
-      <div className="rc-gap mono">
-        {r.gapToNext != null ? `−${r.gapToNext.toFixed(2)}s` : '—'}
-      </div>
-      <div className="rc-pct mono">{r.pct}%</div>
+      <div className="rc-pct-v2" style={{color: isTop ? '#D4A853' : '#475569'}}>{r.pct}%</div>
     </div>
   )
 }
