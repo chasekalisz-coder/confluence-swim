@@ -184,6 +184,38 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
       {/* === TOOLS TAB === */}
       <div className={`agp-tab-content agp-tools-tab ${mobileTab === 'tools' ? 'agp-active' : ''}`}>
         <div className="agp-tools-row">
+          <button className="tool-card" onClick={() => window.location.href = '/test-ai.html'}>
+            <div className="tool-icon" style={{background:'rgba(96,165,250,0.1)', borderColor:'rgba(96,165,250,0.25)', color:'#60a5fa'}}>📝</div>
+            <div className="tool-text">
+              <div className="tool-title">Training</div>
+              <div className="tool-sub">Aerobic session note generator</div>
+            </div>
+            <span className="tool-chev">→</span>
+          </button>
+          <button className="tool-card" onClick={() => window.location.href = '/technique.html'}>
+            <div className="tool-icon" style={{background:'rgba(251,191,36,0.1)', borderColor:'rgba(251,191,36,0.25)', color:'#fbbf24'}}>◐</div>
+            <div className="tool-text">
+              <div className="tool-title">Technique</div>
+              <div className="tool-sub">Technique session note generator</div>
+            </div>
+            <span className="tool-chev">→</span>
+          </button>
+          <button className="tool-card" onClick={() => window.location.href = '/meetprep.html'}>
+            <div className="tool-icon" style={{background:'rgba(244,114,182,0.1)', borderColor:'rgba(244,114,182,0.25)', color:'#f472b6'}}>★</div>
+            <div className="tool-text">
+              <div className="tool-title">Meet Prep</div>
+              <div className="tool-sub">Pre-meet plan generator</div>
+            </div>
+            <span className="tool-chev">→</span>
+          </button>
+          <button className="tool-card" onClick={() => window.location.href = '/sprint.html'}>
+            <div className="tool-icon" style={{background:'rgba(124,58,237,0.1)', borderColor:'rgba(124,58,237,0.25)', color:'#a78bfa'}}>⚡</div>
+            <div className="tool-text">
+              <div className="tool-title">Sprint Lab</div>
+              <div className="tool-sub">Coach McEvoy sprint methodology</div>
+            </div>
+            <span className="tool-chev">→</span>
+          </button>
           <button className="tool-card" onClick={() => window.location.href = '/workout.html'}>
             <div className="tool-icon" style={{background:'rgba(212,168,83,0.1)', borderColor:'rgba(212,168,83,0.2)', color:'#d4a853'}}>⚡</div>
             <div className="tool-text">
