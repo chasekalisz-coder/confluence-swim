@@ -21,11 +21,17 @@ Desktop layout unchanged — overrides only fire below 720px.
 
 JSX changes: wrapped existing `time` / `goal` / current cells in a `.best-group` div. On desktop this wrapper uses `display: contents` so its 3 kids become direct grid items — desktop 7-column layout preserved 1:1. On mobile the wrapper switches to `flex column` so the 3 kids stack inside one grid slot. Added `.cur-inline-mobile` badge inside `.time` (hidden on desktop). Added `.goal-marker` bullseye span inside `.goal` (hidden on desktop). Added second `.times-row.header.header-mobile` block; existing header marked `.header-desktop`. CSS toggles which header shows.
 
-CSS overrides for NEXT cell: it has a React inline `style="..."` attribute (`flexDirection: column`) which CSS can't override without `!important`. Used `.delta[style]` selector + `!important` to force `flex-direction: row` on mobile. Inside the cell, the second span (with -s and inline pct) gets its own flex-column to stack -s over %.
-
-Bullseye marker (◎) appears before the goal time in both header and data rows. Goal-time digit columns left-align with the time digits above (negative `margin-left: -14px` plus `padding-left: 14px` on `.best-group` so the bullseye hangs into the padding).
-
-Decision walk: started single-line + drop-%, then bullseye-on-goal-time, then header-divider on BEST col only, then equal spacing on NEXT/GAP/TX. Final structure ships above. Desktop unchanged throughout.
+**Times & Goals table — mobile pass v3** (1 commit, CSS-only). Live screenshot showed the v2 layout was visually too busy. Chase requested:
+- NEXT cell: badge on top, -s below (stacked column instead of flex-row), no %
+- GAP cell: keep -s with % under it (only column with %)
+- TX cell: time on top, -s below, no %
+- BEST header divider: shorter (~50px) and brighter (1px solid rgba 0.4 instead of 0.5px solid rgba 0.18)
+Changes inside the existing `@media (max-width: 720px)` block:
+- `.delta[style]` flipped from `flex-direction: row` → `column` with `align-items: center`, gap 2px
+- Hide `.delta-pct` inside `.delta[style]` (NEXT only)
+- Hide `.stacked-pct` in TX TAGs cell
+- Header divider rule updated
+Desktop unchanged.
 
 ### Files changed this session
 - src/styles/apple-dark.css (one mobile-only block added inside existing 720px breakpoint)

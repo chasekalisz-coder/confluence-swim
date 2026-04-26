@@ -782,31 +782,27 @@ body.v2-active #root {
   /* Best-header-mobile — Time / divider / ◎ Goal Time stack */
   .v2 .header-mobile .best-header-mobile { padding-left: 14px; }
   .v2 .header-mobile .best-header-mobile .best-header-divider {
-    border-top: 0.5px solid rgba(255,255,255,0.18);
+    border-top: 1px solid rgba(255,255,255,0.4);
     margin: 3px 0;
+    width: 50px;
   }
   .v2 .header-mobile .best-header-mobile .best-header-goal { margin-left: -14px; }
   .v2 .header-mobile .best-header-mobile .goal-marker { color: #E6C178; margin-right: 4px; }
   .v2 .header-mobile .next-header-mobile { text-align: center; }
   .v2 .header-mobile .gap-header-mobile { text-align: center; }
 
-  /* NEXT cell — flex row, badge + stacked (-s over %).
+  /* NEXT cell — stacked: badge on top, -s below, centered, no pct.
      Override the React inline style on .delta with !important. */
   .v2 .times-row .delta[style] {
-    flex-direction: row !important;
-    align-items: flex-start !important;
-    gap: 5px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 2px !important;
     padding-top: 1px;
-    justify-content: center;
   }
-  /* Inside NEXT, the second <span> holds -s with .delta-pct nested.
-     Force vertical stack: -s on top, % below. */
-  .v2 .times-row .delta[style] > span:not(.std) {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .v2 .times-row .delta .delta-pct {
+  /* Inside NEXT, hide the inline pct (kept on GAP only) */
+  .v2 .times-row .delta[style] .delta-pct { display: none; }
+  /* GAP keeps pct: display:block under the -s, muted */
+  .v2 .times-row .delta:not([style]) .delta-pct {
     display: block;
     margin-left: 0;
     margin-top: 1px;
@@ -828,12 +824,12 @@ body.v2-active #root {
   /* Smaller fonts overall */
   .v2 .times-row .delta { font-size: 11px; }
 
-  /* TX TAGs cell — bring back the stacked sub-row (was hidden in v1 mobile pass).
+  /* TX TAGs cell — show stacked time + -s; hide % per Chase request.
      Drop the desktop min-height since the stack is shorter here. */
   .v2 .tags-cell { min-height: 0; }
   .v2 .stacked-gap .stacked-cut { font-size: 11px; }
-  .v2 .stacked-gap .stacked-pct { display: inline; }
-  .v2 .stacked-gap .stacked-delta { display: inline; }
+  .v2 .stacked-gap .stacked-pct { display: none; }
+  .v2 .stacked-gap .stacked-delta { display: inline; font-size: 10px; }
   .v2 .stacked-gap .stacked-delta-row { display: flex; gap: 4px; }
 
   /* Stroke family label — tighter spacing */
