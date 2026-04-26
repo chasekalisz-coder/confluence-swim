@@ -349,6 +349,112 @@ body.v2-active #root {
 }
 .v2 .next-cut.empty .chase { color: var(--v2-text-2); font-size: 22px; }
 
+/* ===== CHASING NEXT V2 — rotating card ===== */
+.v2 .next-cut-v2 {
+  background: linear-gradient(135deg, rgba(212,168,83,0.08), rgba(212,168,83,0.02));
+  border: 0.5px solid rgba(212,168,83,0.3);
+  border-radius: 24px;
+  padding: 36px 44px 28px;
+}
+.v2 .nc-inner {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.v2 .nc-inner.nc-visible { opacity: 1; transform: translateY(0); }
+.v2 .nc-inner.nc-hidden  { opacity: 0; transform: translateY(8px); }
+.v2 .nc-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+.v2 .nc-event {
+  font-size: 36px; font-weight: 700; letter-spacing: -0.02em;
+  color: var(--v2-text); margin-bottom: 10px; line-height: 1.1;
+}
+.v2 .nc-standard {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.v2 .nc-arrow { color: var(--v2-text-3); font-size: 14px; }
+.v2 .nc-sub { font-size: 13px; color: var(--v2-text-3); }
+.v2 .nc-right { text-align: right; flex-shrink: 0; }
+.v2 .nc-gap {
+  font-size: 56px; font-weight: 700; letter-spacing: -0.04em;
+  color: var(--v2-gold); line-height: 1; margin-bottom: 4px;
+}
+.v2 .nc-gap span { font-size: 22px; color: var(--v2-text-3); }
+.v2 .nc-gap-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--v2-text-3);
+}
+/* Bar shared */
+.v2 .nc-bar-wrap { position: relative; padding-bottom: 4px; }
+.v2 .nc-bar-track {
+  position: relative; height: 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 980px;
+  overflow: visible;
+}
+.v2 .nc-bar-fill {
+  height: 8px; background: #D4A853;
+  border-radius: 980px; position: relative;
+  transition: width 0.4s ease;
+}
+.v2 .nc-pct-label {
+  position: absolute; right: -2px; top: -22px;
+  font-size: 11px; font-weight: 700; color: #D4A853;
+  white-space: nowrap;
+}
+/* Simple bar scale */
+.v2 .nc-bar-scale {
+  display: flex; justify-content: space-between;
+  margin-top: 6px; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--v2-text-3);
+}
+/* Ticked bar */
+.v2 .nc-ticks-above {
+  position: relative; height: 14px; margin-bottom: 4px;
+}
+.v2 .nc-tick-mark {
+  position: absolute; transform: translateX(-50%);
+  width: 1px; height: 8px;
+  background: rgba(212,168,83,0.4);
+  top: 6px;
+}
+.v2 .nc-tick-mark.next {
+  width: 2px; height: 12px; top: 2px;
+  background: #D4A853;
+}
+.v2 .nc-tick-mark.achieved { background: rgba(212,168,83,0.6); }
+.v2 .nc-bar-tick {
+  position: absolute; top: 0;
+  width: 1px; height: 8px;
+  background: rgba(0,0,0,0.25);
+  pointer-events: none;
+}
+.v2 .nc-tick-labels {
+  position: relative; height: 18px; margin-top: 5px;
+}
+.v2 .nc-tick-label {
+  position: absolute; transform: translateX(-50%);
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--v2-text-3);
+}
+.v2 .nc-tick-label.next { color: #D4A853; font-size: 10px; }
+.v2 .nc-tick-label.achieved { color: rgba(212,168,83,0.5); }
+/* Dots */
+.v2 .nc-dots {
+  display: flex; gap: 6px; justify-content: center;
+  margin-top: 20px;
+}
+.v2 .nc-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(212,168,83,0.15);
+  cursor: pointer; transition: background 0.3s;
+}
+.v2 .nc-dot.active { background: #D4A853; }
+
 /* ===== PILLS / TOGGLES ===== */
 .v2 .pill-toggle {
   display: inline-flex;
