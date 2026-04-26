@@ -788,18 +788,18 @@ body.v2-active #root {
   }
   .v2 .header-mobile .best-header-mobile .best-header-goal { margin-left: -14px; }
   .v2 .header-mobile .best-header-mobile .goal-marker { color: #E6C178; margin-right: 4px; }
-  .v2 .header-mobile .next-header-mobile { text-align: center; }
-  .v2 .header-mobile .gap-header-mobile { text-align: center; }
+  .v2 .header-mobile .next-header-mobile { text-align: left; }
+  .v2 .header-mobile .gap-header-mobile { text-align: left; }
 
-  /* NEXT cell — stacked: badge on top, -s below, centered, no pct.
+  /* NEXT cell — stacked: badge on top, -s below, left-aligned so badges across rows share a left edge.
      Override the React inline style on .delta with !important. */
   .v2 .times-row .delta[style] {
     flex-direction: column !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     width: 100%;
     gap: 2px !important;
     padding-top: 1px;
-    text-align: center;
+    text-align: left;
   }
   /* Inside NEXT, hide the inline pct (kept on GAP only) */
   .v2 .times-row .delta[style] .delta-pct { display: none; }
@@ -812,12 +812,12 @@ body.v2-active #root {
     font-weight: 500;
   }
 
-  /* GAP cell — stacked (-s over %) */
+  /* GAP cell — stacked (-s over %), left-aligned so numbers share a left edge */
   .v2 .times-table-no-tags .times-row > .delta:not([style]) {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
   }
 
   /* Empty NEXT placeholder ("—" inside .std.none) — render blank on mobile */
