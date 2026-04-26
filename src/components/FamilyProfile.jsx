@@ -432,25 +432,37 @@ function NextCutCard({ cuts }) {
   }
 
   const cut = cuts[idx]
-  const pct = Math.min(100, cut.next.pct)
 
-  // Determine tick positions for Option A bar (has A or better)
-  // Map each standard level to a position along the bar (0-100%)
-  // based on proximity to AAAA (top cut)
+  // Tick positions + fill pct — both on the same B→AAAA time scale
   const tickPositions = (() => {
     if (!cut.hasAOrBetter || !cut.stds) return null
     const levels = LEVELS_ORDER.filter(l => cut.stds[l] != null)
     if (levels.length < 2) return null
-    const slowest = cut.stds[levels[0]]   // B cut — slowest (highest seconds)
-    const fastest = cut.stds[levels[levels.length - 1]] // AAAA/top — fastest
+    const slowest = cut.stds[levels[0]]             // B — slowest (highest seconds)
+    const fastest = cut.stds[levels[levels.length - 1]] // AAAA — fastest
     const range = slowest - fastest
     if (range === 0) return null
     return levels.map(l => ({
       level: l,
       pos: ((slowest - cut.stds[l]) / range) * 100,
-      achieved: ['A','AA','AAA','AAAA','B','BB'].indexOf(l) <= ['A','AA','AAA','AAAA','B','BB'].indexOf(cut.currentLevel),
+      achieved: LEVELS_ORDER.indexOf(l) <= LEVELS_ORDER.indexOf(cut.currentLevel),
       isNext: l === cut.next.level,
     }))
+  })()
+
+  // Fill pct: athlete's time mapped onto same B→AAAA scale as ticks
+  // This ensures the fill head sits correctly relative to the tick marks
+  const pct = (() => {
+    if (cut.hasAOrBetter && tickPositions && cut.stds) {
+      const levels = LEVELS_ORDER.filter(l => cut.stds[l] != null)
+      const slowest = cut.stds[levels[0]]
+      const fastest = cut.stds[levels[levels.length - 1]]
+      const range = slowest - fastest
+      if (range === 0) return 0
+      return Math.min(99, Math.max(0, ((slowest - cut.timeSec) / range) * 100))
+    }
+    // Simple bar: pct between previous and next cut
+    return Math.min(99, cut.next.pct)
   })()
 
   return (
