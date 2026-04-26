@@ -1050,8 +1050,8 @@ function ProgressionChart({ data, athleteName }) {
   // page refresh.)
 
   // Plot dims
-  const W = 700, H = 300
-  const padL = 64, padR = 28, padT = 28, padB = 52
+  const W = 900, H = 320
+  const padL = 64, padR = 20, padT = 28, padB = 52
   const plotW = W - padL - padR
   const plotH = H - padT - padB
 
