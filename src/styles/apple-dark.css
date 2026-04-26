@@ -768,27 +768,28 @@ body.v2-active #root {
   .v2 .nc-gap span { font-size: 18px; }
 
   /* Meet Analyzer / Last Race card — stack vertically on mobile.
-     Desktop uses grid 1fr auto (title left, button right) which squeezes the title
-     column on a narrow viewport, wrapping every word to its own line. */
+     Desktop rule at line 1156 sits later in stylesheet and uses grid 1fr auto, which
+     squeezes the title column on a narrow viewport. !important needed to win source-order. */
   .v2 .analyzer-card {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 22px;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    padding: 22px !important;
   }
   .v2 .analyzer-card .az-title {
-    font-size: 19px;
-    line-height: 1.25;
+    font-size: 19px !important;
+    line-height: 1.25 !important;
     margin-bottom: 8px;
   }
   .v2 .analyzer-card .az-insight {
-    font-size: 13px;
+    font-size: 13px !important;
     line-height: 1.45;
   }
   .v2 .analyzer-card .az-cta {
-    width: 100%;
-    padding: 12px 20px;
-    font-size: 14px;
+    width: 100% !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
     text-align: center;
+    justify-self: stretch;
   }
 
   /* ===== Times & Goals table — mobile pass v2 =====
