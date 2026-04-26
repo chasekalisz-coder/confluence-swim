@@ -541,7 +541,7 @@ body.v2-active #root {
   display: grid;
   grid-template-columns: 80px 1fr 1fr 1fr 1fr 1fr 1fr;
   gap: 20px;
-  padding: 10px 8px;
+  padding: 7px 8px;
   border-bottom: 0.5px solid var(--v2-border);
   align-items: center;
 }
@@ -567,7 +567,7 @@ body.v2-active #root {
 .v2 .times-row .delta { font-size: 13px; font-weight: 500; color: var(--v2-text-2); }
 .v2 .times-row .delta.delta-green    { color: var(--v2-green);  }
 .v2 .times-row .delta.delta-yellow   { color: var(--v2-gold);   }
-.v2 .times-row .delta.delta-red      { color: var(--v2-orange); }
+.v2 .times-row .delta.delta-red      { color: #C0514A; }
 .v2 .times-row .delta.delta-neutral  { color: var(--v2-text-2); }
 .v2 .stroke-family-label {
   padding: 28px 8px 12px;
@@ -1684,7 +1684,7 @@ body.v2-active #root {
 }
 .v2 .color-legend .legend-green  { color: var(--v2-green);  }
 .v2 .color-legend .legend-yellow { color: var(--v2-gold);   }
-.v2 .color-legend .legend-red    { color: var(--v2-orange); }
+.v2 .color-legend .legend-red    { color: #C0514A; }
 
 /* ============================================================
    STACKED GAP CELL — cut time / delta / percent
@@ -1729,7 +1729,7 @@ body.v2-active #root {
 .v2 .stacked-gap.delta-yellow  .stacked-delta,
 .v2 .stacked-gap.delta-yellow  .stacked-pct   { color: var(--v2-gold);  }
 .v2 .stacked-gap.delta-red     .stacked-delta,
-.v2 .stacked-gap.delta-red     .stacked-pct   { color: var(--v2-orange); }
+.v2 .stacked-gap.delta-red     .stacked-pct   { color: #C0514A; }
 .v2 .stacked-gap.delta-neutral .stacked-delta,
 .v2 .stacked-gap.delta-neutral .stacked-pct   { color: var(--v2-text-2);}
 
