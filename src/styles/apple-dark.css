@@ -796,8 +796,10 @@ body.v2-active #root {
   .v2 .times-row .delta[style] {
     flex-direction: column !important;
     align-items: center !important;
+    width: 100%;
     gap: 2px !important;
     padding-top: 1px;
+    text-align: center;
   }
   /* Inside NEXT, hide the inline pct (kept on GAP only) */
   .v2 .times-row .delta[style] .delta-pct { display: none; }
