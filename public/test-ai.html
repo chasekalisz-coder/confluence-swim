@@ -39,20 +39,20 @@ body::before {
   position: fixed;
   top: -200px;
   right: -200px;
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle, rgba(46, 58, 18, 0.28) 0%, rgba(46, 58, 18, 0.08) 35%, transparent 65%);
+  width: 900px;
+  height: 900px;
+  background: radial-gradient(circle, rgba(46, 58, 18, 0.45) 0%, rgba(46, 58, 18, 0.18) 30%, rgba(46, 58, 18, 0.06) 55%, transparent 75%);
   pointer-events: none;
   z-index: 0;
 }
 body::after {
   content: '';
   position: fixed;
-  bottom: -250px;
-  left: -200px;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(46, 58, 18, 0.14) 0%, transparent 60%);
+  bottom: -300px;
+  left: -250px;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(46, 58, 18, 0.32) 0%, rgba(46, 58, 18, 0.12) 35%, transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
@@ -557,8 +557,7 @@ textarea::placeholder, input::placeholder { color: #475569; }
   .step { padding: 0 20px 24px; }
   .step-num { font-size: 22px; }
   .step-label { font-size: 10px; }
-  .row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .row > div:first-child { grid-column: 1 / -1; }
+  .row { grid-template-columns: 1fr 1fr; gap: 10px; }
   .note-page { padding: 20px 16px; }
   .note { padding: 22px 18px; }
   .action-bar { flex-direction: column; }
@@ -658,6 +657,10 @@ textarea::placeholder, input::placeholder { color: #475569; }
           <select id="athleteId"></select>
         </div>
         <div>
+          <label>Session Date</label>
+          <input id="sessionDate" type="date" />
+        </div>
+        <div>
           <label>Category</label>
           <select id="category">
             <option value="aerobic">Aerobic</option>
@@ -678,10 +681,6 @@ textarea::placeholder, input::placeholder { color: #475569; }
             <option value="fly">Butterfly</option>
             <option value="im">IM</option>
           </select>
-        </div>
-        <div>
-          <label>Session Date</label>
-          <input id="sessionDate" type="date" />
         </div>
         <div>
           <label>Session Number</label>
