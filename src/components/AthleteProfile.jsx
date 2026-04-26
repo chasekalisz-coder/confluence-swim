@@ -99,6 +99,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
     meetTimes: false,
     goalTimes: false,
     meetResults: false,
+    upcomingMeets: false,
   })
   const toggleSection = (key) => setOpenSections(s => ({ ...s, [key]: !s[key] }))
 
@@ -140,6 +141,8 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
       // Step 8. Not canonical-expanded — each entry is a real recorded
       // swim, not a placeholder slot.
       progression: Array.isArray(athlete.progression) ? [...athlete.progression] : [],
+      // Upcoming meets — coach-entered list of planned meets
+      upcomingMeets: Array.isArray(athlete.upcomingMeets) ? [...athlete.upcomingMeets] : [],
     })
     setEditing(true)
   }
@@ -165,6 +168,7 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
         // to the DB). Send it explicitly so nothing accidentally falls
         // back on the stale ...athlete spread during edit sessions.
         progression: editData.progression || [],
+        upcomingMeets: editData.upcomingMeets || [],
       }
       console.log(`[saveEdit] writing ${updated.meetTimes.length} times + ${(updated.goalTimes || []).length} goals + ${updated.progression.length} progression entries for ${athlete.id}`)
       await updateAthlete(athlete.id, updated)
@@ -423,6 +427,27 @@ export default function AthleteProfile({ athlete, onBack, onNewSession, onViewSe
                 <MeetResultsEditor
                   progression={editData.progression}
                   onChange={(next) => setEditData({ ...editData, progression: next })}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ========== UPCOMING MEETS ========== */}
+          <div className="edit-section">
+            <button
+              type="button"
+              className="edit-section-header"
+              onClick={() => toggleSection('upcomingMeets')}
+              aria-expanded={openSections.upcomingMeets}
+            >
+              <span className="edit-section-title">Upcoming Meets</span>
+              <span className="edit-section-chev">{openSections.upcomingMeets ? '▾' : '▸'}</span>
+            </button>
+            {openSections.upcomingMeets && (
+              <div className="edit-section-body">
+                <UpcomingMeetsEditor
+                  meets={editData.upcomingMeets || []}
+                  onChange={(next) => setEditData({ ...editData, upcomingMeets: next })}
                 />
               </div>
             )}
@@ -848,4 +873,177 @@ function formatMeetDate(d) {
   const date = new Date(s + 'T12:00:00')
   if (isNaN(date.getTime())) return s
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// ========================================================================
+// UpcomingMeetsEditor
+// ------------------------------------------------------------------------
+// Simple list editor for upcoming meets. Each meet has: name, location,
+// startDate, endDate, dateRange (display string), notes.
+//
+// Writes happen to parent's editData.upcomingMeets through onChange().
+// Persists with the normal "Save Changes" button.
+// ========================================================================
+function UpcomingMeetsEditor({ meets, onChange }) {
+  const list = Array.isArray(meets) ? meets : []
+  const [adding, setAdding] = useState(false)
+  const [editingIndex, setEditingIndex] = useState(null)
+  const [form, setForm] = useState({ name: '', location: '', startDate: '', endDate: '', dateRange: '', notes: '' })
+
+  const resetForm = () => setForm({ name: '', location: '', startDate: '', endDate: '', dateRange: '', notes: '' })
+
+  const openAdd = () => {
+    resetForm()
+    setEditingIndex(null)
+    setAdding(true)
+  }
+
+  const openEdit = (idx) => {
+    const m = list[idx]
+    setForm({
+      name: m.name || '',
+      location: m.location || '',
+      startDate: m.startDate || '',
+      endDate: m.endDate || '',
+      dateRange: m.dateRange || '',
+      notes: m.notes || '',
+    })
+    setEditingIndex(idx)
+    setAdding(false)
+  }
+
+  const closeForm = () => {
+    setAdding(false)
+    setEditingIndex(null)
+    resetForm()
+  }
+
+  const submitForm = () => {
+    const cleaned = {
+      name: form.name.trim(),
+      location: form.location.trim(),
+      startDate: form.startDate.trim(),
+      endDate: form.endDate.trim() || form.startDate.trim(),
+      dateRange: form.dateRange.trim() || formatDateRange(form.startDate, form.endDate),
+      notes: form.notes.trim(),
+    }
+    if (!cleaned.name || !cleaned.startDate) {
+      alert('Meet name and start date are required.')
+      return
+    }
+    const next = [...list]
+    if (editingIndex !== null) {
+      next[editingIndex] = cleaned
+    } else {
+      next.push(cleaned)
+    }
+    // Sort by startDate ascending
+    next.sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''))
+    onChange(next)
+    closeForm()
+  }
+
+  const removeMeet = (idx) => {
+    if (!window.confirm('Remove this meet?')) return
+    const next = list.filter((_, i) => i !== idx)
+    onChange(next)
+  }
+
+  return (
+    <div>
+      {!adding && editingIndex === null && (
+        <button className="btn btn-outline" style={{marginBottom:12}} onClick={openAdd}>+ Add Upcoming Meet</button>
+      )}
+
+      {(adding || editingIndex !== null) && (
+        <div style={{padding:12, background:'rgba(255,255,255,0.04)', borderRadius:8, marginBottom:12}}>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:8}}>
+            <input
+              type="text"
+              placeholder="Meet name (e.g. NT TAGS Senior Champs)"
+              value={form.name}
+              onChange={e => setForm({...form, name: e.target.value})}
+              style={{padding:8, background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.15)', borderRadius:6, color:'#f1f5f9'}}
+            />
+            <input
+              type="text"
+              placeholder="Location (city, venue)"
+              value={form.location}
+              onChange={e => setForm({...form, location: e.target.value})}
+              style={{padding:8, background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.15)', borderRadius:6, color:'#f1f5f9'}}
+            />
+          </div>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:8}}>
+            <input
+              type="date"
+              value={form.startDate}
+              onChange={e => setForm({...form, startDate: e.target.value})}
+              style={{padding:8, background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.15)', borderRadius:6, color:'#f1f5f9'}}
+            />
+            <input
+              type="date"
+              placeholder="End date (optional)"
+              value={form.endDate}
+              onChange={e => setForm({...form, endDate: e.target.value})}
+              style={{padding:8, background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.15)', borderRadius:6, color:'#f1f5f9'}}
+            />
+          </div>
+          <textarea
+            placeholder="Notes (events entered, focus, etc.) — optional"
+            value={form.notes}
+            onChange={e => setForm({...form, notes: e.target.value})}
+            rows={2}
+            style={{width:'100%', padding:8, background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.15)', borderRadius:6, color:'#f1f5f9', marginBottom:8, resize:'vertical', fontFamily:'inherit'}}
+          />
+          <div style={{display:'flex', gap:8, justifyContent:'flex-end'}}>
+            <button className="btn btn-outline" onClick={closeForm}>Cancel</button>
+            <button className="btn btn-primary" onClick={submitForm}>{editingIndex !== null ? 'Save' : 'Add Meet'}</button>
+          </div>
+        </div>
+      )}
+
+      {list.length === 0 && !adding && (
+        <div style={{color:'#64748b', fontSize:13, padding:'8px 0'}}>No upcoming meets added yet.</div>
+      )}
+
+      {list.length > 0 && (
+        <div style={{display:'flex', flexDirection:'column', gap:6}}>
+          {list.map((m, i) => (
+            <div key={i} style={{display:'grid', gridTemplateColumns:'1fr auto', gap:8, padding:'10px 12px', background:'rgba(255,255,255,0.03)', borderRadius:6, alignItems:'center'}}>
+              <div>
+                <div style={{fontWeight:600, color:'#f1f5f9', fontSize:14}}>{m.name}</div>
+                <div style={{fontSize:12, color:'#94a3b8', marginTop:2}}>
+                  {m.location && <span>{m.location} · </span>}
+                  <span>{m.dateRange || formatDateRange(m.startDate, m.endDate)}</span>
+                </div>
+                {m.notes && <div style={{fontSize:11, color:'#64748b', marginTop:4, fontStyle:'italic'}}>{m.notes}</div>}
+              </div>
+              <div style={{display:'flex', gap:4}}>
+                <button className="btn-tiny" onClick={() => openEdit(i)} style={{padding:'4px 10px', fontSize:11, background:'transparent', border:'0.5px solid rgba(255,255,255,0.2)', borderRadius:4, color:'#94a3b8', cursor:'pointer'}}>Edit</button>
+                <button className="btn-tiny" onClick={() => removeMeet(i)} style={{padding:'4px 10px', fontSize:11, background:'transparent', border:'0.5px solid rgba(220,80,80,0.3)', borderRadius:4, color:'#dc5050', cursor:'pointer'}}>×</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function formatDateRange(startDate, endDate) {
+  if (!startDate) return ''
+  const fmt = (s) => {
+    if (!s) return ''
+    const d = new Date(s + 'T12:00:00')
+    if (isNaN(d.getTime())) return s
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+  if (!endDate || endDate === startDate) return fmt(startDate)
+  // Same year compact: "Mar 14–16, 2026"
+  const s = new Date(startDate + 'T12:00:00')
+  const e = new Date(endDate + 'T12:00:00')
+  if (s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth()) {
+    return `${s.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}–${e.getDate()}, ${s.getFullYear()}`
+  }
+  return `${fmt(startDate)} – ${fmt(endDate)}`
 }
