@@ -416,7 +416,7 @@ function NextCutCard({ cuts }) {
         setIdx(i => (i + 1) % cuts.length)
         setVisible(true)
       }, 600)
-    }, 3500)
+    }, 5000)
     return () => clearInterval(timer)
   }, [cuts, paused])
 
