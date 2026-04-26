@@ -1788,6 +1788,7 @@ body.v2-active #root {
 }
 .v2 .tool-card {
   position: relative;
+  display: block;
   background: var(--v2-surface);
   border: 0.5px solid var(--v2-border);
   border-radius: 16px;
