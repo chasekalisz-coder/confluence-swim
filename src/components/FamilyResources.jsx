@@ -306,6 +306,10 @@ function SchedulingBlock({ athlete, slotData }) {
   const [loading, setLoading] = useState(true)
   const [note, setNote] = useState('')
   const [lastSubmittedAt, setLastSubmittedAt] = useState(null)
+  // Mobile-only: which day's slot panel is expanded below the compact calendar.
+  // null = no day selected (panel hidden). On mobile the calendar cells show only
+  // a date + dot summary; tap a day to surface its full slot rows here.
+  const [selectedDayIdx, setSelectedDayIdx] = useState(null)
 
   const athleteId = athlete?.id
 
@@ -332,14 +336,18 @@ function SchedulingBlock({ athlete, slotData }) {
     return () => { active = false }
   }, [athleteId, slotData.month])
 
-  const cyclePick = (slotId) => {
+  const setPick = (slotId, intent) => {
     if (submitted) setSubmitted(false) // Edit mode if they touch a slot post-submit
     setPicks(prev => {
       const cur = prev[slotId]
       const next = { ...prev }
-      if (!cur) next[slotId] = 'primary'
-      else if (cur === 'primary') next[slotId] = 'secondary'
-      else delete next[slotId]
+      if (cur === intent) {
+        // Tapping the same button again = clear
+        delete next[slotId]
+      } else {
+        // Either no pick yet, or swapping from the other intent
+        next[slotId] = intent
+      }
       return next
     })
   }
@@ -399,15 +407,28 @@ function SchedulingBlock({ athlete, slotData }) {
         <div className="sb-tag">Scheduling</div>
         <div className="sb-title">Request your sessions for {monthLabel}</div>
         <div className="sb-sub">
-          Tap a slot to mark it as your <span className="sb-pill primary">first choice</span>.
-          Tap again to make it a <span className="sb-pill secondary">backup</span>. Tap once more to clear.
-          Pick as many as you'd like — Chase will use these to put your sessions on the schedule.
+          Mark the slots you'd like as <span className="sb-pill primary">Requests</span>.
+          If you have flexibility, mark a few additional times as <span className="sb-pill secondary">Alternatives</span>.
+          Every effort goes into giving each family their full set of Requests — Alternatives only come into play if a Request needs to shift.
+        </div>
+        <div className="sb-legend">
+          <span className="sb-legend-item">
+            <span className="sb-legend-key primary">R</span>
+            <span>Request</span>
+          </span>
+          <span className="sb-legend-item">
+            <span className="sb-legend-key secondary">A</span>
+            <span>Alternative</span>
+          </span>
+        </div>
+        <div className="sb-disclaimer">
+          Once schedule requests are set, Chase will reach out to review all dates before sessions are confirmed.
         </div>
       </div>
 
       <div className="sb-counts">
-        <div><span className="sb-dot primary"></span> {primaryCount} first choice</div>
-        <div><span className="sb-dot secondary"></span> {secondaryCount} backup</div>
+        <div><span className="sb-dot primary"></span> {primaryCount} {primaryCount === 1 ? 'Request' : 'Requests'}</div>
+        <div><span className="sb-dot secondary"></span> {secondaryCount} {secondaryCount === 1 ? 'Alternative' : 'Alternatives'}</div>
       </div>
 
       {/* Calendar grid */}
@@ -417,31 +438,113 @@ function SchedulingBlock({ athlete, slotData }) {
           <div key={w} className="sb-cal-weekday">{w}</div>
         ))}
         {/* Day cells */}
-        {calendarCells.map((day, i) => (
-          <div key={i} className={`sb-cal-cell ${!day ? 'empty' : ''}`}>
-            {day && (
-              <>
-                <div className="sb-cal-date">{parseInt(day.date.split('-')[2])}</div>
-                <div className="sb-cal-slots">
-                  {day.slots.map(s => {
-                    const pick = picks[s.id]
-                    return (
-                      <button
-                        key={s.id}
-                        className={`sb-slot ${pick || ''}`}
-                        onClick={() => cyclePick(s.id)}
-                        title={s.label}
-                      >
-                        {s.label.replace(/–/g, '–').split('–')[0]}
-                      </button>
-                    )
-                  })}
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+        {calendarCells.map((day, i) => {
+          // Determine day-level tint: gold if any slot is a Request, gray if only Alternatives, neutral if none.
+          let dayTint = ''
+          let requestCount = 0
+          let alternativeCount = 0
+          if (day) {
+            for (const s of day.slots) {
+              const p = picks[s.id]
+              if (p === 'primary') requestCount++
+              else if (p === 'secondary') alternativeCount++
+            }
+            if (requestCount > 0) dayTint = 'has-request'
+            else if (alternativeCount > 0) dayTint = 'has-alternative'
+          }
+          const isSelected = day && i === selectedDayIdx
+          return (
+            <div key={i} className={`sb-cal-cell ${!day ? 'empty' : ''} ${dayTint} ${isSelected ? 'selected' : ''}`}>
+              {day && (
+                <>
+                  {/* Mobile-only summary — tap to expand the day panel below */}
+                  <button
+                    type="button"
+                    className="sb-cal-mobile-summary"
+                    onClick={() => setSelectedDayIdx(prev => prev === i ? null : i)}
+                    aria-label={`View slots for ${day.date}`}
+                  >
+                    <span className="sb-cal-date">{parseInt(day.date.split('-')[2])}</span>
+                    <span className="sb-cal-dots">
+                      {day.slots.map(s => {
+                        const p = picks[s.id]
+                        return <span key={s.id} className={`sb-cal-dot ${p || ''}`} />
+                      })}
+                    </span>
+                  </button>
+                  {/* Desktop view — date + slot rows inline. Hidden on mobile. */}
+                  <div className="sb-cal-desktop">
+                    <div className="sb-cal-date">{parseInt(day.date.split('-')[2])}</div>
+                    <div className="sb-cal-slots">
+                      {day.slots.map(s => {
+                        const pick = picks[s.id]
+                        const startLabel = s.label.replace(/–/g, '–').split('–')[0]
+                        return (
+                          <div key={s.id} className={`sb-slot-row ${pick || ''}`}>
+                            <span className="sb-slot-time" title={s.label}>{startLabel}</span>
+                            <button
+                              type="button"
+                              className={`sb-slot-btn primary ${pick === 'primary' ? 'active' : ''}`}
+                              onClick={() => setPick(s.id, 'primary')}
+                              aria-label={`Mark ${s.label} as Request`}
+                            >R</button>
+                            <button
+                              type="button"
+                              className={`sb-slot-btn secondary ${pick === 'secondary' ? 'active' : ''}`}
+                              onClick={() => setPick(s.id, 'secondary')}
+                              aria-label={`Mark ${s.label} as Alternative`}
+                            >A</button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )
+        })}
       </div>
+
+      {/* Mobile-only day panel — shows the full slot rows for the selected day */}
+      {selectedDayIdx != null && calendarCells[selectedDayIdx] && (
+        <div className="sb-day-panel">
+          <div className="sb-day-panel-header">
+            <span className="sb-day-panel-date">
+              {(() => {
+                const d = new Date(calendarCells[selectedDayIdx].date + 'T12:00:00')
+                return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+              })()}
+            </span>
+            <button
+              type="button"
+              className="sb-day-panel-close"
+              onClick={() => setSelectedDayIdx(null)}
+              aria-label="Close day panel"
+            >×</button>
+          </div>
+          <div className="sb-day-panel-slots">
+            {calendarCells[selectedDayIdx].slots.map(s => {
+              const pick = picks[s.id]
+              return (
+                <div key={s.id} className={`sb-slot-row sb-slot-row-mobile ${pick || ''}`}>
+                  <span className="sb-slot-time">{s.label}</span>
+                  <button
+                    type="button"
+                    className={`sb-slot-btn primary ${pick === 'primary' ? 'active' : ''}`}
+                    onClick={() => setPick(s.id, 'primary')}
+                  >R</button>
+                  <button
+                    type="button"
+                    className={`sb-slot-btn secondary ${pick === 'secondary' ? 'active' : ''}`}
+                    onClick={() => setPick(s.id, 'secondary')}
+                  >A</button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Optional note */}
       {!submitted && !loading && (primaryCount + secondaryCount > 0) && (
