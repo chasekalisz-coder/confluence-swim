@@ -29,6 +29,7 @@ import {
   formatDelta,
   pickNextCut,
   topNextCuts,
+  nextStandard,
   eventPowerRankings,
   timesTableRow,
   eventStandards,
@@ -829,7 +830,25 @@ function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, bestTimes
       : null
     const nextStds = nextAge != null ? eventStandards({ age: nextAge, gender, course, event: ev }) : null
     const existsInNextGroup = nextStds != null
-    return { ev, timeSec, currentLevel, projLevel, existsInNextGroup }
+
+    // Back-of-card: projected level in next age group + next two steps up
+    // Shows where they land and what it takes to climb from there
+    let backSteps = []
+    if (nextStds && timeSec != null) {
+      const projectedLevelInNext = classifyTime(timeSec, nextStds)
+      // Find the next two standards above projectedLevel
+      const LEVELS = ['B','BB','A','AA','AAA','AAAA']
+      const projIdx = projectedLevelInNext ? LEVELS.indexOf(projectedLevelInNext) : -1
+      const stepsAbove = LEVELS.slice(projIdx + 1, projIdx + 3)
+      backSteps = stepsAbove.map(level => {
+        const cut = nextStds[level]
+        if (cut == null) return null
+        const gap = gapToCut(timeSec, cut)
+        return { level, cut, gap }
+      }).filter(Boolean)
+    }
+
+    return { ev, timeSec, currentLevel, projLevel, existsInNextGroup, nextStds, backSteps }
   }
 
   // Only show events that exist in the next age group
@@ -861,20 +880,56 @@ function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, bestTimes
   )
 }
 
-// Single event card used by both the top 3 and the inline expansions.
-// Keeps visual treatment identical between the two surfaces.
 function AgeUpCard({ data }) {
-  const { ev, timeSec, currentLevel, projLevel } = data
+  const { ev, timeSec, currentLevel, projLevel, backSteps } = data
+
+  // Color rule for gap: same as Times & Goals
+  const gapColor = (pct) => {
+    if (pct == null) return 'neutral'
+    if (pct <= 2) return 'green'
+    if (pct <= 3.5) return 'yellow'
+    return 'red'
+  }
+
+  // Short event name for card (just the distance + stroke abbreviation)
+  const shortEv = ev.replace('Free','Fr').replace('Butterfly','Fly').replace('Backstroke','Bk').replace('Breaststroke','Br').replace('Individual Medley','IM')
+
   return (
-    <div className="age-up-item">
-      <div className="ev">{ev}</div>
-      <div className="time-line">
-        <span className="t mono">{timeSec != null ? formatTime(timeSec) : '—'}</span>
-      </div>
-      <div className="std-display">
-        <span className={`std ${currentLevel || 'none'}`}>{currentLevel || '—'}</span>
-        <span className="arrow">→</span>
-        <span className={`std ${projLevel || 'none'}`}>{projLevel || '—'}</span>
+    <div className="au-card-wrap">
+      <div className="au-card-inner">
+        {/* FRONT */}
+        <div className="au-front">
+          <div className="au-ev">{shortEv}</div>
+          <div className="au-time mono">{timeSec != null ? formatTime(timeSec) : '—'}</div>
+          <div className="au-stds">
+            <span className={`std ${currentLevel || 'none'}`}>{currentLevel || '—'}</span>
+            <span className="au-arrow">→</span>
+            <span className={`std ${projLevel || 'none'}`}>{projLevel || '—'}</span>
+          </div>
+        </div>
+        {/* BACK */}
+        <div className="au-back">
+          <div className="au-back-top">
+            <span className="au-back-time mono">{timeSec != null ? formatTime(timeSec) : '—'}</span>
+            <span className={`std ${projLevel || 'none'}`}>{projLevel || '—'}</span>
+          </div>
+          <div className="au-back-steps">
+            {backSteps.length ? backSteps.map(step => (
+              <div key={step.level} className="au-back-row">
+                <span className={`std ${step.level}`}>{step.level}</span>
+                <span className="au-back-cut mono">{formatTime(step.cut)}</span>
+                {step.gap && !step.gap.achieved && (
+                  <span className={`au-back-gap delta-${gapColor(step.gap.pctOff)}`}>
+                    −{step.gap.deltaSec.toFixed(2)}s · {step.gap.pctOff.toFixed(1)}%
+                  </span>
+                )}
+                {step.gap?.achieved && <span className="hit-pill">✓ Hit</span>}
+              </div>
+            )) : (
+              <div className="au-back-row" style={{color:'#475569', fontSize:'11px'}}>At top standard</div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
