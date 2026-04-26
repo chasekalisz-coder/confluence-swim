@@ -52,6 +52,13 @@ Step 11 (Mason + Pace progression import) verified DONE: Chase ran the bulk-impo
 
 Both items deleted from TODO.md. Future chats: do NOT re-raise these.
 
+### Program type field — verified done, deleted from TODO
+Two TODO items related to program type were already built and shipped, never marked complete:
+- P1 "Program type field on athlete profiles" — DONE. AthleteProfile.jsx has the dropdown (programType + programLevel) at lines 270-282, persisted to DB at line 162.
+- P2 "Program type shown in profile header" — DONE. FamilyProfile.jsx renders the badge under the athlete name at lines 179-185, with toRoman() conversion for the level. Visible on every family profile (e.g. "Ben Pomper · GOLD DEVELOPMENT · I").
+
+Both deleted from TODO.md.
+
 ### Next up
 Phase 2 (desktop optimization across the whole site) and Phase 3 (TODO.md cleanup) are the next phases per STATE.md. Top P1 items on TODO.md: Scheduling request flow (Resources page block), Meet Analyzer direction decision, SwimCloud rankings integration, Upcoming meets admin entry, Session count fix, Program type field. Phase 4 is Clerk auth + invites + Squarespace integration.
 

@@ -103,14 +103,6 @@ None currently.
   noteType or add a flag to distinguish coached sessions from tool outputs.
 
 
-- [ ] **Program type field on athlete profiles**
-  Add a clickable dropdown to the athlete edit form: program type + number.
-  Programs: Gold Development (GD I, GD II, GD III...), and lower tiers.
-  Display on the athlete profile header in a prestigious way:
-  "JON POMPER · Gold Development III" — prominent, not buried.
-  Roman numerals for the iteration number.
-  Admin-editable only. Families see it read-only.
-
 - [ ] **Session counting — admin feature**
   Three numbers to track per athlete:
   1. Sessions in CURRENT program block (e.g. 4 of 10 in GD I)
@@ -196,11 +188,6 @@ None currently.
   counting feature to be built first. Most historical sessions weren't
   done in-app so manual backfill will be needed — Chase to figure out
   those numbers and input manually. Mark as later priority.
-
-- [ ] **Program type shown in profile header**
-  Once program type field exists: show it prominently on the
-  family-facing athlete profile. "GOLD DEVELOPMENT III" as a badge or
-  subtitle under the athlete name. Prestigious, not a footnote.
 
 
 - [ ] **Chase coach profile with live USA Swimming times (no API key)**
