@@ -259,14 +259,14 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
                   <>
                     The pathway beyond USA Swimming motivationals.
                     <strong> Sectionals</strong> ·
-                    <strong> Futures</strong> · <strong>Jr Nats</strong> ·
-                    <strong> Nationals</strong> · <strong>Pro Swim</strong>.
+                    <strong> Futures</strong> · <strong>Pro Swim</strong> ·
+                    <strong> Jr Nats</strong> · <strong>Nationals</strong>.
                   </>
                 ) : (
                   <>
                     The national pathway beyond USA Swimming motivationals.
                     <strong> Sectionals</strong> · <strong>Futures</strong> ·
-                    <strong> Jr Nats</strong> · <strong>Nationals</strong> · <strong>Pro Swim</strong>.
+                    <strong> Pro Swim</strong> · <strong>Jr Nats</strong> · <strong>Nationals</strong>.
                   </>
                 )}
               </p>

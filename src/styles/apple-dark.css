@@ -2409,7 +2409,7 @@ body.v2-active #root {
   display: grid;
   grid-template-columns: 70px 1fr 1fr 1fr 1fr 1fr 1fr;
   gap: 14px;
-  padding: 4px 16px 4px 36px;
+  padding: 3px 16px 3px 36px;
   border-bottom: 0.5px solid rgba(84,84,88,0.12);
   align-items: center;
 }
