@@ -734,8 +734,10 @@ body.v2-active #root {
   .v2 .au-front, .v2 .au-back { padding: 9px 10px; }
   .v2 .au-time { font-size: 15px; margin-bottom: 3px; }
 
-  /* Progression chart — tighten container padding on mobile so the chart spreads wider */
-  .v2 .progression-chart { padding: 16px 12px; }
+  /* Progression chart — tighten container padding on mobile so the chart spreads wider.
+     Header row gets its own horizontal padding so event selector + summary aren't flush to edge. */
+  .v2 .progression-chart { padding: 16px 6px; }
+  .v2 .progression-chart .pc-head { padding: 0 8px; }
 
   /* Chasing Next card — tighter on mobile so event title + gap number share the row cleanly */
   .v2 .next-cut-v2 { padding: 24px 22px 22px; }

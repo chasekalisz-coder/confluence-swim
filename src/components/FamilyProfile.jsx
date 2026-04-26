@@ -1111,8 +1111,9 @@ function ProgressionChart({ data, athleteName }) {
   const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 720px)').matches
   const W = isMobile ? 480 : 900
   const H = isMobile ? 360 : 320
-  const padL = isMobile ? 44 : 64
-  const padR = isMobile ? 8 : 20
+  const padL = isMobile ? 40 : 64
+  // padR larger on mobile so last data label (e.g. '2:18.6') doesn't clip past the chart edge
+  const padR = isMobile ? 30 : 20
   const padT = isMobile ? 24 : 28
   const padB = isMobile ? 44 : 52
   const plotW = W - padL - padR
