@@ -562,6 +562,7 @@ function NextCutCard({ cuts }) {
 }
 
 function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
+  const bucket = ageBucket(age)
   return (
     <div className="times-table times-table-no-tags">
       <div className="times-row header">
@@ -570,8 +571,8 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
         <div>Goal</div>
         <div>Current</div>
         <div>Next</div>
-        <div>Gap to Next</div>
         <div>Gap to Goal</div>
+        <div>TX TAGs</div>
       </div>
 
       {STROKE_FAMILIES.map(fam => (
@@ -587,6 +588,12 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
               bestTime: best, goalTime: goal,
             })
 
+            // TX TAGs
+            const tagsCut = txTagsCut({ gender, ageBucket: bucket, course, event: baseEvent })
+            const tagsGap = (row.bestSec != null && tagsCut != null)
+              ? gapToCut(row.bestSec, tagsCut)
+              : null
+
             return (
               <div className="times-row" key={eventKey}>
                 <div className="event">{dist}</div>
@@ -599,21 +606,21 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
                     ? <span className={`std ${row.currentLevel}`}>{row.currentLevel}</span>
                     : <span className="std none">—</span>}
                 </div>
-                <div>
-                  {row.nextLevel
-                    ? <span className={`std ${row.nextLevel}`}>{row.nextLevel}</span>
-                    : <span className="std none">—</span>}
-                </div>
+                {/* Next — combined: standard badge + gap seconds + % */}
                 <div className={`delta mono delta-${row.colorToNext || 'neutral'}`}>
-                  {row.deltaToNext != null ? (
+                  {row.nextLevel
+                    ? <span className={`std ${row.nextLevel}`} style={{marginBottom:4,display:'block'}}>{row.nextLevel}</span>
+                    : <span className="std none">—</span>}
+                  {row.deltaToNext != null && (
                     <>
                       {formatDelta(-row.deltaToNext)}
                       {row.pctToNext != null && (
                         <span className="delta-pct">{row.pctToNext.toFixed(1)}%</span>
                       )}
                     </>
-                  ) : '—'}
+                  )}
                 </div>
+                {/* Gap to Goal */}
                 <div className={`delta mono delta-${row.colorToGoal || 'neutral'}`}>
                   {row.deltaToGoal != null ? (
                     <>
@@ -623,6 +630,20 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
                       )}
                     </>
                   ) : '—'}
+                </div>
+                {/* TX TAGs */}
+                <div className="tags-cell">
+                  {tagsGap?.achieved ? (
+                    <span className="hit-pill">✓ Hit</span>
+                  ) : tagsGap ? (
+                    <div className={`stacked-gap delta-${tagsGap.color || 'neutral'}`}>
+                      <div className="stacked-cut mono">{formatTime(tagsCut)}</div>
+                      <div className="stacked-delta mono">−{tagsGap.deltaSec.toFixed(2)}</div>
+                      <div className="stacked-pct">{tagsGap.pctOff.toFixed(1)}%</div>
+                    </div>
+                  ) : (
+                    <span className="std none">—</span>
+                  )}
                 </div>
               </div>
             )
