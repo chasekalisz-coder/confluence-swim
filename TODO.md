@@ -141,17 +141,6 @@ None currently.
   red, or show improvement arrows rather than gap colors, or reframe
   the label from a deficit to a target ("4.2s to BB" not red).
 
-
-- [ ] **Chase: replace or delete stale project-attached handoff**
-  File: `/mnt/project/CONFLUENCE_HANDOFF__1_.md`
-  Current content: old handoff (says Supabase, says 9 athletes, etc.) — feeds bad context to new Claudes
-  Recommended replacement: one line pointing to `CLAUDE.md` in the repo
-  Exact text to use:
-  ```
-  See CLAUDE.md at the root of github.com/chasekalisz-coder/confluence-swim.
-  That is the source of truth. Clone the repo and read the four context files (CLAUDE.md, STATE.md, PROGRESS.md, TODO.md) before doing anything.
-  ```
-
 ---
 
 ## P2 — PLANNED

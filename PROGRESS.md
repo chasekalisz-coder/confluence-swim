@@ -59,6 +59,9 @@ Two TODO items related to program type were already built and shipped, never mar
 
 Both deleted from TODO.md.
 
+### Stale project-attached handoff — verified gone, deleted from TODO
+TODO.md had a longstanding item asking Chase to replace/delete `/mnt/project/CONFLUENCE_HANDOFF__1_.md` (an old handoff doc that referenced Supabase + 9 athletes and was feeding wrong context into every new chat via the project's Files attachment). Chase confirmed via screenshot of the project's Files section that no files are currently attached — the handoff was already removed at some point. The current project Instructions point new chats at the repo's CLAUDE.md correctly. Item deleted from TODO.md.
+
 ### Next up
 Phase 2 (desktop optimization across the whole site) and Phase 3 (TODO.md cleanup) are the next phases per STATE.md. Top P1 items on TODO.md: Scheduling request flow (Resources page block), Meet Analyzer direction decision, SwimCloud rankings integration, Upcoming meets admin entry, Session count fix, Program type field. Phase 4 is Clerk auth + invites + Squarespace integration.
 
