@@ -842,9 +842,11 @@ body.v2-active #root {
   .v2 .stroke-family-label { padding: 10px 4px 4px; font-size: 9px; }
 
   /* ===== Championship Standards — mobile: drop Pro Swim + Nationals, stack Event/Time ===== */
-  /* Hide Pro Swim and Nationals cells everywhere they appear */
-  .v2 .ca-tier-pro_swim { display: none; }
-  .v2 .ca-tier-nationals { display: none; }
+  /* Hide Pro Swim and Nationals cells everywhere they appear.
+     Note: .ca-cell { display: flex } sits later in the stylesheet at desktop scope,
+     and same specificity as our .ca-tier rule, so we need !important to win. */
+  .v2 .ca-tier-pro_swim { display: none !important; }
+  .v2 .ca-tier-nationals { display: none !important; }
   /* Stack Event over Best on mobile (event-best-group goes from display:contents to flex-column) */
   .v2 .ca-event-best-group {
     display: flex;
