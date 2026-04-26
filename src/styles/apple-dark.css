@@ -570,7 +570,7 @@ body.v2-active #root {
 .v2 .times-row .delta.delta-red      { color: #C0514A; }
 .v2 .times-row .delta.delta-neutral  { color: var(--v2-text-2); }
 .v2 .times-row:not(.header):hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 4px;
 }
   padding: 14px 8px 6px;
