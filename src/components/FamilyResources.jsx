@@ -17,6 +17,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
+import maySlots from '../data/may-2026-slots.json'
 
 const RESOURCES = [
   {
@@ -239,6 +240,9 @@ export default function FamilyResources({ athlete, onBack, onNavigate }) {
               </div>
             </div>
 
+            {/* ===== Scheduling block ===== */}
+            <SchedulingBlock athlete={athlete} slotData={maySlots} />
+
             {/* ===== Playbook grid ===== */}
             <h2 className="section-title">The Playbook</h2>
             <div className="resource-grid">
@@ -284,7 +288,149 @@ export default function FamilyResources({ athlete, onBack, onNavigate }) {
 }
 
 // ============================================================
-// ArticleView — renders a single resource article.
+// SchedulingBlock — Calendar view + slot picker
+// ============================================================
+// Shows a month view of available slots. Family clicks a slot to
+// cycle through:  available → primary (gold) → secondary (silver) → available.
+// Submit button at bottom collects all picks and (eventually) sends
+// to DB. For now picks are stored in component local state.
+// ============================================================
+function SchedulingBlock({ athlete, slotData }) {
+  // picks: { [slotId]: 'primary' | 'secondary' }
+  const [picks, setPicks] = useState({})
+  const [submitted, setSubmitted] = useState(false)
+
+  const cyclePick = (slotId) => {
+    setPicks(prev => {
+      const cur = prev[slotId]
+      const next = { ...prev }
+      if (!cur) next[slotId] = 'primary'
+      else if (cur === 'primary') next[slotId] = 'secondary'
+      else delete next[slotId]
+      return next
+    })
+  }
+
+  const primaryCount = Object.values(picks).filter(v => v === 'primary').length
+  const secondaryCount = Object.values(picks).filter(v => v === 'secondary').length
+
+  const handleSubmit = () => {
+    // TODO: wire up DB save in next pass
+    console.log('Submitting picks:', picks)
+    setSubmitted(true)
+  }
+
+  const handleReset = () => {
+    setPicks({})
+    setSubmitted(false)
+  }
+
+  // Group days into weeks for calendar grid
+  const monthLabel = useMemo(() => {
+    const [y, m] = slotData.month.split('-').map(Number)
+    const date = new Date(y, m - 1, 1)
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  }, [slotData.month])
+
+  // Build calendar grid: figure out what weekday May 1 is, pad with empty cells
+  const calendarCells = useMemo(() => {
+    const firstDay = slotData.days[0]
+    const firstDate = new Date(firstDay.date + 'T12:00:00')
+    const firstWeekday = firstDate.getDay() // 0=Sun
+    const cells = []
+    // Pad with empty cells for days before May 1
+    for (let i = 0; i < firstWeekday; i++) cells.push(null)
+    // Add all days
+    slotData.days.forEach(d => cells.push(d))
+    return cells
+  }, [slotData])
+
+  const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  return (
+    <div className="sched-block">
+      <div className="sb-header">
+        <div className="sb-tag">Scheduling</div>
+        <div className="sb-title">Request your sessions for {monthLabel}</div>
+        <div className="sb-sub">
+          Tap a slot to mark it as your <span className="sb-pill primary">first choice</span>.
+          Tap again to make it a <span className="sb-pill secondary">backup</span>. Tap once more to clear.
+          Pick as many as you'd like — Chase will use these to put your sessions on the schedule.
+        </div>
+      </div>
+
+      <div className="sb-counts">
+        <div><span className="sb-dot primary"></span> {primaryCount} first choice</div>
+        <div><span className="sb-dot secondary"></span> {secondaryCount} backup</div>
+      </div>
+
+      {/* Calendar grid */}
+      <div className="sb-cal">
+        {/* Weekday header */}
+        {weekdayLabels.map(w => (
+          <div key={w} className="sb-cal-weekday">{w}</div>
+        ))}
+        {/* Day cells */}
+        {calendarCells.map((day, i) => (
+          <div key={i} className={`sb-cal-cell ${!day ? 'empty' : ''}`}>
+            {day && (
+              <>
+                <div className="sb-cal-date">{parseInt(day.date.split('-')[2])}</div>
+                <div className="sb-cal-slots">
+                  {day.slots.map(s => {
+                    const pick = picks[s.id]
+                    return (
+                      <button
+                        key={s.id}
+                        className={`sb-slot ${pick || ''}`}
+                        onClick={() => cyclePick(s.id)}
+                        title={s.label}
+                      >
+                        {s.label.replace(/–/g, '–').split('–')[0]}
+                      </button>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Action bar */}
+      <div className="sb-actions">
+        {submitted ? (
+          <div className="sb-success">
+            ✓ Request submitted. Chase will be in touch to confirm your sessions.
+            <button className="sb-link" onClick={handleReset}>Edit my picks</button>
+          </div>
+        ) : (
+          <>
+            <div className="sb-summary">
+              {primaryCount + secondaryCount === 0
+                ? 'No slots picked yet.'
+                : `${primaryCount + secondaryCount} slot${primaryCount + secondaryCount === 1 ? '' : 's'} picked`}
+            </div>
+            <div className="sb-btns">
+              {(primaryCount + secondaryCount > 0) && (
+                <button className="sb-btn-clear" onClick={handleReset}>Clear all</button>
+              )}
+              <button
+                className="sb-btn-submit"
+                onClick={handleSubmit}
+                disabled={primaryCount + secondaryCount === 0}
+              >
+                Submit Request
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+
 // Shared template for every Playbook entry. Pulls blocks from
 // article.body which is an array of { type, text | items } nodes.
 // ============================================================
