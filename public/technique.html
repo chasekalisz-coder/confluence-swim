@@ -382,6 +382,45 @@ textarea::placeholder, input::placeholder { color: #475569; }
 }
 .media-row .step { padding: 0; }
 
+/* Pool toggle: center label + buttons under the setup row */
+.pool-wrap { text-align: center; }
+.pool-wrap .field-label { text-align: center; }
+.pool-wrap .pool-toggle { margin: 0 auto; }
+
+/* Photo picker: match the visual weight of the +Add Video button so the
+   two columns in .media-row have equal-height surfaces. Centers the
+   "No photo attached" status text and the native file input. */
+.photo-picker {
+  background: rgba(132, 169, 140, 0.06);
+  border: 0.5px dashed rgba(132, 169, 140, 0.4);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  margin-top: 8px;
+}
+.photo-picker .photo-status {
+  margin-bottom: 10px;
+  text-align: center;
+}
+.photo-picker input[type="file"] {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+.photo-picker .photo-preview {
+  display: block;
+  margin: 12px auto 0;
+}
+/* Equalize the two media blocks visually — photo-section adds the same
+   bottom margin so its height matches the video column when the video
+   column has just the +Add Video button. */
+.media-row .step { display: flex; flex-direction: column; }
+.media-row .photo-section .photo-picker { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.media-row #addVideoBtn { margin-top: auto; }
+
 .error {
   margin: 0 32px 16px;
   padding: 12px 14px;
@@ -710,7 +749,7 @@ textarea::placeholder, input::placeholder { color: #475569; }
         <input id="sessionNum" type="number" placeholder="optional" />
       </div>
     </div>
-    <div style="margin-top:12px;">
+    <div class="pool-wrap" style="margin-top:12px;">
       <label class="field-label">Pool Type <span class="required">*required</span></label>
       <div class="pool-toggle">
         <button type="button" class="pool-btn" data-pool="SCY" onclick="setPool('SCY')">SCY</button>
@@ -735,9 +774,11 @@ textarea::placeholder, input::placeholder { color: #475569; }
         <div class="step-label">Session Photo</div>
         <div class="step-tag">Optional</div>
       </div>
-      <div class="photo-status" id="photoStatus">No photo attached</div>
-      <input type="file" accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif" onchange="handlePhoto(event)" />
-      <img id="photoPreview" class="photo-preview" style="display:none" />
+      <div class="photo-picker">
+        <div class="photo-status" id="photoStatus">No photo attached</div>
+        <input type="file" accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif" onchange="handlePhoto(event)" />
+        <img id="photoPreview" class="photo-preview" style="display:none" />
+      </div>
     </div>
     <div class="step">
       <div class="step-header">
