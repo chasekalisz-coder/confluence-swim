@@ -1435,8 +1435,27 @@ function AnimatedProgressionChart({
             const isFinalPR   = i === lastPRIdx
             const isLastPoint = i === pointsWithPRFlag.length - 1
 
+            // Smart label placement — pick above or below based on
+            // neighbors. If nearby points are above this dot (higher y =
+            // slower time = lower on chart), place label below. Otherwise above.
+            const labelOffset = (() => {
+              const prev = i > 0 ? yScale(pointsWithPRFlag[i-1].time) : null
+              const next = i < pointsWithPRFlag.length - 1 ? yScale(pointsWithPRFlag[i+1].time) : null
+              // Count how many neighbors are above (lower cy = higher on chart = faster)
+              let neighborsAbove = 0
+              if (prev != null && prev < cy) neighborsAbove++
+              if (next != null && next < cy) neighborsAbove++
+              // If line comes from above, label goes below. Otherwise above.
+              const goBelow = neighborsAbove >= 1
+              return goBelow ? 1 : -1  // 1 = below, -1 = above
+            })()
+
+            const labelY = (offset, gap) => cy + offset * gap
+
             if (p.isPR) {
               const showLabel = isFinalPR || p.labelPR
+              const gap = isFinalPR ? 20 : 16
+              const captionGap = isFinalPR ? 36 : 0
               return (
                 <g key={i}>
                   <circle
@@ -1451,8 +1470,9 @@ function AnimatedProgressionChart({
                   />
                   {showLabel && (
                     <text
-                      x={cx} y={cy - (isFinalPR ? 18 : 14)}
+                      x={cx} y={labelY(labelOffset, gap)}
                       textAnchor="middle"
+                      dominantBaseline={labelOffset > 0 ? 'hanging' : 'auto'}
                       fill="#FFD89C"
                       fontSize={isFinalPR ? 15 : 12}
                       fontFamily="SF Mono, ui-monospace, monospace"
@@ -1465,8 +1485,9 @@ function AnimatedProgressionChart({
                   )}
                   {isFinalPR && (
                     <text
-                      x={cx} y={cy - 35}
+                      x={cx} y={labelY(labelOffset, captionGap)}
                       textAnchor="middle"
+                      dominantBaseline={labelOffset > 0 ? 'hanging' : 'auto'}
                       fill="#94a3b8"
                       fontSize="9"
                       fontFamily="-apple-system, sans-serif"
@@ -1481,8 +1502,6 @@ function AnimatedProgressionChart({
               )
             }
 
-            // Non-PR point. If it's the last point in the series, give it a
-            // proper dot + label so the line has a clear visual terminator.
             if (isLastPoint) {
               return (
                 <g key={i}>
@@ -1496,8 +1515,9 @@ function AnimatedProgressionChart({
                     data-pidx={i}
                   />
                   <text
-                    x={cx} y={cy - 12}
+                    x={cx} y={labelY(labelOffset, 14)}
                     textAnchor="middle"
+                    dominantBaseline={labelOffset > 0 ? 'hanging' : 'auto'}
                     fill="rgba(212,168,83,0.7)"
                     fontSize="11"
                     fontFamily="SF Mono, ui-monospace, monospace"
