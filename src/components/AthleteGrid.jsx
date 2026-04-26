@@ -6,7 +6,7 @@ import { fullName, initials, primaryEvents, makeBlankAthlete } from '../data/ath
 import { addAthlete } from '../lib/db.js'
 import { buildCanonicalTimesList } from '../lib/canonicalEvents.js'
 
-export default function AthleteGrid({ athletes, onSelect, onViewProfile, connectionStatus, onAthleteAdded }) {
+export default function AthleteGrid({ athletes, onSelect, onViewProfile, connectionStatus, onAthleteAdded, onViewSlotRequests }) {
   const [adding, setAdding] = useState(false)
   const [newFirst, setNewFirst] = useState('')
   const [newLast, setNewLast] = useState('')
@@ -141,6 +141,14 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
           <div style={{flex:1}}>
             <div style={{fontSize:14, fontWeight:600, color:'#f1f5f9', marginBottom:2}}>Race Pace Calculator</div>
             <div style={{fontSize:11, color:'#64748b'}}>Elite-modeled target splits</div>
+          </div>
+          <span style={{color:'#334155', fontSize:18}}>→</span>
+        </button>
+        <button className="tool-card" onClick={onViewSlotRequests} style={{flex:1, padding:'18px 20px', background:'linear-gradient(135deg, rgba(20,28,50,0.9), rgba(15,22,40,0.95))', border:'1px solid rgba(148,163,184,0.1)', borderRadius:12, cursor:'pointer', display:'flex', alignItems:'center', gap:14, transition:'all 0.25s', position:'relative', overflow:'hidden', textAlign:'left'}}>
+          <div style={{width:42, height:42, borderRadius:10, background:'rgba(110,231,183,0.1)', border:'1px solid rgba(110,231,183,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'#6ee7b7'}}>📅</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14, fontWeight:600, color:'#f1f5f9', marginBottom:2}}>Slot Requests</div>
+            <div style={{fontSize:11, color:'#64748b'}}>Family scheduling requests</div>
           </div>
           <span style={{color:'#334155', fontSize:18}}>→</span>
         </button>
