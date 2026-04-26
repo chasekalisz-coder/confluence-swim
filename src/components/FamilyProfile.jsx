@@ -2137,6 +2137,8 @@ function BloomCircle({ label, course, athlete, age, gender, visible, bestTimes }
 }
 
 function UpcomingMeetsList({ meets }) {
+  const [showAll, setShowAll] = useState(false)
+
   // meets: [{ name, location, startDate, endDate }]
   const today = new Date()
   const withDays = meets.map(m => {
@@ -2145,9 +2147,13 @@ function UpcomingMeetsList({ meets }) {
     return { ...m, days }
   }).sort((a, b) => a.days - b.days)
 
+  const INITIAL = 3
+  const visibleMeets = showAll ? withDays : withDays.slice(0, INITIAL)
+  const hasMore = withDays.length > INITIAL
+
   return (
     <div className="meets-list">
-      {withDays.map((m, i) => (
+      {visibleMeets.map((m, i) => (
         <div className="meet-row" key={i}>
           <div className={`countdown ${m.days <= 14 ? 'close' : ''}`}>
             <div className="num">{m.days}</div>
@@ -2160,6 +2166,15 @@ function UpcomingMeetsList({ meets }) {
           <div className="meet-date mono">{m.dateRange || ''}</div>
         </div>
       ))}
+      {hasMore && (
+        <button
+          type="button"
+          className="meets-show-more"
+          onClick={() => setShowAll(prev => !prev)}
+        >
+          {showAll ? 'Show less' : `Show ${withDays.length - INITIAL} more`}
+        </button>
+      )}
     </div>
   )
 }
