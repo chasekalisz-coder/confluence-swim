@@ -894,10 +894,13 @@ function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, bestTimes
     <div className="age-up">
       <div className="section-header-row">
         <div>
-          <div className="caption">Age-Up Preview</div>
+          <div className="caption au-caption-row">
+            Age-Up Preview
+            <span className="age-pill age-pill-mobile">{nextAgeBucket}</span>
+          </div>
           <div className="title">
             Current times in the next age group
-            <span className="age-pill">{nextAgeBucket}</span>
+            <span className="age-pill age-pill-desktop">{nextAgeBucket}</span>
           </div>
         </div>
         <div className="section-pill-toggle">

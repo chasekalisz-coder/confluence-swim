@@ -630,6 +630,8 @@ body.v2-active #root {
   margin-left: 8px;
   vertical-align: middle;
 }
+/* Mobile-only age pill (sits next to "Age-Up Preview" caption on phones) — hidden on desktop. */
+.v2 .age-pill-mobile { display: none; }
 .v2 .age-up-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -708,6 +710,29 @@ body.v2-active #root {
 
   /* Section spacing — 72px between every section is desktop-scale, too much vertical dead space on a narrow viewport */
   .v2 section { margin-bottom: 32px; }
+
+  /* Age-Up Preview — move age-bucket pill from title-line to caption-line.
+     Hide desktop pill, show mobile pill, lay caption + pill on one row. */
+  .v2 .age-up .title .age-pill-desktop { display: none; }
+  .v2 .age-up .au-caption-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .v2 .age-up .age-pill-mobile {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--v2-surface-3);
+    border-radius: 980px;
+    font-size: 10px;
+    color: var(--v2-text-2);
+    letter-spacing: 0.04em;
+  }
+  /* Tighten the cards — drop fixed height + reduce padding so they're not vertically stretched */
+  .v2 .au-card-wrap { height: 105px; }
+  .v2 .au-front, .v2 .au-back { padding: 9px 10px; }
+  .v2 .au-time { font-size: 15px; margin-bottom: 3px; }
 
   /* Chasing Next card — tighter on mobile so event title + gap number share the row cleanly */
   .v2 .next-cut-v2 { padding: 24px 22px 22px; }
