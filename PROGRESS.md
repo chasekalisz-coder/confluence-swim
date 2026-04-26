@@ -33,6 +33,8 @@ Changes inside the existing `@media (max-width: 720px)` block:
 - Header divider rule updated
 Desktop unchanged.
 
+**Times & Goals table — mobile pass v4 (REVERTED, commit 7deb760).** Tried to use vertical alignment lines so badges in NEXT/CUR top-row aligned with each other and content in GAP/TX bottom-row aligned with goal time. Approach: NEXT flex-row inline + align-self start, GAP flex-row inline + align-self end, TX flex-column space-between. Result on live screenshot was worse — Chase wanted NEXT stacked badge-over--s and GAP stacked -s-over-% and the v4 inlined them both. Reverted to v3.
+
 ### Files changed this session
 - src/styles/apple-dark.css (one mobile-only block added inside existing 720px breakpoint)
 - PROGRESS.md (this entry)
