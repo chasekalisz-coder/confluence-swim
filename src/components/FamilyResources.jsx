@@ -176,7 +176,7 @@ const RESOURCES = [
   },
 ]
 
-export default function FamilyResources({ athlete, onBack, onNavigate }) {
+export default function FamilyResources({ athlete, onBack, onNavigate, onLogoClick }) {
   const [openId, setOpenId] = useState(null)
 
   useEffect(() => {
@@ -205,7 +205,7 @@ export default function FamilyResources({ athlete, onBack, onNavigate }) {
 
   return (
     <div className="v2">
-      <FamilyNav active="Resources" athleteInitials={initials} onNavigate={onNavigate} />
+      <FamilyNav active="Resources" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} />
       <main className="v2-main">
         {openArticle ? (
           // ============ ARTICLE VIEW ============

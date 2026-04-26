@@ -53,7 +53,7 @@ const FILTER_CHIPS = [
   { id: 'workout',     label: 'Workout' },
 ]
 
-export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession }) {
+export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession, onLogoClick }) {
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState('all')
@@ -213,7 +213,7 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
   if (!athlete) {
     return (
       <div className="v2">
-        <FamilyNav active="Session Notes" onNavigate={onNavigate} />
+        <FamilyNav active="Session Notes" onNavigate={onNavigate} onLogoClick={onLogoClick} />
         <main className="v2-main">
           <div className="empty-state">No athlete selected.</div>
         </main>
@@ -224,7 +224,7 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
 
   return (
     <div className="v2">
-      <FamilyNav active="Session Notes" athleteInitials={initials} onNavigate={onNavigate} />
+      <FamilyNav active="Session Notes" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} />
       <main className="v2-main">
         {onBack && <button className="back" onClick={onBack}>← Back to Profile</button>}
 

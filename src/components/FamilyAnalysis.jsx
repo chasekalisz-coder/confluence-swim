@@ -25,7 +25,7 @@ import {
   ageFromDob,
 } from '../lib/calculations.js'
 
-export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
+export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClick }) {
   // View state: 'index' (default), 'analyzer', 'pace'
   const [view, setView] = useState('index')
 
@@ -71,7 +71,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
   if (!athlete) {
     return (
       <div className="v2">
-        <FamilyNav active="Analysis" onNavigate={onNavigate} />
+        <FamilyNav active="Analysis" onNavigate={onNavigate} onLogoClick={onLogoClick} />
         <main className="v2-main">
           <div style={{ color:"var(--text-muted)", fontSize:13, padding:"20px 0", lineHeight:1.6 }}>No athlete selected.</div>
         </main>
@@ -82,7 +82,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate }) {
 
   return (
     <div className="v2">
-      <FamilyNav active="Analysis" athleteInitials={initials} onNavigate={onNavigate} />
+      <FamilyNav active="Analysis" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} />
       <main className="v2-main">
         {view === 'analyzer' && (
           <MeetAnalyzerTool athlete={athlete} onClose={() => setView('index')} />

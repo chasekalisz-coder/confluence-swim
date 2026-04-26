@@ -21,7 +21,7 @@ import FamilyFooter from './FamilyFooter.jsx'
 import FamilyTabBar from './FamilyTabBar.jsx'
 import { formatTime, parseTime, formatDelta } from '../lib/calculations.js'
 
-export default function FamilyMeets({ athlete, onBack, onNavigate }) {
+export default function FamilyMeets({ athlete, onBack, onNavigate, onLogoClick }) {
   const [tab, setTab] = useState('upcoming')
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function FamilyMeets({ athlete, onBack, onNavigate }) {
   if (!athlete) {
     return (
       <div className="v2">
-        <FamilyNav active="Meets" onNavigate={onNavigate} />
+        <FamilyNav active="Meets" onNavigate={onNavigate} onLogoClick={onLogoClick} />
         <main className="v2-main">
           <div className="empty-state">No athlete selected.</div>
         </main>
@@ -88,7 +88,7 @@ export default function FamilyMeets({ athlete, onBack, onNavigate }) {
 
   return (
     <div className="v2">
-      <FamilyNav active="Meets" athleteInitials={initials} onNavigate={onNavigate} />
+      <FamilyNav active="Meets" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} />
       <main className="v2-main">
         {onBack && <button className="back" onClick={onBack}>← Back to Profile</button>}
 

@@ -3,7 +3,7 @@
 // NOT via `import` (Vite/Rollup can't resolve absolute paths at build time).
 const SWIM_LOGO = '/assets/confluence-swim-white.png'
 
-export default function FamilyNav({ active = 'Profile', athleteInitials = '', onNavigate }) {
+export default function FamilyNav({ active = 'Profile', athleteInitials = '', onNavigate, onLogoClick }) {
   const links = [
     { label: 'Profile', view: 'profile' },
     { label: 'Session Notes', view: 'notes' },
@@ -17,13 +17,21 @@ export default function FamilyNav({ active = 'Profile', athleteInitials = '', on
     if (onNavigate) onNavigate(view)
   }
 
+  const handleLogo = () => {
+    if (onLogoClick) {
+      onLogoClick()
+    } else if (onNavigate) {
+      onNavigate('profile')
+    }
+  }
+
   return (
     <nav className="topnav">
       <button
         type="button"
         className="brand brand-button"
-        onClick={() => onNavigate && onNavigate('profile')}
-        aria-label="Go to profile"
+        onClick={handleLogo}
+        aria-label="Home"
       >
         <img src={SWIM_LOGO} alt="Confluence Swim" />
       </button>

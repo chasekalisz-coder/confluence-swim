@@ -54,7 +54,7 @@ import {
 const ROMAN = ['','I','II','III','IV','V','VI','VII','VIII','IX','X']
 const toRoman = (n) => ROMAN[parseInt(n)] || String(n)
 
-export default function FamilyProfile({ athlete, onBack, onNavigate }) {
+export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick }) {
   const [courseTimesGoals, setCourseTimesGoals] = useState('SCY')
   const [courseChampionship, setCourseChampionship] = useState('SCY')
   const [courseAgeUp, setCourseAgeUp] = useState('SCY')
@@ -71,7 +71,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
   if (!athlete) {
     return (
       <div className="v2">
-        <FamilyNav onNavigate={onNavigate} />
+        <FamilyNav onNavigate={onNavigate} onLogoClick={onLogoClick} />
         <main className="v2-main">
           <div className="empty-state">No athlete selected.</div>
         </main>
@@ -164,7 +164,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
 
   return (
     <div className="v2">
-      <FamilyNav active="Profile" athleteInitials={initials} onNavigate={onNavigate} />
+      <FamilyNav active="Profile" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} />
 
       <main className="v2-main">
         {onBack && (

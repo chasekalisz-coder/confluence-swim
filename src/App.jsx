@@ -52,11 +52,19 @@ export default function App() {
     setView('home')
     setSelectedAthlete(null)
     setSelectedSession(null)
+    // Update URL — admin home is at "/"
+    if (window.location.pathname !== '/' || window.location.hash) {
+      window.history.pushState({}, '', '/')
+    }
   }
 
   const selectAthlete = (a) => {
     setSelectedAthlete(a)
     setView('athlete')
+    // Admin edit page — push history so back button works
+    if (a?.id) {
+      window.history.pushState({ adminEdit: a.id }, '', `/?edit=${a.id}`)
+    }
   }
 
   // Opens the athlete performance profile (what the athlete sees themselves).
@@ -65,6 +73,11 @@ export default function App() {
   const viewAthleteProfile = (a) => {
     setSelectedAthlete(a)
     setView('family-profile')
+    // Admin viewing an athlete's performance profile — change URL to /athlete/:id
+    // so back button takes us back to /
+    if (a?.id) {
+      window.history.pushState({ athleteId: a.id }, '', `/athlete/${a.id}`)
+    }
   }
 
   const startNewSession = (a) => {
@@ -117,40 +130,56 @@ export default function App() {
     alert(`${type} sessions coming soon.`)
   }
 
-  // ---- Browser history support for family-side navigation ----
-  // The popstate listener is registered once an athlete is loaded.
-  // Applying hash before the athlete loads would render FamilyProfile
-  // with null data and crash the page.
+  // ---- Browser history support ----
+  // Listens for back/forward and updates view based on URL.
+  // Handles both admin (/, /?edit=xxx) and family (/athlete/xxx#tab) routes.
   useEffect(() => {
-    if (!urlAthleteId) return
-    if (!selectedAthlete) return  // Wait for athlete to load
+    const handleNavigation = () => {
+      const path = window.location.pathname
+      const hash = window.location.hash.replace('#', '')
+      const search = new URLSearchParams(window.location.search)
+      const editId = search.get('edit')
 
-    const applyHashToView = () => {
-      const h = window.location.hash.replace('#', '')
-      if (!h || h === 'profile') {
-        setView('family-profile')
-      } else if (h === 'notes') {
-        setView('family-notes')
-      } else if (h === 'meets') {
-        setView('family-meets')
-      } else if (h === 'analysis') {
-        setView('family-analysis')
-      } else if (h === 'resources') {
-        setView('family-resources')
+      // /athlete/:id — family profile pages
+      const athleteMatch = path.match(/^\/athlete\/([^/]+)/)
+      if (athleteMatch) {
+        const id = athleteMatch[1]
+        // Find athlete and select it
+        const athlete = athletes.find(a => a.id === id)
+        if (athlete) {
+          setSelectedAthlete(athlete)
+          // Map hash to view
+          if (!hash || hash === 'profile') setView('family-profile')
+          else if (hash === 'notes') setView('family-notes')
+          else if (hash === 'meets') setView('family-meets')
+          else if (hash === 'analysis') setView('family-analysis')
+          else if (hash === 'resources') setView('family-resources')
+        }
+        return
       }
+
+      // /?edit=xxx — admin edit page
+      if (editId) {
+        const athlete = athletes.find(a => a.id === editId)
+        if (athlete) {
+          setSelectedAthlete(athlete)
+          setView('athlete')
+        }
+        return
+      }
+
+      // / — admin home
+      setView('home')
+      setSelectedAthlete(null)
     }
 
-    // Apply on mount (handles direct URL like /athlete/jon#meets)
-    applyHashToView()
-
-    // Listen for browser back/forward AND hash changes
-    window.addEventListener('popstate', applyHashToView)
-    window.addEventListener('hashchange', applyHashToView)
+    window.addEventListener('popstate', handleNavigation)
+    window.addEventListener('hashchange', handleNavigation)
     return () => {
-      window.removeEventListener('popstate', applyHashToView)
-      window.removeEventListener('hashchange', applyHashToView)
+      window.removeEventListener('popstate', handleNavigation)
+      window.removeEventListener('hashchange', handleNavigation)
     }
-  }, [urlAthleteId, selectedAthlete])
+  }, [athletes])
 
   // ---- v2 navigation handler, shared across all v2 pages ----
   // Maps the FamilyNav labels ('profile', 'notes', 'meets', 'analysis',
@@ -189,6 +218,7 @@ export default function App() {
         athlete={selectedAthlete}
         onBack={urlAthleteId ? null : goHome}
         onNavigate={handleV2Navigate}
+        onLogoClick={!urlAthleteId ? goHome : undefined}
       />
     )
   }
@@ -200,6 +230,7 @@ export default function App() {
         athlete={selectedAthlete}
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
+        onLogoClick={!urlAthleteId ? goHome : undefined}
         onViewSession={(session) => viewSession(session, 'family-notes')}
       />
     )
@@ -212,6 +243,7 @@ export default function App() {
         athlete={selectedAthlete}
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
+        onLogoClick={!urlAthleteId ? goHome : undefined}
       />
     )
   }
@@ -223,6 +255,7 @@ export default function App() {
         athlete={selectedAthlete}
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
+        onLogoClick={!urlAthleteId ? goHome : undefined}
       />
     )
   }
@@ -234,6 +267,7 @@ export default function App() {
         athlete={selectedAthlete}
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
+        onLogoClick={!urlAthleteId ? goHome : undefined}
       />
     )
   }
