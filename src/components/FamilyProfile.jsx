@@ -1724,7 +1724,14 @@ function BloomCircle({ label, course, athlete, age, gender, visible }) {
 
   // Families that have ≥1 event for this course, in display order
   const activeFamilies = BLOOM_STROKE_ORDER
-    .map(fam => ({ ...fam, distances: fam.distances[course] || [] }))
+    .map(fam => {
+      let distances = fam.distances[course] || []
+      // SCY IM: 12 & under get 100+200, 13+ get 200+400
+      if (fam.stroke === 'IM' && course === 'SCY') {
+        distances = age <= 12 ? [100, 200] : [200, 400]
+      }
+      return { ...fam, distances }
+    })
     .filter(fam => fam.distances.length > 0)
 
   if (activeFamilies.length === 0) return null
@@ -2033,13 +2040,14 @@ function BloomCircle({ label, course, athlete, age, gender, visible }) {
           })}
         </g>
 
-        {/* Stroke family labels — positioned well outside the distance
-            labels so nothing overlaps */}
+        {/* Stroke family labels */}
         <g fontFamily="-apple-system, sans-serif" fontSize="11" fontWeight="700" fill="#D4A853" letterSpacing="0.14em">
           {strokeBoundaries.map(b => {
             const a = b.midAngle
             const x = cx + familyLabelR * Math.cos(a)
-            const y = cy + familyLabelR * Math.sin(a)
+            // Push FREE label down slightly so it doesn't clip at top of card
+            const yOffset = b.family === 'FREE' ? 14 : 0
+            const y = cy + familyLabelR * Math.sin(a) + yOffset
             return (
               <text
                 key={b.family}
