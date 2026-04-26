@@ -1780,6 +1780,116 @@ body.v2-active #root {
 }
 .v2 .sb-link:hover { color: var(--v2-text); }
 
+/* ============================================================ */
+/* Admin Slot Requests calendar                                 */
+/* ============================================================ */
+.adm-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.adm-cal-weekday {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+  text-align: center;
+  padding: 8px 0;
+  border-bottom: 0.5px solid rgba(148,163,184,0.15);
+}
+.adm-cal-cell {
+  min-height: 150px;
+  background: rgba(255,255,255,0.02);
+  border: 0.5px solid rgba(255,255,255,0.04);
+  border-radius: 8px;
+  padding: 6px 5px 5px 5px;
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.adm-cal-cell.empty {
+  background: transparent; border-color: transparent;
+}
+.adm-cal-date {
+  font-size: 11px; font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 2px;
+  padding: 0 2px;
+}
+.adm-cal-slots {
+  display: flex; flex-direction: column;
+  gap: 3px;
+}
+.adm-slot {
+  background: rgba(255,255,255,0.03);
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 4px;
+  padding: 3px 5px;
+  font-size: 10px;
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  display: flex; flex-direction: column;
+  gap: 3px;
+  min-height: 22px;
+}
+.adm-slot.empty {
+  opacity: 0.4;
+}
+.adm-slot.primary {
+  background: rgba(212, 168, 83, 0.18);
+  border-color: rgba(212, 168, 83, 0.5);
+  color: #D4A853;
+  font-weight: 600;
+}
+.adm-slot.secondary {
+  background: rgba(148, 163, 184, 0.14);
+  border-color: rgba(148, 163, 184, 0.4);
+  color: #cbd5e1;
+}
+.adm-slot.has-primary {
+  background: rgba(212, 168, 83, 0.10);
+  border-color: rgba(212, 168, 83, 0.35);
+}
+.adm-slot.has-secondary {
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+.adm-slot-time {
+  font-weight: 600;
+  color: #cbd5e1;
+}
+.adm-slot-badges {
+  display: flex; flex-wrap: wrap;
+  gap: 2px;
+}
+.adm-badge {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  min-width: 18px; height: 14px;
+  padding: 0 3px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.adm-badge.primary {
+  background: #D4A853;
+  color: #1a1410;
+}
+.adm-badge.secondary {
+  background: rgba(148, 163, 184, 0.6);
+  color: #0f172a;
+}
+
+@media print {
+  .btn, .app-footer, header { display: none !important; }
+  .adm-cal-cell { min-height: 100px; }
+  .adm-slot { color: #000 !important; background: #fff !important; border-color: #999 !important; }
+  .adm-slot.primary, .adm-slot.has-primary { background: #fde68a !important; }
+  .adm-slot.secondary, .adm-slot.has-secondary { background: #e2e8f0 !important; }
+  .adm-badge.primary { background: #d97706 !important; color: #fff !important; }
+  .adm-badge.secondary { background: #64748b !important; color: #fff !important; }
+}
+
 /* Playbook grid */
 .v2 .resource-grid {
   display: grid;

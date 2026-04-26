@@ -12,6 +12,7 @@ import FamilyNotes from './components/FamilyNotes.jsx'
 import FamilyMeets from './components/FamilyMeets.jsx'
 import FamilyAnalysis from './components/FamilyAnalysis.jsx'
 import FamilyResources from './components/FamilyResources.jsx'
+import SlotRequestsAdmin from './components/SlotRequestsAdmin.jsx'
 import './styles/apple-dark.css'
 
 export default function App() {
@@ -204,6 +205,7 @@ export default function App() {
             onViewProfile={viewAthleteProfile}
             connectionStatus={connectionStatus}
             onAthleteAdded={handleAthleteAdded}
+            onViewSlotRequests={() => setView('slot-requests')}
           />
         )}
         {view === 'athlete' && (
@@ -228,6 +230,12 @@ export default function App() {
             session={selectedSession}
             athlete={selectedAthlete}
             onBack={() => setView(sessionOrigin)}
+          />
+        )}
+        {view === 'slot-requests' && (
+          <SlotRequestsAdmin
+            athletes={athletes}
+            onBack={goHome}
           />
         )}
       </main>
