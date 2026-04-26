@@ -15,6 +15,16 @@ Desktop layout unchanged — overrides only fire below 720px.
 
 **Section spacing — mobile reduction** (1 commit). The global rule `.v2 section { margin-bottom: 72px; }` was inherited on mobile, creating a noticeable dead band between every section — most visible between the hero (events chips) and the Chasing Next card. Added `.v2 section { margin-bottom: 32px; }` to the same 720px breakpoint. Affects every section break on the v2 profile on mobile only; desktop unchanged.
 
+**Times & Goals table — mobile pass** (1 commit). Mobile was inheriting the desktop 7-column grid at full size — column headers wrapped ("GAP TO GOAL" became 3 lines), TX TAGs clipped on the right, NEXT cell stacked badge+gap+% three-deep which floated the badge high relative to single-line cells like BEST and GOAL. Strategy: keep all 7 columns, every cell single-line, drop % values on mobile only.
+- Recalibrated grid: `grid-template-columns: 32px 0.95fr 0.75fr 38px 1.05fr 0.7fr 0.8fr` with 6px gap and 6px×4px padding
+- Smaller fonts: header 9px, event 11px, time 13px, goal 12px, delta 11px
+- NEXT cell: overrode the inline `flex-direction: column` (with `!important` since it's a React inline style) to flatten badge+gap onto one row
+- Hidden on mobile: `.delta-pct` (NEXT/GAP percentages), `.stacked-pct` + `.stacked-delta` + `.stacked-delta-row` (TX TAGs gap-and-pct sub-row, leaving just the cut time)
+- Empty NEXT placeholder ("—" via `.std.none`): rendered blank with `visibility: hidden`
+- TX TAGs cell: dropped 52px min-height since the sub-row is hidden
+- Stroke family label: tighter padding/size to match
+Decision process before coding: walked through stacked vs inline, drop-CURRENT vs keep-it, drop-pct vs keep-pct, horizontal-scroll vs cards. Final call: keep all 7 columns, drop pct on mobile, every cell single-line. Mobile parity matters since most users are on mobile. Desktop layout unchanged.
+
 ### Files changed this session
 - src/styles/apple-dark.css (one mobile-only block added inside existing 720px breakpoint)
 - PROGRESS.md (this entry)

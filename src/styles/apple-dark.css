@@ -704,6 +704,52 @@ body.v2-active #root {
   .v2 .nc-event { font-size: 26px; margin-bottom: 8px; }
   .v2 .nc-gap { font-size: 44px; }
   .v2 .nc-gap span { font-size: 18px; }
+
+  /* ===== Times & Goals table — mobile pass =====
+     Goal: keep all 7 columns, every cell on a single line, all 7 cells horizontally aligned.
+     Strategy:
+       - Drop % values inside NEXT, GAP TO GOAL, TX TAGs
+       - NEXT cell forces inline (badge + gap on one row)
+       - TX TAGs cell shows just the cut time (or "Hit ✓"); gap+% sub-row hidden
+       - Empty NEXT placeholder ("—") rendered blank
+       - Tighter row padding, smaller fonts, recalibrated grid widths */
+  .v2 .times-table-no-tags .times-row {
+    grid-template-columns: 32px 0.95fr 0.75fr 38px 1.05fr 0.7fr 0.8fr;
+    gap: 6px;
+    padding: 6px 4px;
+  }
+  .v2 .times-row.header {
+    padding: 10px 4px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+  .v2 .times-row .event { font-size: 11px; }
+  .v2 .times-row .time { font-size: 13px; }
+  .v2 .times-row .goal { font-size: 12px; }
+  .v2 .times-row .delta { font-size: 11px; }
+
+  /* NEXT cell — flatten to single row (overrides inline style; needs !important) */
+  .v2 .times-row .delta[style] {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 5px !important;
+  }
+
+  /* Hide all percentages on mobile */
+  .v2 .times-table .delta .delta-pct { display: none; }
+  .v2 .stacked-gap .stacked-pct { display: none; }
+  .v2 .stacked-gap .stacked-delta { display: none; }
+  .v2 .stacked-gap .stacked-delta-row { display: none; }
+
+  /* Empty NEXT placeholder ("—" inside .std.none) — render blank on mobile */
+  .v2 .times-row .delta .std.none { visibility: hidden; }
+
+  /* TX TAGs cell — drop the desktop min-height since gap+% sub-row is hidden */
+  .v2 .tags-cell { min-height: 0; }
+  .v2 .stacked-gap .stacked-cut { font-size: 12px; }
+
+  /* Stroke family label — tighter spacing too */
+  .v2 .stroke-family-label { padding: 10px 4px 4px; font-size: 9px; }
 }
 
 /* ===== EVENT POWER RANKINGS ===== */
