@@ -1106,9 +1106,15 @@ function ProgressionChart({ data, athleteName }) {
   // to a sparse one — event selector disappeared, no way back without a
   // page refresh.)
 
-  // Plot dims
-  const W = 900, H = 320
-  const padL = 64, padR = 20, padT = 28, padB = 52
+  // Plot dims — mobile uses a less-wide aspect so the chart fills more vertical space
+  // when the SVG width is constrained to ~340px on a 380px viewport.
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 720px)').matches
+  const W = isMobile ? 480 : 900
+  const H = isMobile ? 360 : 320
+  const padL = isMobile ? 50 : 64
+  const padR = isMobile ? 16 : 20
+  const padT = isMobile ? 24 : 28
+  const padB = isMobile ? 44 : 52
   const plotW = W - padL - padR
   const plotH = H - padT - padB
 
@@ -1408,7 +1414,7 @@ function AnimatedProgressionChart({
               <text
                 x={padL - 10} y={t.y}
                 textAnchor="end" dominantBaseline="middle"
-                fill="#475569" fontSize="10"
+                fill="#94a3b8" fontSize="11"
                 fontFamily="SF Mono, ui-monospace, monospace"
                 style={{ letterSpacing: '0.05em' }}
               >
@@ -1420,7 +1426,7 @@ function AnimatedProgressionChart({
 
         {/* X-axis date labels — drop the middle label if it would overlap
             first or last (small time spans with clustered meets). */}
-        <g fill="#475569" fontSize="10" fontFamily="-apple-system, sans-serif" style={{ letterSpacing: '0.08em' }}>
+        <g fill="#94a3b8" fontSize="11" fontFamily="-apple-system, sans-serif" style={{ letterSpacing: '0.08em' }}>
           {(() => {
             const xMin = firstPt.date.getTime()
             const xMax = lastPt.date.getTime()
