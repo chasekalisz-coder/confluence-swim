@@ -324,10 +324,11 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
           <h2 className="section-title">Range</h2>
           <p className="section-lede">
             The whole swimmer in one look. Each glowing petal is an event,
-            grouped by stroke around the circle. Petals reach further and
-            run hotter where {athlete.first} is closer to the top of the
-            time-standard ladder. Untested events don't glow. SCY on the
-            left, LCM on the right.
+            grouped by stroke around the circle. Petal length climbs the full
+            ladder from B → BB → A → AA → AAA → AAAA, then up through the
+            championship cuts (Futures, Sectionals, Jr Nats, Nats). The further
+            and hotter a petal, the closer {athlete.first} is to the top.
+            Untested events don't glow. SCY on the left, LCM on the right.
           </p>
           <SpecialtyBloom athlete={athlete} age={effectiveAge} gender={gender} bestTimes={bestTimes} />
         </section>
