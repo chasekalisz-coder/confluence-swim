@@ -415,8 +415,8 @@ function NextCutCard({ cuts }) {
       setTimeout(() => {
         setIdx(i => (i + 1) % cuts.length)
         setVisible(true)
-      }, 350)
-    }, 3000)
+      }, 600)
+    }, 3500)
     return () => clearInterval(timer)
   }, [cuts, paused])
 
@@ -540,7 +540,7 @@ function NextCutCard({ cuts }) {
               <div
                 key={i}
                 className={`nc-dot ${i === idx ? 'active' : ''}`}
-                onClick={() => { setVisible(false); setTimeout(() => { setIdx(i); setVisible(true) }, 350) }}
+                onClick={() => { setVisible(false); setTimeout(() => { setIdx(i); setVisible(true) }, 600) }}
               />
             ))}
           </div>
