@@ -2414,6 +2414,10 @@ body.v2-active #root {
   align-items: center;
 }
 .v2 .ca-event-row:last-child { border-bottom: none; }
+.v2 .ca-event-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+}
 .v2 .ca-ev-name {
   font-size: 12px; font-weight: 500; color: var(--v2-text-2);
 }
