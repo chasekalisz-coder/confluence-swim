@@ -2529,6 +2529,8 @@ body.v2-active #root {
   padding: 8px 10px;
   border-radius: 6px;
   margin-bottom: 2px;
+  min-height: 52px;
+  box-sizing: border-box;
 }
 .v2 .rc-row-v2.top3 {
   background: rgba(212,168,83,0.06);
