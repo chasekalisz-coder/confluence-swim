@@ -45,6 +45,13 @@ Continued Phase 1 from Session 11. Finished the three remaining tool pages (Tech
 ### Phase 1 status
 **COMPLETE.** All 6 standalone tool pages now on v2 dark theme with .step pattern, distinct color identity, mobile bottom nav, default 75-min duration where applicable.
 
+### Step 11 + Step 12 verification (closed)
+Step 12 (v2-redesign → main merge) verified DONE: `git rev-parse origin/v2-redesign` and `git rev-parse origin/main` both at `c26bc4a`. Both branches are kept in lockstep on every push per the established workflow.
+
+Step 11 (Mason + Pace progression import) verified DONE: Chase ran the bulk-import button. Result screen showed every athlete at `+0 new` with totals — Mason 15 total, Pace 85 total — meaning all rows were already in Neon and the import was a no-op. Total swim rows in DB: Ben 205, Farris 2, Grace 78, Hannah 73, Jon 304, Kaden 94, Lana 125, Liam 19, Marley 132, Mason 15, Pace 85.
+
+Both items deleted from TODO.md. Future chats: do NOT re-raise these.
+
 ### Next up
 Phase 2 (desktop optimization across the whole site) and Phase 3 (TODO.md cleanup) are the next phases per STATE.md. Top P1 items on TODO.md: Scheduling request flow (Resources page block), Meet Analyzer direction decision, SwimCloud rankings integration, Upcoming meets admin entry, Session count fix, Program type field. Phase 4 is Clerk auth + invites + Squarespace integration.
 

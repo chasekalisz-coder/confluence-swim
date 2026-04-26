@@ -48,7 +48,6 @@ Likely candidates: admin home grid spacing on wide screens, family profile tab l
 
 ### Phase 3 — Polish + finish remaining tasks (NOT STARTED)
 TODO.md is the source of truth for what's left. P1 candidates: Scheduling request flow (Resources page block — May 2026 slots), Meet Analyzer direction decision, SwimCloud rankings integration, Upcoming meets admin entry, Session count fix (workout outputs filter), Program type field (Gold Development tier dropdown).
-**Note: TODO.md may be stale on Step 11 (Mason+Pace bulk import) and Step 12 (v2-redesign → main merge) — Chase has stated both are done. Do not re-do without confirming.**
 
 ### Phase 4 — Auth + invites + Squarespace integration (NOT STARTED)
 - Clerk auth with three tiers (Chase admin, provider sub-admins, families)
