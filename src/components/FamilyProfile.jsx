@@ -325,7 +325,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate }) {
             time-standard ladder. Untested events don't glow. SCY on the
             left, LCM on the right.
           </p>
-          <SpecialtyBloom athlete={athlete} age={effectiveAge} gender={gender} />
+          <SpecialtyBloom athlete={athlete} age={effectiveAge} gender={gender} bestTimes={bestTimes} />
         </section>
 
         {/* ============ TRAINING (placeholder) ============ */}
@@ -1642,7 +1642,7 @@ const BLOOM_STROKE_ORDER = [
   { label: 'IM',     stroke: 'IM',     distances: { SCY: [100,200,400],              LCM: [200,400]                 } },
 ]
 
-function SpecialtyBloom({ athlete, age, gender }) {
+function SpecialtyBloom({ athlete, age, gender, bestTimes }) {
   const ref = useRef(null)
   const [visible, setVisible] = useState(false)
 
@@ -1660,8 +1660,8 @@ function SpecialtyBloom({ athlete, age, gender }) {
   return (
     <div ref={ref}>
       <div className="bloom-pair">
-        <BloomCircle label="SCY" course="SCY" athlete={athlete} age={age} gender={gender} visible={visible} />
-        <BloomCircle label="LCM" course="LCM" athlete={athlete} age={age} gender={gender} visible={visible} />
+        <BloomCircle label="SCY" course="SCY" athlete={athlete} age={age} gender={gender} visible={visible} bestTimes={bestTimes} />
+        <BloomCircle label="LCM" course="LCM" athlete={athlete} age={age} gender={gender} visible={visible} bestTimes={bestTimes} />
       </div>
       <BloomLegend />
     </div>
@@ -1705,7 +1705,7 @@ function BloomLegend() {
   )
 }
 
-function BloomCircle({ label, course, athlete, age, gender, visible }) {
+function BloomCircle({ label, course, athlete, age, gender, visible, bestTimes }) {
   // -----------------------------------------------------------------
   // SPOKE LAYOUT — each stroke family gets an EQUAL slice of the circle.
   // -----------------------------------------------------------------
@@ -1776,7 +1776,7 @@ function BloomCircle({ label, course, athlete, age, gender, visible }) {
   // -----------------------------------------------------------------
   const bestBySpoke = spokes.map(s => {
     const key = `${s.event} ${course}`
-    const timeStr = (athlete.meetTimes || []).find(t => t.event === key)?.time
+    const timeStr = bestTimes?.[key]
     return timeStr ? parseTime(timeStr) : null
   })
 
@@ -2018,13 +2018,12 @@ function BloomCircle({ label, course, athlete, age, gender, visible }) {
         {/* Center dot — drawn AFTER everything so the center stays crisp */}
         <circle cx={cx} cy={cy} r={innerR * 0.5} fill="#0a0a0b" />
 
-        {/* Distance labels — only first and last spoke per family to reduce clutter */}
+        {/* Distance labels — only longest distance per family */}
         <g fontFamily="SF Mono, ui-monospace, monospace" fontSize="9" fontWeight="500" fill="rgba(180,180,185,0.7)">
           {spokes.map((spoke, si) => {
             const boundary = strokeBoundaries.find(b => b.startIdx <= si && b.endIdx >= si)
-            const isFirst = boundary && si === boundary.startIdx
             const isLast = boundary && si === boundary.endIdx
-            if (!isFirst && !isLast) return null
+            if (!isLast) return null
             const a = spoke.aMid
             const x = cx + distLabelR * Math.cos(a)
             const y = cy + distLabelR * Math.sin(a)
