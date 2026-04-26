@@ -118,28 +118,38 @@ export default function App() {
   }
 
   // ---- Browser history support for family-side navigation ----
-  // On mount, restore from URL hash if present. After this, every
-  // family-page navigation pushes a history entry, and the browser
-  // back/forward buttons update the view via popstate.
+  // The popstate listener is registered once on mount and uses the
+  // current hash to determine which view to show. The "current view"
+  // when navigating manually pushes a history entry that the back
+  // button will reverse.
   useEffect(() => {
     if (!urlAthleteId) return
 
-    // On first load, if there's a hash, apply it
-    const hashView = window.location.hash.replace('#', '')
-    if (hashView && ['profile', 'notes', 'meets', 'analysis', 'resources'].includes(hashView)) {
-      setView('family-' + hashView)
-    }
-
-    const handlePopState = () => {
+    const applyHashToView = () => {
       const h = window.location.hash.replace('#', '')
       if (!h || h === 'profile') {
         setView('family-profile')
-      } else if (['notes', 'meets', 'analysis', 'resources'].includes(h)) {
-        setView('family-' + h)
+      } else if (h === 'notes') {
+        setView('family-notes')
+      } else if (h === 'meets') {
+        setView('family-meets')
+      } else if (h === 'analysis') {
+        setView('family-analysis')
+      } else if (h === 'resources') {
+        setView('family-resources')
       }
     }
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
+
+    // Apply on mount (handles direct URL like /athlete/jon#meets)
+    applyHashToView()
+
+    // Listen for browser back/forward AND hash changes
+    window.addEventListener('popstate', applyHashToView)
+    window.addEventListener('hashchange', applyHashToView)
+    return () => {
+      window.removeEventListener('popstate', applyHashToView)
+      window.removeEventListener('hashchange', applyHashToView)
+    }
   }, [urlAthleteId])
 
   // ---- v2 navigation handler, shared across all v2 pages ----
