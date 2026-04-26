@@ -678,6 +678,7 @@ export const TX_TAGS = {
 //
 // TAGS is ONLY shown for athletes aged 14 and under. The table renderer
 // checks the athlete's age bucket and hides the TAGS column for 15+.
+// Tiers ordered easiest → hardest: Sectionals → Futures → Jr Nats → Nationals → Pro Swim
 export const CHAMPIONSHIP_TIERS = ["SECTIONALS", "FUTURES", "JR_NATS", "NATIONALS", "PRO_SWIM"]
 export const CHAMPIONSHIP_TIER_LABELS = {
   TAGS: 'TAGS',
