@@ -1337,9 +1337,23 @@ html, body, #root {
 .agp-search-wrap,
 .agp-tabbar,
 .agp-fab,
-.athlete-card-row-tap,
-.athlete-card-chev,
 .agp-no-results { display: none; }
+
+/* The row-tap button wraps the athlete card content. On desktop it
+   acts as an invisible passthrough — content inside still renders.
+   On mobile (in the @media block below) it gets full-row tap styling. */
+.athlete-card-row-tap {
+  display: block;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: default;
+  color: inherit;
+  font-family: inherit;
+}
+.athlete-card-chev { display: none; }
 
 /* On desktop, tab content is always visible (tabs do nothing) */
 .agp-tab-content { display: block; }
