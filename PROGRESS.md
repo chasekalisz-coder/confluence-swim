@@ -134,6 +134,24 @@ The lock copy went through several drafts. Chase's framing: "a friendly way to l
 
 **Status check:** Tier matrix Phase 5 progress — Step 4 plumbing done (Session 14 morning). Step 5b badge fan-out done across the entire app. Step 5b actual gating wired for Race Pace only. Remaining gated sections (Progression, Power Rankings, Championship Standards, Age-Up, Range) still render the user's own data for everyone — that demo-data swap is the next chunk.
 
+### Race Pace lock fix batch (late afternoon, after Chase tested with Bronze profile)
+
+Chase flipped Jon to Bronze and confirmed the lock wasn't blocking — could generate at will. Investigated and found the bug: the Race Pace card's onClick was `window.location.href = '/pace.html'`, sending users to a 1,354-line standalone HTML page that has zero athlete awareness. The React `RacePaceCalculator` (where the lock lives) was never being opened from the card. The lock worked perfectly on a tool nobody opened.
+
+Decision tree on the fix:
+- Option A: Repoint the click target to the React tool. One-line change. Risk: React version is 369 lines vs HTML's 1,354 — there might be feature gaps.
+- Option B: Add the lock to `pace.html`. Bigger lift since the page has no athlete-loading code; would need to teach a static HTML page how to read athlete tier from the DB.
+
+Went with A. The HTML page is older code, the React port is newer; keeping both versions of the same tool is how bugs hide. If something's missing on the React side, we patch it as it surfaces.
+
+In the same commit, Chase asked for the limit to go from 1 generation per 5 days to 2. Reworked the throttle from a single-timestamp model (`lastRacePaceDemoAt`) to a runs-list model (`racePaceDemoRuns`, an array of ISO timestamps). On generate, append a new timestamp; on render, prune to active 5-day window; lock when count >= 2. When locked, the unlock time is when the *oldest* active run falls out of the window — that frees up exactly one slot. Added a soft "1 demo generation left in this 5-day window" hint shown to non-Gold users who've used 1 of 2 (no border-heavy treatment, just a subtle line above the result).
+
+Also closed out two missing-UI gaps Chase flagged at the same time:
+- Meet Analyzer tool card on Performance Analysis was missing the Gold Development tier badge. Added — sits below the Soon badge on the same card. New CSS class `.tc-tier-badge` mirrors `.tc-soon-badge` positioning; combined-card stacking handled via adjacent-sibling selector (`.tool-card .tc-soon-badge + .tc-tier-badge { top: 50px }`).
+- Race Pace tool card had no signal that non-Gold users *can* still try a demo. Added Gold Development badge always + replaced the "no race pace history yet" meta line for non-Gold with "2 demo runs available every 5 days." Now they see what they have before clicking.
+
+**Doc-update friction recurrence (third call-out this session):** Chase explicitly called out (again) that doc updates need to land in the same commit as code, not as a separate batch later. CLAUDE.md line 88 covers this. This commit pairs code + STATE/PROGRESS in the same push. New rule for this Claude going forward: doc updates are part of the commit, not a follow-up step.
+
 ### Friction worth naming
 Chase had to call out (again) that PROGRESS.md and STATE.md were not being kept current during the session. CLAUDE.md is explicit on line 88: "Never let STATE.md or PROGRESS.md fall behind during a session." This was already noted as a Session 12 failure — it recurred in Session 14, and recurred *again* during the late-afternoon batch (eight commits shipped without doc updates between them). Pattern is: Claude makes a commit, pushes the relevant code/feature, but skips the STATE/PROGRESS update until end-of-session or until Chase asks. Need a stronger trigger pattern in CLAUDE.md or in the session-start protocol so this doesn't keep happening. Honest acknowledgment from this Claude: I let it slide once Chase was iterating fast and didn't catch up. The fix is to stop treating doc updates as separate commits that batch up at the end and start treating them as part of the commit itself — every commit goes out paired.
 

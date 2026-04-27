@@ -5,7 +5,8 @@ import { updateAthlete } from '../lib/db.js'
 
 const COURSE_FULL = { scy: 'Short Course Yards', lcm: 'Long Course Meters', scm: 'Short Course Meters' }
 
-const DEMO_LOCK_MS = 5 * 24 * 60 * 60 * 1000  // 5 days in ms — demo throttle for non-Gold tiers
+const DEMO_LOCK_MS = 5 * 24 * 60 * 60 * 1000  // 5 days in ms — demo throttle window for non-Gold tiers
+const DEMO_RUNS_ALLOWED = 2  // non-Gold tiers can generate this many times within the window
 
 // Returns "N days" / "N hours" / "less than an hour" from a millisecond
 // count. Rounds up — see Session 14 conversation: rounding up reads as
@@ -48,30 +49,34 @@ export default function RacePaceCalculator({ athlete = null }) {
   const [seconds, setSeconds] = useState('')
   const [result, setResult] = useState(null)
 
-  // Local override for "they just used their demo this session." Needed
-  // because the athlete prop only updates on a parent re-fetch — without
-  // this, a non-Gold user could fire the Generate button repeatedly within
-  // the same page load before the lock would ever flip from a refreshed
-  // prop. Set in generate() right after the run completes; persists in
-  // memory until next page load (at which point the saved athlete.lastRace*
-  // fields drive the lock instead).
-  const [localLockAt, setLocalLockAt] = useState(0)
+  // In-session list of run timestamps that haven't been written to the DB
+  // yet (fire-and-forget save round-trips). Combined with the persisted
+  // list from athlete.racePaceDemoRuns to compute the lock state, so
+  // multiple Generates within the same page load count correctly.
+  const [localRuns, setLocalRuns] = useState([])
 
-  // Demo throttle for non-Gold tiers. Gold athletes bypass this entirely.
-  // For everyone else, we cap at one generation per 5 days. The last result
-  // is rendered read-only during the lock window so they still see what
-  // they ran. Stored on the athlete record as `lastRacePaceDemoAt` (ISO
-  // timestamp) and `lastRacePaceDemoResult` (the result object).
+  // Demo throttle for non-Gold tiers. Gold athletes bypass entirely.
+  // Non-Gold tiers get DEMO_RUNS_ALLOWED generations per DEMO_LOCK_MS
+  // window, with the window starting from the timestamp of their oldest
+  // active run. Stored on the athlete record as `racePaceDemoRuns`
+  // (array of ISO timestamps). Last result is also persisted so the
+  // tool shows the most recent plan when locked.
   const isGold = !athlete || getTier(athlete) === 'gold'
-  const propLastRunAt = athlete?.lastRacePaceDemoAt
-    ? new Date(athlete.lastRacePaceDemoAt).getTime()
+  const now = Date.now()
+  const persistedRuns = Array.isArray(athlete?.racePaceDemoRuns)
+    ? athlete.racePaceDemoRuns.map(ts => new Date(ts).getTime()).filter(t => !isNaN(t))
+    : []
+  // Combine persisted + in-session local runs, dedupe, keep only those
+  // inside the active 5-day window.
+  const allRuns = [...new Set([...persistedRuns, ...localRuns])].sort((a, b) => a - b)
+  const activeRuns = allRuns.filter(t => now - t < DEMO_LOCK_MS)
+  const isLocked = !isGold && activeRuns.length >= DEMO_RUNS_ALLOWED
+  // When locked, the unlock time is when the *oldest* active run falls
+  // out of the window — that frees up one slot for a new generation.
+  const msRemaining = isLocked
+    ? (activeRuns[0] + DEMO_LOCK_MS) - now
     : 0
-  // Take the most recent of the prop-derived timestamp and the in-session
-  // local lock — whichever is newer wins.
-  const lastRunAt = Math.max(propLastRunAt, localLockAt)
-  const lockUntil = lastRunAt ? lastRunAt + DEMO_LOCK_MS : 0
-  const msRemaining = lockUntil - Date.now()
-  const isLocked = !isGold && msRemaining > 0
+  const runsLeftInWindow = isGold ? Infinity : Math.max(0, DEMO_RUNS_ALLOWED - activeRuns.length)
 
   // Hydrate the rendered result from the saved demo result while locked,
   // so non-Gold users see the plan they generated last time even after
@@ -93,24 +98,28 @@ export default function RacePaceCalculator({ athlete = null }) {
     const newResult = { event, course, gender, totalSec, pcts }
     setResult(newResult)
 
-    // For non-Gold tiers, lock immediately on the client AND persist the
-    // demo run to the DB so we can show it back during the 5-day lock
-    // window across page loads. The local lock fires synchronously so the
-    // user can't fire Generate twice before the save round-trips. The DB
-    // save is fire-and-forget — if it fails, the user still gets their
-    // plan and the in-session lock; they just won't see it on next visit.
+    // For non-Gold tiers, append this run's timestamp to the demo runs
+    // list AND persist to the DB so the lock survives page loads. Local
+    // append fires synchronously so a second Generate click within the
+    // same session counts immediately, before the DB save round-trips.
     // Gold tier skips both (no lock to maintain).
     if (!isGold && athlete?.id) {
-      const now = Date.now()
-      setLocalLockAt(now)
+      const runAt = Date.now()
+      const newLocalRuns = [...localRuns, runAt]
+      setLocalRuns(newLocalRuns)
+      // Build the new persisted list: existing active runs + the new one,
+      // pruning anything older than the window so the array doesn't grow
+      // forever.
+      const newPersistedRuns = [...activeRuns, runAt]
+        .map(t => new Date(t).toISOString())
       try {
         await updateAthlete(athlete.id, {
           ...athlete,
-          lastRacePaceDemoAt: new Date(now).toISOString(),
+          racePaceDemoRuns: newPersistedRuns,
           lastRacePaceDemoResult: newResult,
         })
       } catch (err) {
-        console.warn('[RacePaceCalculator] failed to persist demo timestamp:', err)
+        console.warn('[RacePaceCalculator] failed to persist demo runs:', err)
       }
     }
   }
@@ -224,6 +233,26 @@ export default function RacePaceCalculator({ athlete = null }) {
               Try again in {formatLockRemaining(msRemaining)}. Race Pace is part of Gold Development — ask Chase about adding it any time.
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Soft demo-window indicator — shown to non-Gold users who have
+          generations left but are inside the active window. Tells them
+          how many demo runs remain without blocking anything. Gold users
+          and brand-new non-Gold users (zero runs) don't see this. */}
+      {!isGold && !isLocked && activeRuns.length > 0 && (
+        <div style={{
+          marginBottom: 20,
+          padding: '10px 14px',
+          background: 'rgba(212, 168, 83, 0.05)',
+          border: '0.5px solid rgba(212, 168, 83, 0.18)',
+          borderRadius: 8,
+          fontSize: 12,
+          color: 'var(--text-muted)',
+        }}>
+          {runsLeftInWindow === 1
+            ? '1 demo generation left in this 5-day window.'
+            : `${runsLeftInWindow} demo generations left in this 5-day window.`}
         </div>
       )}
 

@@ -7,20 +7,25 @@ Last updated: 2026-04-27 (Session 14 — Step 5b Race Pace tier gating shipped, 
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`2ce321d Race Pace lock: trigger immediately within session, not just on reload` — Hot-fix to the previous commit. The original `isLocked` was computed once at render and didn't recheck after `generate()` saved `lastRacePaceDemoAt` to the athlete record. Result: a non-Gold user could click Generate twice in a row and the second click went through. Fixed by deriving `isLocked` from a stateful `lastRunAtMs` that updates immediately on generate (in addition to hydrating from `athlete.lastRacePaceDemoAt` on mount). Now: first generate succeeds, second click within session is locked, lock notice appears immediately.
+`<pending>` — Race Pace fix + 2-runs-per-window + tool-card badges. Three things in one commit:
+
+1. **Click target fix.** The Race Pace card on Performance Analysis was sending users to `/pace.html` (a 1,354-line standalone HTML page with no athlete awareness) instead of the React `RacePaceCalculator` component where the lock lives. That's why Jon (Bronze) could generate at will — the lock worked, but on a tool nobody opened. Flipped the onClick from `window.location.href = '/pace.html'` to `setView('pace')` so the card opens the React tool. The HTML page still exists on disk but is no longer reachable from the app navigation.
+
+2. **2 runs per 5 days, not 1.** Reworked the throttle from a single-timestamp model (`lastRacePaceDemoAt`) to a runs-list model (`racePaceDemoRuns` array of ISO timestamps). New logic: prune to the active 5-day window, lock when count >= 2. Unlock time is when the *oldest* active run falls out of the window (frees up one slot). Adds a soft "1 demo generation left in this 5-day window" hint when non-Gold users have used 1 of 2.
+
+3. **Tier badges on tool cards.** New `.tc-tier-badge` CSS class. Meet Analyzer card now wears Soon + Gold Development (stacked, Soon on top). Race Pace card wears Gold Development. Race Pace card meta line for non-Gold users replaced with "2 demo runs available every 5 days" so they know what they have available before clicking.
 
 Earlier this session, in chronological order (newest at top):
-- `590acb7` — Race Pace 5-day demo throttle for non-Gold tiers. Skills/Bronze/Silver get one generation per 5 days, persisted as `athlete.lastRacePaceDemoAt` + `athlete.lastRacePaceDemoResult`. Time math is strict 5×24h from moment of use, not calendar days. Display rolls down: "N days" > 24h, "N hours" 1-24h, "less than an hour" < 1h. Gold bypasses entirely. The locked state shows the user's last generated plan read-only with a friendly notice ("Demo limit reached. Try again in N days. Race Pace is part of Gold Development — ask Chase about adding it any time.").
-- `0f81550` — Tier badges on Event Power Rankings and Championship Standards (Bronze + Silver + Gold Development pills). Both sections accessible to Bronze+, so all three pills render. New CSS class `.section-tier-badge-bronze` matching `.program-badge-bronze` color tokens. Made `.section-header-row` flex-wrap with 8px gap so badges don't crowd the SCY/LCM toggle on mobile.
-- `86fc2b8` — Tier badges on Progression (Silver + Gold), Age-Up Preview (Silver + Gold), Range / Specialty Bloom (Gold only). New CSS class `.section-tier-badge-silver` matching `.program-badge-silver` color tokens. Visible to all tiers per Chase's direction — the badge tells everyone what tier each section needs regardless of whether they have access.
-- `fb663e9` — Session Notes filter chip: small "Gold" pill inside the Workout chip label. New CSS class `.chip-tier-pill` scoped to `.filter-chips .chip` so it doesn't leak. Pill stays gold-on-gold even when the chip is active so the tier signal doesn't disappear into the active chip's white background.
-- `e2115fa` — Gold Development badge on the Profile Last Race / Meet Analyzer card and on the Profile Training Metrics (Coming Soon) section. Reuses existing `.section-tier-badge` style. Adds the badge that Chase asked for in the screenshot exchange about the Last Race card needing a tier badge.
-- `564e77f` — Switched all Soon badges across the site from gold to blue. Three styles touched: `.section-soon-badge`, `.tc-soon-badge`, `.coming-soon-card .cs-tag`. Visual separation from the gold tier badges so the two pills read as different things at a glance: blue = "not built yet," gold = "tier this belongs to."
-- `4b0c088` — Added Gold Development tier badge to all six Coming Soon sections on Performance Analysis (Aerobic Development, Recent Analyses, plus the four new ones below). Each section now wears two pills next to its heading: blue Soon (status), gold Gold Development (tier). Reinforces what Gold means without hiding anything.
-- `2fe7994` — Added four Coming Soon sections at the bottom of Performance Analysis (Event Rankings, Sprint vs Endurance Profile, IMX Score Tracker, Tempo / DPS / Velocity Tracker). Same visual treatment as Aerobic Development and Recent Analyses (section heading + Soon badge + dark empty-state card). No tier gating yet — when these ship, gating gets wired up alongside.
-- `44c3c03` — STATE/PROGRESS: explained the Step 5a revert and refocused Step 5 on per-section gating instead of nav-level hiding.
-- `90a47b9` — Revert of `776f57d` (Step 5a hide-Performance-Analysis-for-Skills). The whole approach for non-Gold tiers is "show every section but render Chase's demo data when the user's tier doesn't have access" — that's how non-Gold families discover what the platform offers. Hiding the tab entirely contradicts that and reintroduces the discovery problem.
-- `3a26e75` — Step 4 of tier matrix: feature-access plumbing (`src/lib/tiers.js` and `src/config/featureAccess.js`). Still in place; survives the Step 5a revert.
+- `80bfc9b` — STATE/PROGRESS catch-up commit
+- `2ce321d` — Race Pace lock immediate-trigger hot fix (within-session second click was bypassing the lock)
+- `590acb7` — Race Pace 5-day demo throttle (1-run version, superseded by this commit)
+- `0f81550` — Tier badges on Event Power Rankings and Championship Standards (Bronze + Silver + Gold)
+- `86fc2b8` — Tier badges on Progression, Age-Up Preview (Silver + Gold), and Range (Gold only)
+- `fb663e9` — Session Notes Workout chip Gold pill
+- `e2115fa` — Gold Development badge on Profile Last Race + Training Metrics cards
+- `564e77f` — Switched all Soon badges from gold to blue (visual separation from gold tier badges)
+- `4b0c088` — Gold Development tier badge on all six Coming Soon sections
+- `2fe7994` — Four Coming Soon sections at bottom of Performance Analysis
 - `94ef7b8` — STATE backfill for Chase progression import
 - `6420c2f` — Add Chase Kalisz progression data to bulk import system (251 entries, 28 events)
 - `edb8f3c` — Fix: admin clicking logo from athlete profile bounces to admin home

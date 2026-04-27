@@ -2061,6 +2061,30 @@ body.v2-active #root {
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+/* Tier-marker pill on a tool card. Sits in the top-right same as the Soon
+   badge; if a card has both, the Soon badge sits outermost and the tier
+   badge tucks below it (handled by the +60px offset on combined cards
+   via attribute selectors). For single-tier cards, this lives where the
+   Soon badge would. */
+.v2 .tc-tier-badge {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  padding: 3px 9px;
+  background: rgba(212, 168, 83, 0.18);
+  color: var(--v2-gold);
+  border: 0.5px solid rgba(212, 168, 83, 0.3);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+/* When a card has both badges (Meet Analyzer: Soon + Gold Development),
+   stack them — Soon on top, tier badge directly below. */
+.v2 .tool-card .tc-soon-badge + .tc-tier-badge {
+  top: 50px;
+}
 
 /* Section-title-level Soon badge — used inline next to h2 headings for sections
    whose contents aren't ready yet (Aerobic Development, Recent Analyses). The

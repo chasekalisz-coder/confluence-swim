@@ -19,6 +19,7 @@ import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
 import FamilyTabBar from './FamilyTabBar.jsx'
 import RacePaceCalculator from './RacePaceCalculator.jsx'
+import { getTier } from '../lib/tiers.js'
 import {
   TimesTable,
   ChampionshipTable,
@@ -137,6 +138,11 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
     )
   }
 
+  // Tier check for tool-card UI affordances. Used to show/hide the Gold
+  // Development badge on Meet Analyzer and the demo-availability hint
+  // on the Race Pace card.
+  const isGold = !athlete || getTier(athlete) === 'gold'
+
   return (
     <div className="v2">
       <FamilyNav active="Performance Analysis" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
@@ -222,6 +228,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             title="Coming soon"
           >
             <span className="tc-soon-badge">Soon</span>
+            <span className="tc-tier-badge">Gold Development</span>
             <div className="icon-ring">
               <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 3v18h18" />
@@ -241,8 +248,9 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
 
           <div
             className="tool-card pace"
-            onClick={() => { window.location.href = '/pace.html' }}
+            onClick={() => setView('pace')}
           >
+            <span className="tc-tier-badge">Gold Development</span>
             <div className="icon-ring">
               <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="9" />
@@ -258,12 +266,14 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             <div className="tc-meta">
               <span className="status-dot" />
               <span>
-                {(() => {
-                  const paces = (athlete.analyses || []).filter(a => a.tool === 'pace').length
-                  if (paces === 0) return 'No race pace history yet'
-                  if (paces === 1) return '1 race pace calculated'
-                  return `${paces} race paces calculated`
-                })()}
+                {!isGold
+                  ? '2 demo runs available every 5 days'
+                  : (() => {
+                      const paces = (athlete.analyses || []).filter(a => a.tool === 'pace').length
+                      if (paces === 0) return 'No race pace history yet'
+                      if (paces === 1) return '1 race pace calculated'
+                      return `${paces} race paces calculated`
+                    })()}
               </span>
             </div>
             <div className="arrow">›</div>
