@@ -216,7 +216,7 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
   if (!athlete) {
     return (
       <div className="v2">
-        <FamilyNav active="Session Notes" onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} currentAthlete={athlete} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
+        <FamilyNav active="Session Notes" onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
         <main className="v2-main">
           <div className="empty-state">No athlete selected.</div>
         </main>
@@ -227,7 +227,7 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
 
   return (
     <div className="v2">
-      <FamilyNav active="Session Notes" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} currentAthlete={athlete} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
+      <FamilyNav active="Session Notes" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
       <main className="v2-main">
         {onBack && <button className="back" onClick={onBack}>← Back to Profile</button>}
 
@@ -327,7 +327,7 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
         )}
       </main>
       <FamilyFooter />
-      <FamilyTabBar active="notes" onNavigate={onNavigate} currentAthlete={athlete} />
+      <FamilyTabBar active="notes" onNavigate={onNavigate} />
     </div>
   )
 }

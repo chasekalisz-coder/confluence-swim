@@ -3,35 +3,24 @@
 // NOT via `import` (Vite/Rollup can't resolve absolute paths at build time).
 import { useState, useEffect, useRef } from 'react'
 import { UserButton } from '@clerk/clerk-react'
-import { canSeeFeature } from '../config/featureAccess.js'
 const SWIM_LOGO = '/assets/confluence-swim-white.png'
 
 export default function FamilyNav({
   active = 'Profile',
   athleteInitials = '',
   currentAthleteId = null,
-  currentAthlete = null,   // full record of the athlete currently being viewed — used for tier gating
   linkedAthletes = [],   // [{ id, first, last, age, ... }] — full athlete records for switcher
   onSwitchAthlete = null,
   onNavigate,
   onLogoClick,
 }) {
-  // Build links and filter by tier access. Performance Analysis is the only
-  // tier-gated nav item right now (Skills doesn't get it per the matrix).
-  // If currentAthlete is null/missing (admin landing on AthleteGrid before
-  // selecting anyone), all links render — there's no athlete to gate against.
-  const allLinks = [
+  const links = [
     { label: 'Profile', view: 'profile' },
     { label: 'Session Notes', view: 'notes' },
-    { label: 'Performance Analysis', view: 'analysis', feature: 'performance_analysis_tab' },
+    { label: 'Performance Analysis', view: 'analysis' },
     { label: 'Meets', view: 'meets' },
     { label: 'Resources', view: 'resources' },
   ]
-  const links = allLinks.filter(link => {
-    if (!link.feature) return true
-    if (!currentAthlete) return true
-    return canSeeFeature(currentAthlete, link.feature)
-  })
 
   const handle = (view) => (e) => {
     e.preventDefault()

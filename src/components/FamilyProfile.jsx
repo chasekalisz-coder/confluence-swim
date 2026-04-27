@@ -70,7 +70,6 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
   // repeating the prop list in two places.
   const navSwitcherProps = {
     currentAthleteId: athlete?.id,
-    currentAthlete: athlete,
     linkedAthletes,
     onSwitchAthlete,
   }
@@ -327,7 +326,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
       </main>
 
       <FamilyFooter />
-      <FamilyTabBar active="profile" onNavigate={onNavigate} currentAthlete={athlete} />
+      <FamilyTabBar active="profile" onNavigate={onNavigate} />
     </div>
   )
 }

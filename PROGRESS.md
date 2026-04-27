@@ -82,14 +82,6 @@ Internal route key (`analysis`), URL hash, view ID, file name (`FamilyAnalysis.j
 
 Status check: Steps 1, 2, 3 (data import), 4 (plumbing) complete. Next is Step 5 — wire `canSeeFeature` into the FamilyAnalysis JSX so non-Gold tiers see Chase's demo data instead of their own where the matrix says they shouldn't have access. After that, the test loop is "flip Jon to Bronze in admin, verify Performance Analysis shows Race Pace with Jon's data and Progression with Chase's data, flip back."
 
-**Step 5a — hide Performance Analysis tab for Skills tier.** First half of Step 5 (the easier half — full per-section gating with demo data is Step 5b/6). Both `FamilyNav.jsx` (desktop top nav) and `FamilyTabBar.jsx` (mobile bottom bar) take a new `currentAthlete` prop (full record) and filter their links/tabs through `canSeeFeature(athlete, 'performance_analysis_tab')`. The 5 family page components (Profile, Notes, Meets, Analysis, Resources) all pass `currentAthlete={athlete}` to both Nav and TabBar.
-
-Defensive: if a Skills user types `/athlete/{id}#analysis` directly, the App.jsx route guard for `view === 'family-analysis'` checks tier access and redirects them to `family-profile` via setTimeout (so the state update doesn't fire mid-render). Admins always pass through the guard — they need to be able to view any athlete's Performance Analysis regardless of tier. The redirect uses `setView('family-profile')` rather than throwing or showing a "not allowed" page; the experience is silent — feels like the route just doesn't exist for them.
-
-Currently only Skills is hidden (matrix doc says Bronze, Silver, Gold all see the Performance Analysis tab — they just see different content inside it, which is Step 5b/6). Build clean, bundle size unchanged (the gate is a tiny pure function call). 8 files touched: 6 components updated to pass the prop, 2 components updated to consume it, plus App.jsx for the route guard.
-
-To test once a Skills athlete exists: set any athlete's `programType` to "Skills Package" via admin → reload that athlete's page → top nav and mobile tab bar should both lose the Performance Analysis item → typing `/athlete/{id}#analysis` should bounce to Profile. Flip back to "Gold Development" → tab returns.
-
 ### Decisions made
 - The Squarespace "topic checklist per tier" copy is misleading — every tier can request any topic; the difference is who decides. Squarespace copy needs rewriting alongside tier launch.
 - Times & Goals stays universal (mostly public swimming-data, presented well — gating it would be theater).

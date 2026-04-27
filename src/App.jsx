@@ -14,7 +14,6 @@ import FamilyMeets from './components/FamilyMeets.jsx'
 import FamilyAnalysis from './components/FamilyAnalysis.jsx'
 import FamilyResources from './components/FamilyResources.jsx'
 import SlotRequestsAdmin from './components/SlotRequestsAdmin.jsx'
-import { canSeeFeature } from './config/featureAccess.js'
 import './styles/apple-dark.css'
 
 export default function App() {
@@ -555,15 +554,6 @@ function AppContent() {
 
   // ---- v2 Family Analysis view ----
   if (view === 'family-analysis') {
-    // Tier guard: athletes whose tier doesn't include Performance Analysis
-    // (Skills, currently) get bounced back to Profile if they hit this route
-    // directly via URL or hashchange. Admins always get through — this
-    // shouldn't apply to Chase navigating his own grid.
-    if (!isAdmin && selectedAthlete && !canSeeFeature(selectedAthlete, 'performance_analysis_tab')) {
-      // Use setTimeout so the state update doesn't fire mid-render.
-      setTimeout(() => setView('family-profile'), 0)
-      return null
-    }
     return (
       <FamilyAnalysis
         athlete={selectedAthlete}

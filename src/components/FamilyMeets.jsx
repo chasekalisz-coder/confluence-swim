@@ -77,7 +77,7 @@ export default function FamilyMeets({ athlete, onBack, onNavigate, onLogoClick, 
   if (!athlete) {
     return (
       <div className="v2">
-        <FamilyNav active="Meets" onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} currentAthlete={athlete} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
+        <FamilyNav active="Meets" onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
         <main className="v2-main">
           <div className="empty-state">No athlete selected.</div>
         </main>
@@ -88,7 +88,7 @@ export default function FamilyMeets({ athlete, onBack, onNavigate, onLogoClick, 
 
   return (
     <div className="v2">
-      <FamilyNav active="Meets" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} currentAthlete={athlete} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
+      <FamilyNav active="Meets" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
       <main className="v2-main">
         {onBack && <button className="back" onClick={onBack}>← Back to Profile</button>}
 
@@ -205,7 +205,7 @@ export default function FamilyMeets({ athlete, onBack, onNavigate, onLogoClick, 
         )}
       </main>
       <FamilyFooter />
-      <FamilyTabBar active="meets" onNavigate={onNavigate} currentAthlete={athlete} />
+      <FamilyTabBar active="meets" onNavigate={onNavigate} />
     </div>
   )
 }
