@@ -15,6 +15,15 @@ None currently.
 
 ## P1 — NEXT UP
 
+- [ ] **Race Pace Calculator companion — tempo, underwater kick, avg velocity, stroke count tool**
+  Same A-finals dataset, different cuts of the data. Where Race Pace
+  Calculator answers "what splits should I swim?", this tool answers
+  "what does each length physically look like?" — stroke count per
+  length, average tempo (turnover), underwater kick distance off each
+  wall, average velocity. Scope and shape of the tool TBD. Could be a
+  tab inside the existing pace.html, could be its own tool. Needs
+  Chase to outline what data is available per event before build.
+
 - [ ] **Race Pace Calculator — better description of what the tool does**
   Found by Chase during Pomper test login on Session 14. The page
   (`public/pace.html`) opens with "Your race pace." + a single sentence
