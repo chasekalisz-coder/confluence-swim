@@ -451,6 +451,99 @@ function SchedulingBlock({ athlete, slotData }) {
         </div>
       </div>
 
+      {loading ? (
+        <div className="sb-summary" style={{ padding: '40px 0', textAlign: 'center' }}>Loading your request...</div>
+      ) : submitted ? (
+        // Submitted state — replaces the entire calendar UI with a confirmation card.
+        // This is the default view both right after submit AND on fresh page loads
+        // when a saved request already exists, so parents returning days later
+        // see "yes, this is saved" instead of an ambiguous calendar with marks.
+        <div className="sb-confirm">
+          <div className="sb-confirm-header">
+            <div className="sb-confirm-check">✓</div>
+            <div>
+              <div className="sb-confirm-title">Request submitted</div>
+              {lastSubmittedAt && (
+                <div className="sb-confirm-meta">
+                  {new Date(lastSubmittedAt).toLocaleDateString('en-US', {
+                    month: 'long', day: 'numeric', year: 'numeric',
+                    hour: 'numeric', minute: '2-digit'
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="sb-confirm-body">
+            Chase has your requests for {monthLabel}. He'll reach out to review all dates before sessions are confirmed.
+          </div>
+
+          {primaryCount > 0 && (
+            <div className="sb-confirm-section">
+              <div className="sb-confirm-section-title">
+                Your requests <span className="sb-confirm-count">{primaryCount}</span>
+              </div>
+              <div className="sb-confirm-rows">
+                {pickedList.filter(p => p.priority === 'primary').map(item => {
+                  const dateObj = new Date(item.date + 'T12:00:00')
+                  const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                  return (
+                    <div key={item.slotId} className="sb-confirm-row">
+                      <span className="sb-picked-tag primary">R</span>
+                      <span className="sb-picked-time">{item.label}</span>
+                      <span className="sb-picked-sep">·</span>
+                      <span className="sb-picked-date">{dateStr}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {secondaryCount > 0 && (
+            <div className="sb-confirm-section">
+              <div className="sb-confirm-section-title">
+                Your alternatives <span className="sb-confirm-count">{secondaryCount}</span>
+              </div>
+              <div className="sb-confirm-rows">
+                {pickedList.filter(p => p.priority === 'secondary').map(item => {
+                  const dateObj = new Date(item.date + 'T12:00:00')
+                  const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                  return (
+                    <div key={item.slotId} className="sb-confirm-row">
+                      <span className="sb-picked-tag secondary">A</span>
+                      <span className="sb-picked-time">{item.label}</span>
+                      <span className="sb-picked-sep">·</span>
+                      <span className="sb-picked-date">{dateStr}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="sb-confirm-actions">
+            <button
+              type="button"
+              className="sb-btn-submit"
+              onClick={() => setSubmitted(false)}
+            >
+              Add more requests
+            </button>
+            <div className="sb-confirm-help">
+              Tapping reopens the calendar with all your existing picks still in place — add new ones on top, then re-submit.
+            </div>
+            <button
+              type="button"
+              className="sb-link sb-confirm-clear"
+              onClick={handleReset}
+            >
+              Clear and start fresh
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
       <div className="sb-counts">
         <div><span className="sb-dot primary"></span> {primaryCount} {primaryCount === 1 ? 'Request' : 'Requests'}</div>
         <div><span className="sb-dot secondary"></span> {secondaryCount} {secondaryCount === 1 ? 'Alternative' : 'Alternatives'}</div>
@@ -621,37 +714,28 @@ function SchedulingBlock({ athlete, slotData }) {
         </div>
       )}
 
-      {/* Action bar */}
+      {/* Action bar — edit mode only. Submitted state has its own action bar in the confirm card. */}
       <div className="sb-actions">
-        {loading ? (
-          <div className="sb-summary">Loading your request...</div>
-        ) : submitted ? (
-          <div className="sb-success">
-            <span>✓ Request submitted{lastSubmittedAt ? ` (${new Date(lastSubmittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })})` : ''}. Chase will be in touch.</span>
-            <button className="sb-link" onClick={handleReset}>Start over</button>
-          </div>
-        ) : (
-          <>
-            <div className="sb-summary">
-              {primaryCount + secondaryCount === 0
-                ? 'No slots picked yet.'
-                : `${primaryCount + secondaryCount} slot${primaryCount + secondaryCount === 1 ? '' : 's'} picked`}
-            </div>
-            <div className="sb-btns">
-              {(primaryCount + secondaryCount > 0) && (
-                <button className="sb-btn-clear" onClick={handleReset} disabled={saving}>Clear all</button>
-              )}
-              <button
-                className="sb-btn-submit"
-                onClick={handleSubmit}
-                disabled={primaryCount + secondaryCount === 0 || saving}
-              >
-                {saving ? 'Submitting...' : (lastSubmittedAt ? 'Update Request' : 'Submit Request')}
-              </button>
-            </div>
-          </>
-        )}
+        <div className="sb-summary">
+          {primaryCount + secondaryCount === 0
+            ? 'No slots picked yet.'
+            : `${primaryCount + secondaryCount} slot${primaryCount + secondaryCount === 1 ? '' : 's'} picked`}
+        </div>
+        <div className="sb-btns">
+          {(primaryCount + secondaryCount > 0) && (
+            <button className="sb-btn-clear" onClick={handleReset} disabled={saving}>Clear all</button>
+          )}
+          <button
+            className="sb-btn-submit"
+            onClick={handleSubmit}
+            disabled={primaryCount + secondaryCount === 0 || saving}
+          >
+            {saving ? 'Submitting...' : (lastSubmittedAt ? 'Update Request' : 'Submit Request')}
+          </button>
+        </div>
       </div>
+        </>
+      )}
     </div>
   )
 }
