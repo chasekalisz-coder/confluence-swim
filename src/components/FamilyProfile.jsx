@@ -54,7 +54,7 @@ import {
 const ROMAN = ['','I','II','III','IV','V','VI','VII','VIII','IX','X']
 const toRoman = (n) => ROMAN[parseInt(n)] || String(n)
 
-export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick }) {
+export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick, linkedAthletes, onSwitchAthlete }) {
   const [courseTimesGoals, setCourseTimesGoals] = useState('SCY')
   const [courseChampionship, setCourseChampionship] = useState('SCY')
   const [courseAgeUp, setCourseAgeUp] = useState('SCY')
@@ -68,10 +68,19 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
     return () => { document.body.classList.remove('v2-active') }
   }, [])
 
+  // Bundle the switcher props so we can spread them into both FamilyNav
+  // mount points (the empty-state branch and the main render) without
+  // repeating the prop list in two places.
+  const navSwitcherProps = {
+    currentAthleteId: athlete?.id,
+    linkedAthletes,
+    onSwitchAthlete,
+  }
+
   if (!athlete) {
     return (
       <div className="v2">
-        <FamilyNav onNavigate={onNavigate} onLogoClick={onLogoClick} />
+        <FamilyNav onNavigate={onNavigate} onLogoClick={onLogoClick} {...navSwitcherProps} />
         <main className="v2-main">
           <div className="empty-state">No athlete selected.</div>
         </main>
@@ -164,7 +173,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
 
   return (
     <div className="v2">
-      <FamilyNav active="Profile" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} />
+      <FamilyNav active="Profile" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} {...navSwitcherProps} />
 
       <main className="v2-main">
         {onBack && (

@@ -112,13 +112,26 @@
     window.Clerk.load({})
       .then(function () {
         clearTimeout(failsafeBounce)
-        if (window.Clerk.user) {
-          // Authenticated — let the page render.
-          reveal()
-        } else {
+        if (!window.Clerk.user) {
           // Not authenticated — bounce to sign-in.
           redirectToSignIn()
+          return
         }
+        // Authenticated. Check role-based access for this specific tool.
+        // Pages can opt-out of admin-only by setting <html data-allow-family="true">
+        // — pace.html does this since it's part of the family Analysis flow.
+        // All other tools are admin-only by default.
+        var allowFamily = document.documentElement.getAttribute('data-allow-family') === 'true'
+        var role = (window.Clerk.user.publicMetadata && window.Clerk.user.publicMetadata.role) || 'family'
+        var isAdmin = role === 'admin'
+        if (!isAdmin && !allowFamily) {
+          // Family user trying to access an admin-only tool — bounce them
+          // back to the app root, which routes them to their athlete profile.
+          window.location.href = '/'
+          return
+        }
+        // Authorized — let the page render.
+        reveal()
       })
       .catch(function (err) {
         console.error('[auth-guard] Clerk load failed:', err)

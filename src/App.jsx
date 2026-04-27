@@ -1,7 +1,7 @@
 
 
 import { useEffect, useState } from 'react'
-import { SignedIn, SignedOut, SignIn, useUser } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, SignIn, UserButton, useUser } from '@clerk/clerk-react'
 import { loadAthletes } from './lib/db.js'
 import Header from './components/Header.jsx'
 import AthleteGrid from './components/AthleteGrid.jsx'
@@ -99,6 +99,20 @@ function SignInPage() {
 
 function AppContent() {
   const { user } = useUser()
+
+  // Role + scope are stored in Clerk's publicMetadata. Admins see everything;
+  // family users only see the athlete profile(s) listed in linkedAthletes.
+  // Set both via the Clerk dashboard for now (no invite flow yet):
+  //   { "role": "admin" }                                          → full access
+  //   { "role": "family", "linkedAthletes": ["ath_jon", "ath_ben"] } → scoped
+  // A user with no role metadata is treated as family with no linked athletes,
+  // which lands on a "not yet configured" screen rather than leaking admin views.
+  const role = user?.publicMetadata?.role || 'family'
+  const isAdmin = role === 'admin'
+  const linkedAthletes = Array.isArray(user?.publicMetadata?.linkedAthletes)
+    ? user.publicMetadata.linkedAthletes
+    : []
+
   const [view, setView] = useState('home')
   const [athletes, setAthletes] = useState([])
   const [selectedAthlete, setSelectedAthlete] = useState(null)
@@ -121,16 +135,46 @@ function AppContent() {
       setAthletes(athletes)
       setConnectionStatus(status)
       if (error) console.warn('Athletes load:', error)
-      // If URL has an athlete ID, auto-navigate to their family profile
-      if (urlAthleteId) {
-        const athlete = athletes.find(a => a.id === urlAthleteId)
-        if (athlete) {
-          setSelectedAthlete(athlete)
-          setView('family-profile')
+
+      // Routing decision tree on initial load:
+      //
+      // ADMIN: honor URL — landed on /athlete/:id sees that profile, otherwise grid.
+      //
+      // FAMILY: regardless of URL, force them onto one of their linked athletes.
+      //   - URL was /athlete/:id AND that id is in their linkedAthletes → use that one
+      //   - Otherwise → first linked athlete in their list
+      //   - No linked athletes → render the "not configured" screen (handled below)
+      if (isAdmin) {
+        if (urlAthleteId) {
+          const athlete = athletes.find(a => a.id === urlAthleteId)
+          if (athlete) {
+            setSelectedAthlete(athlete)
+            setView('family-profile')
+          }
+        }
+      } else {
+        // Family scope. Pick the right athlete to land on.
+        let landingId = null
+        if (urlAthleteId && linkedAthletes.includes(urlAthleteId)) {
+          landingId = urlAthleteId
+        } else if (linkedAthletes.length > 0) {
+          landingId = linkedAthletes[0]
+        }
+        if (landingId) {
+          const athlete = athletes.find(a => a.id === landingId)
+          if (athlete) {
+            setSelectedAthlete(athlete)
+            setView('family-profile')
+            // Normalize URL so a family who typed someone else's URL doesn't
+            // see that ID stuck in their address bar after the silent bounce.
+            if (window.location.pathname !== `/athlete/${landingId}`) {
+              window.history.replaceState({ athleteId: landingId }, '', `/athlete/${landingId}`)
+            }
+          }
         }
       }
     })
-  }, [])
+  }, [isAdmin, linkedAthletes.join(',')])
 
   const goHome = () => {
     setView('home')
@@ -295,6 +339,73 @@ function AppContent() {
     }
   }
 
+  // Switch which linked athlete a family user is viewing. Used by the
+  // AthleteSwitcher component shown in FamilyNav for multi-athlete families.
+  // Updates state, athlete URL, and stays on the current tab so the family
+  // can compare the same view across kids.
+  const switchAthlete = (athleteId) => {
+    if (!athleteId) return
+    // Family users can only switch to athletes they're linked to. Admins
+    // can switch freely (the switcher is hidden for them anyway).
+    if (!isAdmin && !linkedAthletes.includes(athleteId)) return
+    const next = athletes.find(a => a.id === athleteId)
+    if (!next) return
+    setSelectedAthlete(next)
+    // Preserve the current tab hash so e.g. switching from Jon's Analysis
+    // tab to Ben lands on Ben's Analysis tab, not Ben's Profile.
+    const currentHash = window.location.hash
+    window.history.pushState({ athleteId }, '', `/athlete/${athleteId}${currentHash}`)
+  }
+
+  // Bundle the family-scope props the family pages need, so we can pass them
+  // all without repeating boilerplate. linkedAthletesData is the full athlete
+  // records (not just ids) so the switcher can show names + avatars. Empty
+  // array for admin so the switcher renders nothing for them.
+  const linkedAthletesData = isAdmin
+    ? []
+    : athletes.filter(a => linkedAthletes.includes(a.id))
+
+  const familyScopeProps = {
+    linkedAthletes: linkedAthletesData,
+    onSwitchAthlete: switchAthlete,
+  }
+
+  // ---- "Not configured" screen for family users without linkedAthletes ----
+  // Catches: someone signed up but their metadata hasn't been set in the
+  // Clerk dashboard yet. Without this, they'd land on a blank screen with
+  // no athletes selected and the family branches all crash.
+  if (!isAdmin && linkedAthletes.length === 0) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#06080d',
+        color: '#f1f5f9',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '32px',
+        textAlign: 'center',
+      }}>
+        <div style={{ maxWidth: 460 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#D4A853', marginBottom: 14 }}>
+            Account pending
+          </div>
+          <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 14 }}>
+            Almost ready
+          </h1>
+          <p style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6, marginBottom: 24 }}>
+            Your account is signed in but hasn't been linked to an athlete yet.
+            Chase will finish setting this up — you'll get an email once it's ready.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <UserButton afterSignOutUrl="/" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // ---- v2 Family Profile view ----
   if (view === 'family-profile') {
     return (
@@ -303,6 +414,7 @@ function AppContent() {
         onBack={urlAthleteId ? null : goHome}
         onNavigate={handleV2Navigate}
         onLogoClick={!urlAthleteId ? goHome : undefined}
+        {...familyScopeProps}
       />
     )
   }
@@ -316,6 +428,7 @@ function AppContent() {
         onNavigate={handleV2Navigate}
         onLogoClick={!urlAthleteId ? goHome : undefined}
         onViewSession={(session) => viewSession(session, 'family-notes')}
+        {...familyScopeProps}
       />
     )
   }
@@ -328,6 +441,7 @@ function AppContent() {
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
         onLogoClick={!urlAthleteId ? goHome : undefined}
+        {...familyScopeProps}
       />
     )
   }
@@ -340,6 +454,7 @@ function AppContent() {
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
         onLogoClick={!urlAthleteId ? goHome : undefined}
+        {...familyScopeProps}
       />
     )
   }
@@ -352,8 +467,25 @@ function AppContent() {
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
         onLogoClick={!urlAthleteId ? goHome : undefined}
+        {...familyScopeProps}
       />
     )
+  }
+
+  // ---- Admin-only views below ----
+  // Family users hitting any of the catches below should never happen because
+  // the routing decision tree on mount forces them into 'family-profile'.
+  // But as a safety net, if state somehow gets us here as a family user,
+  // bounce back to their profile rather than rendering admin UI.
+  if (!isAdmin) {
+    setTimeout(() => {
+      setView('family-profile')
+      if (linkedAthletes.length > 0 && !selectedAthlete) {
+        const a = athletes.find(x => x.id === linkedAthletes[0])
+        if (a) setSelectedAthlete(a)
+      }
+    }, 0)
+    return null
   }
 
   return (
