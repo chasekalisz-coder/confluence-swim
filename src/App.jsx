@@ -42,7 +42,27 @@ export default function App() {
 // the dark page background so it matches the rest of the app aesthetically.
 // The Clerk component handles all the actual auth flow (email/password,
 // magic link, error states, verification).
+//
+// Honors a ?redirect_url=... query param so users bounced from a standalone
+// tool page (e.g. /test-ai.html) get sent back there after sign-in instead
+// of dumping them at "/". The auth-guard.js script on each tool page sets
+// this param when it kicks an unauthenticated user to /sign-in.
 function SignInPage() {
+  var redirectUrl = '/'
+  try {
+    var params = new URLSearchParams(window.location.search)
+    var raw = params.get('redirect_url')
+    if (raw) {
+      // Only allow same-origin redirects to prevent open-redirect abuse.
+      // A leading slash means same-origin path; anything else gets ignored.
+      if (raw.indexOf('/') === 0 && raw.indexOf('//') !== 0) {
+        redirectUrl = raw
+      }
+    }
+  } catch (e) {
+    // Defensive — if URLSearchParams or anything else fails, fall back to root.
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -60,6 +80,8 @@ function SignInPage() {
         onError={(e) => { e.currentTarget.style.display = 'none' }}
       />
       <SignIn
+        afterSignInUrl={redirectUrl}
+        afterSignUpUrl={redirectUrl}
         appearance={{
           elements: {
             rootBox: { width: '100%', maxWidth: 420 },
