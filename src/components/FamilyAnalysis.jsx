@@ -390,6 +390,61 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             </div>
           )}
         </section>
+
+        {/* ===== Coming Soon — Future Tools ===== */}
+        {/* Four placeholder sections marking tools planned for first launch.
+            Same visual treatment as Aerobic Development / Recent Analyses
+            (section heading + Soon badge + empty-state card). No tier gating
+            yet — when these ship, gating gets wired up alongside. */}
+
+        <section>
+          <div className="recent-header">
+            <h2 className="section-title" style={{ marginBottom: 0 }}>
+              Event Rankings
+              <span className="section-soon-badge">Soon</span>
+            </h2>
+          </div>
+          <div className="empty-state">
+            See where {athlete.first} stands against every other swimmer in the LSC, state, and nationally — for each event {subjectPronoun(athlete)} swims. Rankings update with every new meet result.
+          </div>
+        </section>
+
+        <section>
+          <div className="recent-header">
+            <h2 className="section-title" style={{ marginBottom: 0 }}>
+              Sprint vs Endurance Profile
+              <span className="section-soon-badge">Soon</span>
+            </h2>
+          </div>
+          <div className="empty-state">
+            A read on whether {athlete.first}'s race times skew sprint, endurance, or balanced — and how that profile is shifting over time. Helps frame which events to invest in and which training emphasis fits best.
+          </div>
+        </section>
+
+        <section>
+          <div className="recent-header">
+            <h2 className="section-title" style={{ marginBottom: 0 }}>
+              IMX Score Tracker
+              <span className="section-soon-badge">Soon</span>
+            </h2>
+          </div>
+          <div className="empty-state">
+            {athlete.first}'s IMX score across the five required events, tracked over time with a feed of every score change. Compare against national IMX benchmarks for {possessive(athlete)} age group.
+          </div>
+        </section>
+
+        <section>
+          <div className="recent-header">
+            <h2 className="section-title" style={{ marginBottom: 0 }}>
+              Tempo / DPS / Velocity Tracker
+              <span className="section-soon-badge">Soon</span>
+            </h2>
+          </div>
+          <div className="empty-state">
+            Stroke rate, distance per stroke, and velocity captured at race pace and in training. The companion data layer to Race Pace planning — see exactly what tempo and DPS combinations produce {possessive(athlete)} fastest splits.
+          </div>
+        </section>
+
           </>
         )}
       </main>
