@@ -282,9 +282,10 @@ body.v2-active #root {
 /* Mobile breakpoint — switcher trigger becomes more compact (avatar-only) */
 @media (max-width: 720px) {
   .v2 .athlete-switcher { margin-right: 4px; }
-  .v2 .as-trigger { padding: 5px; gap: 0; font-size: 13px; }
+  .v2 .as-trigger { padding: 6px 12px 6px 6px; gap: 6px; font-size: 13px; }
   .v2 .as-name { display: none; }
-  .v2 .as-avatar { width: 34px; height: 34px; font-size: 12px; }
+  .v2 .as-avatar { width: 40px; height: 40px; font-size: 14px; }
+  .v2 .as-caret { width: 14px; height: 14px; }
   .v2 .as-menu { min-width: 220px; right: -4px; }
 }
 
