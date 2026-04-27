@@ -48,15 +48,27 @@ export default function RacePaceCalculator({ athlete = null }) {
   const [seconds, setSeconds] = useState('')
   const [result, setResult] = useState(null)
 
+  // Local override for "they just used their demo this session." Needed
+  // because the athlete prop only updates on a parent re-fetch — without
+  // this, a non-Gold user could fire the Generate button repeatedly within
+  // the same page load before the lock would ever flip from a refreshed
+  // prop. Set in generate() right after the run completes; persists in
+  // memory until next page load (at which point the saved athlete.lastRace*
+  // fields drive the lock instead).
+  const [localLockAt, setLocalLockAt] = useState(0)
+
   // Demo throttle for non-Gold tiers. Gold athletes bypass this entirely.
   // For everyone else, we cap at one generation per 5 days. The last result
   // is rendered read-only during the lock window so they still see what
   // they ran. Stored on the athlete record as `lastRacePaceDemoAt` (ISO
   // timestamp) and `lastRacePaceDemoResult` (the result object).
   const isGold = !athlete || getTier(athlete) === 'gold'
-  const lastRunAt = athlete?.lastRacePaceDemoAt
+  const propLastRunAt = athlete?.lastRacePaceDemoAt
     ? new Date(athlete.lastRacePaceDemoAt).getTime()
     : 0
+  // Take the most recent of the prop-derived timestamp and the in-session
+  // local lock — whichever is newer wins.
+  const lastRunAt = Math.max(propLastRunAt, localLockAt)
   const lockUntil = lastRunAt ? lastRunAt + DEMO_LOCK_MS : 0
   const msRemaining = lockUntil - Date.now()
   const isLocked = !isGold && msRemaining > 0
@@ -81,15 +93,20 @@ export default function RacePaceCalculator({ athlete = null }) {
     const newResult = { event, course, gender, totalSec, pcts }
     setResult(newResult)
 
-    // For non-Gold tiers, persist the demo run so we can show it back
-    // during the 5-day lock window. Fire-and-forget — if the save fails,
-    // the user still gets their plan; they just won't see it on next
-    // visit. Gold tier skips the save entirely (no lock to maintain).
+    // For non-Gold tiers, lock immediately on the client AND persist the
+    // demo run to the DB so we can show it back during the 5-day lock
+    // window across page loads. The local lock fires synchronously so the
+    // user can't fire Generate twice before the save round-trips. The DB
+    // save is fire-and-forget — if it fails, the user still gets their
+    // plan and the in-session lock; they just won't see it on next visit.
+    // Gold tier skips both (no lock to maintain).
     if (!isGold && athlete?.id) {
+      const now = Date.now()
+      setLocalLockAt(now)
       try {
         await updateAthlete(athlete.id, {
           ...athlete,
-          lastRacePaceDemoAt: new Date().toISOString(),
+          lastRacePaceDemoAt: new Date(now).toISOString(),
           lastRacePaceDemoResult: newResult,
         })
       } catch (err) {
