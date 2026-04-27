@@ -290,7 +290,12 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
         {/* ===== Event Power Rankings (moved from Profile) ===== */}
         <section>
           <div className="section-header-row">
-            <h2 className="section-title">Event Power Rankings</h2>
+            <h2 className="section-title">
+              Event Power Rankings
+              <span className="section-tier-badge-bronze">Bronze</span>
+              <span className="section-tier-badge-silver">Silver</span>
+              <span className="section-tier-badge">Gold Development</span>
+            </h2>
             <div className="section-pill-toggle">
               <button className={courseRankings === 'SCY' ? 'active' : ''} onClick={() => setCourseRankings('SCY')}>SCY</button>
               <button className={courseRankings === 'LCM' ? 'active' : ''} onClick={() => setCourseRankings('LCM')}>LCM</button>
@@ -310,7 +315,12 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
         {athlete.showChampionshipCuts && (
           <section>
             <div className="section-header-row">
-              <h2 className="section-title">Championship Standards</h2>
+              <h2 className="section-title">
+                Championship Standards
+                <span className="section-tier-badge-bronze">Bronze</span>
+                <span className="section-tier-badge-silver">Silver</span>
+                <span className="section-tier-badge">Gold Development</span>
+              </h2>
               <div className="section-pill-toggle">
                 <button className={courseChampionship === 'SCY' ? 'active' : ''} onClick={() => setCourseChampionship('SCY')}>SCY</button>
                 <button className={courseChampionship === 'LCM' ? 'active' : ''} onClick={() => setCourseChampionship('LCM')}>LCM</button>

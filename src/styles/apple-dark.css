@@ -661,6 +661,8 @@ body.v2-active #root {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .v2 .section-header-row h2.section-title,
 .v2 .section-header-row .cs-heading {
@@ -2112,6 +2114,26 @@ body.v2-active #root {
   background: rgba(148, 163, 184, 0.15);
   color: #94a3b8;
   border: 0.5px solid rgba(148, 163, 184, 0.35);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+/* Bronze variant — same shape, bronze color tones. Used on sections
+   that Bronze, Silver, and Gold tiers all have access to (e.g., Power
+   Rankings, Championship Standards). Color tokens match the existing
+   .program-badge-bronze Hero badge. */
+.v2 .section-tier-badge-bronze {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 9px;
+  background: rgba(184, 115, 51, 0.15);
+  color: #b87333;
+  border: 0.5px solid rgba(184, 115, 51, 0.35);
   border-radius: 980px;
   font-size: 9px;
   font-weight: 700;
