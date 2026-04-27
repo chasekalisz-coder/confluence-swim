@@ -7,10 +7,12 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`992f2b6 Performance Analysis: rewrite page subtitle` — old subtitle described the page narrowly as "tools to break down races and plan target paces"; new subtitle ("Performance Analysis lays out the swimming data that defines where Jon is and where he's headed. Faster swims start with knowing what's underneath them.") frames the page as a strategy layer over swimming data broadly, since the page now holds Times & Goals, Progression, Power Rankings, Championship Standards, Age-Up Preview, Range, Aerobic Development, Race Pace, and Meet Analyzer. Added subjectPronoun() helper alongside existing pronounThem/possessive helpers so he/she/they renders correctly.
+`edb8f3c Fix: admin clicking logo from athlete profile bounces to admin home` — bug was that the `onLogoClick` guard in App.jsx (`!urlAthleteId ? goHome : undefined`) suppressed the home action for *anyone* whose URL had an athlete ID, including admins who reloaded on `/athlete/:id`. The guard's actual purpose was to suppress logo-home for family deep-link users (who have no home beyond their own athlete page) — admins always have the AthleteGrid. Fixed by changing the guard to `(isAdmin || !urlAthleteId)` across all five family routes (family-profile, family-notes, family-meets, family-analysis, family-resources). Same gate now applied to FamilyProfile's onBack so admin reloads on athlete URLs also get the Back button.
 
 Earlier commits worth knowing about:
-- `1a0ecb7` — STATE.md backfill for the rename
+- `5c99e4a` — STATE backfill for subtitle rewrite
+- `992f2b6` — Performance Analysis page subtitle rewrite + subjectPronoun helper
+- `1a0ecb7` — STATE backfill for the rename
 - `27fba07` — rename Analysis → Performance Analysis (desktop full label, mobile stacked over two lines)
 - `6250e9e` — STATE backfill for Step 2
 - `489c037` — Step 2 of tier matrix: Profile + Analysis page restructure
