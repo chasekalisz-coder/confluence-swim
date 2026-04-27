@@ -7,7 +7,11 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`489c037 Step 2 of tier matrix: restructure Profile + Analysis page contents` — restructures FamilyProfile.jsx and FamilyAnalysis.jsx to match the page architecture in `docs/reference/tier-access-matrix.md`. Profile keeps Hero/Chasing Next/Times & Goals/Last Race/Upcoming Meets/Training Metrics (Coming Soon)/Scheduling. Analysis adds Times & Goals mirror + Progression + Event Power Rankings + Championship Standards + Age-Up Preview + Range. 7 sub-components in FamilyProfile.jsx are now exported (TimesTable, ChampionshipTable, AgeUpPreview, ProgressionChart, PowerRankingsList, SpecialtyBloom, ColorLegend) and imported by FamilyAnalysis.jsx for the mirrored sections — no duplication, no new shared file. Zero CSS changes; mobile formatting preserved. No tier gating yet — all users still see everything since they're all Gold.
+`27fba07 Rename Analysis tab to 'Performance Analysis'; stack on mobile` — user-visible label only. Desktop top nav and page title get the full "Performance Analysis"; mobile tab bar stacks it on two lines via `\n` in the label string + `white-space: pre-line` + reserved 24px label height so the bar doesn't grow vertically. Internal route key, URL hash, view ID, file name, prop names, comments — all unchanged.
+
+Earlier commits worth knowing about:
+- `6250e9e` — backfilled commit hash for Step 2 restructure
+- `489c037` — Step 2 of tier matrix: restructure FamilyProfile.jsx and FamilyAnalysis.jsx to match the page architecture in `docs/reference/tier-access-matrix.md`. Profile keeps Hero/Chasing Next/Times & Goals/Last Race/Upcoming Meets/Training Metrics (Coming Soon)/Scheduling. Analysis adds Times & Goals mirror + Progression + Event Power Rankings + Championship Standards + Age-Up Preview + Range. 7 sub-components in FamilyProfile.jsx exported and imported by FamilyAnalysis.jsx for the mirrored sections. Zero CSS changes; mobile formatting preserved. No tier gating yet — all users still see everything since they're all Gold.
 
 Earlier Session 14 commits worth knowing about:
 - `5f8eb02` — CLAUDE.md update protocol section (acceptable vs unacceptable commit patterns; matched-PROGRESS-entry trigger after every push)
