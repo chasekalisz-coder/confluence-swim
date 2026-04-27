@@ -231,8 +231,8 @@ export default function FamilyResources({ athlete, onBack, onNavigate, onLogoCli
               <div className="ab-title">Elite private lessons in Dallas, built around the athlete.</div>
               <div className="ab-body">
                 <p>
-                  Every session is one-on-one. Every session is built around the
-                  athlete, their events, their goals, and what they need that day.
+                  Every session is one-on-one, built around the athlete, their
+                  events, their goals, and what they need that day.
                 </p>
               </div>
             </div>
