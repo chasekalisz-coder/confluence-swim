@@ -222,18 +222,19 @@ export default function FamilyResources({ athlete, onBack, onNavigate, onLogoCli
             <div className="page-sub">
               Learn the language of {athlete?.first || 'your swimmer'}'s training.
               Understand what the zones mean, what a taper is, what to expect on meet day,
-              and the coaching philosophy behind every session.
+              and the philosophy behind every session.
             </div>
 
             {/* ===== About block ===== */}
             <div className="about-block">
               <div className="ab-tag">About Confluence Swim</div>
-              <div className="ab-title">Elite private coaching in Dallas, built around the athlete.</div>
+              <div className="ab-title">Elite private lessons in Dallas, built around the athlete.</div>
               <div className="ab-body">
                 <p>
-                  Every session is one-on-one. Every workout is built for the swimmer in front of
-                  the coach. No generic programs, no age-group templates — just high-level coaching
-                  applied to the specific needs of each athlete, their events, and their goals.
+                  Every session is one-on-one. Every session is built for the swimmer
+                  in front of Chase. No generic programs, no age-group templates — just
+                  elite-level work applied to the specific needs of each athlete, their
+                  events, and their goals.
                 </p>
                 <p>
                   Training is grounded in the Urbanchek color zone system, modern race craft,
