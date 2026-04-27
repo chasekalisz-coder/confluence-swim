@@ -61,6 +61,32 @@ None currently.
   Athletes to audit: Jon, Lana, Ben, Grace, Hannah, Kaden, Marley, Liam,
   Farris, Mason, Pace, Jelena.
 
+- [ ] **Auth — custom sign-in form with "Remember me" checkbox**
+  Clerk's pre-built `<SignIn>` component doesn't expose a "Remember me"
+  checkbox — Clerk manages session length at the app level, not per-
+  login. To get a real "Remember me" checkbox we'd need to replace
+  Clerk's component with a custom form built on Clerk's lower-level
+  API.
+
+  Tradeoffs to revisit:
+  - Custom form lets the user pick session length per login (checked
+    = long session, unchecked = short session)
+  - Lose the polished theming we already wrote (would need to rebuild
+    in raw HTML/CSS to match v2 dark design)
+  - Have to manually handle email + password fields, error states,
+    password reset flow, account-locked states — Clerk's component
+    handles all that for free
+  - Several hours of work
+
+  Alternative if just visual reassurance is wanted: ship a fake
+  "Remember me" checkbox that's always checked and always sets a long
+  session. Parents see the comforting UX without the engineering cost.
+  Slightly dishonest if a user unchecks it expecting a short session.
+
+  Note: this is separate from the bigger "session length" question —
+  that's settable in Clerk dashboard right now (default 7 days, can
+  bump to 30 or 90 days for everyone with no code change).
+
 - [ ] **Auth — add SMS as a sign-in option alongside email**
   Right now sign-in is email + password only. Some parents (especially
   grandparents managing accounts) would prefer SMS code login. Clerk
