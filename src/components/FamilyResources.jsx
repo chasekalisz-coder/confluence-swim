@@ -232,11 +232,7 @@ export default function FamilyResources({ athlete, onBack, onNavigate, onLogoCli
               <div className="ab-body">
                 <p>
                   Every session is one-on-one. Every session is built around the
-                  athlete — their events, their goals, what they need that day.
-                </p>
-                <p>
-                  Training is grounded in the Urbanchek color zone system, modern race craft,
-                  and technique work developed at the highest levels of the sport.
+                  athlete, their events, their goals, and what they need that day.
                 </p>
               </div>
             </div>
