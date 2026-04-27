@@ -48,17 +48,6 @@ None currently.
   recruiting, app site for current families. Existing P2 task "Link site
   to main Squarespace site" is the placeholder for this.
 
-- [ ] **Domain rename — drop vercel.app, pick a premium custom domain**
-  `confluence-swim.vercel.app` doesn't feel premium and doesn't match
-  Chase's coaching system. Options:
-  - app.confluencesport.com (subdomain on existing site, no new domain)
-  - confluenceswim.com (new domain, separate brand)
-  - my.confluencesport.com (subdomain, suggests a private members area)
-  - Other ideas TBD with Chase
-
-  Needs Vercel custom domain config + DNS setup once chosen. Cheap
-  ($10-15/yr if new domain), trivial to set up.
-
 - [ ] **End-to-end profile audit — verify each athlete is ready for invite**
   Before sending real invites, walk every athlete profile and check:
   - All meet times current (cross-reference SwimCloud)

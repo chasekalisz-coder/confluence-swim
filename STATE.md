@@ -1,10 +1,10 @@
 # STATE.md — Current Branch State
 
-Last updated: 2026-04-26 (Session 13 cont'd — Auth scaffold)
+Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + custom domain)
 
 ## Active branch: v2-redesign
 ## Production branch: main
-## Live URL: confluence-swim.vercel.app
+## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
 `2094c19 Auth-guard: fix malformed Clerk script URL on tool pages` — closes the auth work for tonight. Clerk login is live across the entire site (React app + 6 standalone tool HTMLs). Chase's email is hardcoded as admin in two places (App.jsx ADMIN_EMAILS and public/auth-guard.js ADMIN_EMAILS) because Clerk's dev-instance metadata editor was failing to persist values. Family scope/switcher code is wired but no family users have been invited yet.
