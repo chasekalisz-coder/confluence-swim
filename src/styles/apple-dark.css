@@ -2058,6 +2058,27 @@ body.v2-active #root {
   top: -2px;
 }
 
+/* Tier-access pill rendered on Coming Soon sections to show which tier
+   the feature belongs to. Same visual scale as section-soon-badge so
+   they line up next to each other; slightly stronger gold to read as
+   the primary label and let Soon read as the secondary. */
+.v2 .section-tier-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 9px;
+  background: rgba(212, 168, 83, 0.18);
+  color: var(--v2-gold);
+  border: 0.5px solid rgba(212, 168, 83, 0.3);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+
 /* Recent analyses section */
 .v2 .recent-header {
   display: flex;

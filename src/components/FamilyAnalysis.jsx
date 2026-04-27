@@ -372,6 +372,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             <h2 className="section-title" style={{ marginBottom: 0 }}>
               Recent Analyses
               <span className="section-soon-badge">Soon</span>
+              <span className="section-tier-badge">Gold Development</span>
             </h2>
           </div>
 
@@ -402,6 +403,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             <h2 className="section-title" style={{ marginBottom: 0 }}>
               Event Rankings
               <span className="section-soon-badge">Soon</span>
+              <span className="section-tier-badge">Gold Development</span>
             </h2>
           </div>
           <div className="empty-state">
@@ -414,6 +416,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             <h2 className="section-title" style={{ marginBottom: 0 }}>
               Sprint vs Endurance Profile
               <span className="section-soon-badge">Soon</span>
+              <span className="section-tier-badge">Gold Development</span>
             </h2>
           </div>
           <div className="empty-state">
@@ -426,6 +429,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             <h2 className="section-title" style={{ marginBottom: 0 }}>
               IMX Score Tracker
               <span className="section-soon-badge">Soon</span>
+              <span className="section-tier-badge">Gold Development</span>
             </h2>
           </div>
           <div className="empty-state">
@@ -438,6 +442,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             <h2 className="section-title" style={{ marginBottom: 0 }}>
               Tempo / DPS / Velocity Tracker
               <span className="section-soon-badge">Soon</span>
+              <span className="section-tier-badge">Gold Development</span>
             </h2>
           </div>
           <div className="empty-state">
@@ -598,6 +603,7 @@ function AerobicDevelopmentChart({ athlete }) {
         <h2 className="section-title">
           Aerobic Development
           <span className="section-soon-badge">Soon</span>
+          <span className="section-tier-badge">Gold Development</span>
         </h2>
         <div style={{ color:"var(--text-muted)", fontSize:13, padding:"20px 0" }}>Loading session data…</div>
       </section>
@@ -610,6 +616,7 @@ function AerobicDevelopmentChart({ athlete }) {
         <h2 className="section-title">
           Aerobic Development
           <span className="section-soon-badge">Soon</span>
+          <span className="section-tier-badge">Gold Development</span>
         </h2>
         <div className="empty-state">
           This chart populates once aerobic training sessions with rep-level data are saved.
@@ -628,6 +635,7 @@ function AerobicDevelopmentChart({ athlete }) {
           <h2 style={{ fontSize:16, fontWeight:500, color:"var(--text-primary)", margin:"0 0 2px", display: 'inline-flex', alignItems: 'center', gap: 10 }}>
             Aerobic Development
             <span className="section-soon-badge">Soon</span>
+            <span className="section-tier-badge">Gold Development</span>
           </h2>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Each dot = one rep. Down + left = aerobic engine improving.</div>
         </div>
