@@ -280,12 +280,6 @@ export default function FamilyResources({ athlete, onBack, onNavigate, onLogoCli
                     Scheduling, clarifications, anything — the fastest way is email.
                   </div>
                 </div>
-                <a
-                  href="mailto:chase@confluencesport.com"
-                  className="cc-email"
-                >
-                  chase@confluencesport.com
-                </a>
               </div>
             </section>
           </>
