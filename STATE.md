@@ -7,9 +7,16 @@ Last updated: 2026-04-27 (Session 14 — Step 5b Race Pace tier gating shipped, 
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`<pending>` — Race Pace: restored the practice pace clock animation. Chase tested the polished tool, called out that the spinning hand + sweeping track on the two practice pace clocks (Avg /50 and Avg /100) was missing — I'd dropped it during the visual port and called it intentional. Putting it back. Three animations restored: `ptClockSpin` (purple track ring rotates 360° and fades over 2s), `ptHandSweep` (gradient hand sweeps 360° over the same 2s), `ptFadeInValue` (time value fades in at 1.8s). Added the four DOM elements (track, hand, dot, value) inside each `.pt-pace-clock` and the `.pt-pace-animate` trigger class on each `.pt-pace-card`. Keyframes scoped under `.pace-tool` so they don't collide with the rest of the v2 design system.
+`<pending>` — Progression demo for non-Silver/non-Gold tiers. First section to actually swap its data layer based on tier (rather than just decorating with badges). Skills + Bronze tiers now see Chase Kalisz's career LCM progression for 200 Fly, 200 IM, and 400 IM (10 entries each, 2016–2024) with a "DEMO · Chase Kalisz" banner above the chart. Silver + Gold tiers see their athlete's own progression unchanged.
+
+Implementation:
+- New fixture `src/data/progression-demo.js` exports `PROGRESSION_DEMO_DATA` — 30 entries pulled from `api/data/ath_chase.json`, filtered to the 3 LCM events. Same `{event, time, date}` shape that `ProgressionChart` already consumes from `athlete.progression`, so no chart changes were needed.
+- New `hasProgressionAccess` derivation in FamilyAnalysis (`tier === 'silver' || tier === 'gold'`). Conditional in the JSX swaps the `data` prop and the lede copy. Non-Silver/non-Gold get the `<div className="demo-banner">` (Demo pill + "Chase Kalisz" + sub-copy) in place of the section lede.
+- New CSS class `.demo-banner` (+ `.demo-banner-tag`, `.demo-banner-name`, `.demo-banner-sub`). Gold-tinted, prominent enough to be unmistakable that the data isn't their kid's, without blocking the experience. Will be reused on the other gated sections as their demo wiring lands.
+- Event dropdown remains visible inside `ProgressionChart` — non-Silver users can switch between the 3 LCM events. Decision was: keep the existing chart UX rather than build multi-line rendering. One line at a time, dropdown to switch, just limited to the 3 demo events because that's all the demo data has.
 
 Earlier this session, in chronological order (newest at top):
+- `760570b` — Race Pace: restored practice pace clock animations
 - `3511464` — Race Pace tool polish (lock copy, in-hero gold badge, IM dev banner)
 - `bad5345` — Race Pace full visual port from /pace.html to React
 - `b0f5d1b` — Race Pace fix batch (click target flip, 2-runs-per-window throttle, tool card badges)

@@ -3328,6 +3328,54 @@ body.v2-active #root {
   font-weight: 600;
 }
 
+/* Demo banner — sits where section-lede would, but for sections being
+   shown to non-access tiers as a preview using Chase's data. Gold-tinted,
+   prominent enough to be unmistakable that what they're seeing isn't
+   their kid's data, without being so aggressive it blocks the experience.
+   Used on Progression for Skills + Bronze tiers. Will likely be reused on
+   the other gated sections as their demo wiring lands. */
+.v2 .demo-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: -12px 0 24px;
+  padding: 14px 18px;
+  background: rgba(212, 168, 83, 0.08);
+  border: 0.5px solid rgba(212, 168, 83, 0.25);
+  border-radius: 10px;
+}
+.v2 .demo-banner-tag {
+  display: inline-block;
+  padding: 3px 9px;
+  background: rgba(212, 168, 83, 0.22);
+  color: var(--v2-gold);
+  border: 0.5px solid rgba(212, 168, 83, 0.4);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.v2 .demo-banner-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--v2-gold);
+  letter-spacing: -0.01em;
+}
+.v2 .demo-banner-sub {
+  font-size: 12px;
+  color: var(--v2-text-2);
+  flex: 1 1 100%;
+  margin-top: 2px;
+}
+@media (min-width: 720px) {
+  .v2 .demo-banner-sub {
+    flex: 1 1 auto;
+    margin-top: 0;
+  }
+}
+
 /* Inline pct next to Δ to Next / Δ to Goal in the Times & Goals table.
    Inherits color from the parent .delta.delta-{green|yellow|red|neutral} */
 .v2 .times-table .delta .delta-pct {

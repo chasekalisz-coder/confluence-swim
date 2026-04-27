@@ -20,6 +20,7 @@ import FamilyFooter from './FamilyFooter.jsx'
 import FamilyTabBar from './FamilyTabBar.jsx'
 import RacePaceCalculator from './RacePaceCalculator.jsx'
 import { getTier } from '../lib/tiers.js'
+import { PROGRESSION_DEMO_DATA } from '../data/progression-demo.js'
 import {
   TimesTable,
   ChampionshipTable,
@@ -142,6 +143,15 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
   // Development badge on Meet Analyzer and the demo-availability hint
   // on the Race Pace card.
   const isGold = !athlete || getTier(athlete) === 'gold'
+
+  // Progression access — Silver and Gold tiers see the athlete's own
+  // progression chart with their full event list. Skills and Bronze
+  // tiers see a "DEMO · Chase Kalisz" preview using Chase's career
+  // LCM data (200 Fly, 200 IM, 400 IM) so they understand what
+  // progression tracking looks like at the elite level. Admin (no
+  // athlete) defaults to access (treated like Gold).
+  const tier = athlete ? getTier(athlete) : 'gold'
+  const hasProgressionAccess = tier === 'silver' || tier === 'gold'
 
   return (
     <div className="v2">
@@ -280,21 +290,41 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
           </div>
         </div>
 
-        {/* ===== Progression chart (moved from Profile) ===== */}
+        {/* ===== Progression chart (moved from Profile) =====
+             Silver + Gold tiers see the athlete's own progression with
+             the full event list. Skills + Bronze see a "DEMO · Chase
+             Kalisz" preview using Chase's career LCM data — gives them
+             a feel for what progression looks like at the elite level. */}
         <section>
           <h2 className="section-title">
             Progression
             <span className="section-tier-badge-silver">Silver</span>
             <span className="section-tier-badge">Gold Development</span>
           </h2>
-          <p className="section-lede">
-            How {athlete.first}'s times have dropped over past meets. Each line is
-            one event. Lower on the chart = faster.
-          </p>
-          <ProgressionChart
-            data={athlete.progression || []}
-            athleteName={athlete.first}
-          />
+          {hasProgressionAccess ? (
+            <>
+              <p className="section-lede">
+                How {athlete.first}'s times have dropped over past meets. Each line is
+                one event. Lower on the chart = faster.
+              </p>
+              <ProgressionChart
+                data={athlete.progression || []}
+                athleteName={athlete.first}
+              />
+            </>
+          ) : (
+            <>
+              <div className="demo-banner">
+                <span className="demo-banner-tag">Demo</span>
+                <span className="demo-banner-name">Chase Kalisz</span>
+                <span className="demo-banner-sub">Olympic medalist career progression — 200 Fly, 200 IM, 400 IM (LCM)</span>
+              </div>
+              <ProgressionChart
+                data={PROGRESSION_DEMO_DATA}
+                athleteName="Chase"
+              />
+            </>
+          )}
         </section>
 
         {/* ===== Event Power Rankings (moved from Profile) ===== */}
