@@ -105,13 +105,35 @@ function AppContent() {
   // Set both via the Clerk dashboard for now (no invite flow yet):
   //   { "role": "admin" }                                          → full access
   //   { "role": "family", "linkedAthletes": ["ath_jon", "ath_ben"] } → scoped
-  // A user with no role metadata is treated as family with no linked athletes,
-  // which lands on a "not yet configured" screen rather than leaking admin views.
-  const role = user?.publicMetadata?.role || 'family'
+  //
+  // Diagnostic logging — print exactly what Clerk returned for the user object
+  // so we can debug "Account pending" issues. Once the role flow is rock-solid
+  // we can drop these.
+  if (typeof window !== 'undefined' && user) {
+    console.log('[App] user.id:', user.id)
+    console.log('[App] user.publicMetadata:', user.publicMetadata)
+    console.log('[App] user.unsafeMetadata:', user.unsafeMetadata)
+  }
+
+  // Read role from publicMetadata. Clerk normalizes the property name to
+  // publicMetadata in the React SDK. We also accept unsafeMetadata as a fallback
+  // because the dashboard's "Public" editor sometimes writes to unsafeMetadata
+  // (a known Clerk quirk on dev instances) — a user marked admin in the dashboard
+  // shouldn't accidentally land on "Account pending" because of that.
+  const pubMeta = user?.publicMetadata || {}
+  const unsafeMeta = user?.unsafeMetadata || {}
+  const role = pubMeta.role || unsafeMeta.role || 'family'
   const isAdmin = role === 'admin'
-  const linkedAthletes = Array.isArray(user?.publicMetadata?.linkedAthletes)
-    ? user.publicMetadata.linkedAthletes
-    : []
+  const rawLinked = Array.isArray(pubMeta.linkedAthletes)
+    ? pubMeta.linkedAthletes
+    : Array.isArray(unsafeMeta.linkedAthletes)
+      ? unsafeMeta.linkedAthletes
+      : []
+  const linkedAthletes = rawLinked
+
+  if (typeof window !== 'undefined' && user) {
+    console.log('[App] resolved role:', role, '| linkedAthletes:', linkedAthletes)
+  }
 
   const [view, setView] = useState('home')
   const [athletes, setAthletes] = useState([])
