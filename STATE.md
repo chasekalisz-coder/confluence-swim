@@ -7,18 +7,17 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`3a26e75 Step 4 of tier matrix: feature-access plumbing` — Two new files, no UI wiring, zero behavior change. `src/lib/tiers.js` exports `getTier(athlete)` (derives `gold/silver/bronze/skills/single` from `programType` first-word-lowercased — same logic the badge already uses, just centralized) and `compareTiers(a, b)` for "minimum tier" gates. `src/config/featureAccess.js` encodes the matrix doc as a `FEATURES` map (feature_name → array of allowed tiers) and exports `canSeeFeature(athlete, featureName)` and `isLockedForTier(athlete, featureName)` as the gate. Defaults: unset/unknown `programType` → `gold`; undeclared feature → universal access (default-allow). Step 5+ wires these into the FamilyAnalysis sections to render Chase's demo data when locked.
+`90a47b9 Revert "Step 5a: hide Performance Analysis tab for Skills tier"` — Step 5a was rolled back. Decision: do NOT hide Performance Analysis for any tier, including Skills. The whole approach for non-Gold tiers is "show every section but render Chase's demo data when the user's tier doesn't have access" — that's how non-Gold families discover what the platform offers. Hiding the tab entirely for Skills contradicts that and reintroduces the discovery problem (how does someone know what they're missing if it's not visible). The plumbing from Step 4 stays in place — `getTier`, `canSeeFeature`, etc. They get used at the section level in Step 5b, not the nav level.
 
 Earlier commits worth knowing about:
+- `d2a948b` — revert of the STATE backfill for Step 5a (paired with 90a47b9)
+- `776f57d` — Step 5a code that was reverted (left in history for context)
+- `3a26e75` — Step 4 of tier matrix: feature-access plumbing (still in place; survives the revert)
 - `94ef7b8` — STATE backfill for Chase progression import
 - `6420c2f` — Add Chase Kalisz progression data to bulk import system (251 entries, 28 events)
-- `a00767d` — STATE backfill for admin-logo bugfix
 - `edb8f3c` — Fix: admin clicking logo from athlete profile bounces to admin home
-- `5c99e4a` — STATE backfill for subtitle rewrite
 - `992f2b6` — Performance Analysis page subtitle rewrite + subjectPronoun helper
-- `1a0ecb7` — STATE backfill for the rename
 - `27fba07` — rename Analysis → Performance Analysis (desktop full label, mobile stacked over two lines)
-- `6250e9e` — STATE backfill for Step 2
 - `489c037` — Step 2 of tier matrix: Profile + Analysis page restructure
 
 Earlier Session 14 commits worth knowing about:
@@ -116,8 +115,8 @@ Per `docs/reference/tier-access-matrix.md`:
 2. Add `tier` field + `features` object to athlete data model in Neon — **NOT NEEDED in initial implementation**. Decision Session 14: derive tier from existing `programType` field (e.g. "Gold Development" → "gold") via `getTier()` helper. If a separate field becomes necessary later (typo safety, decoupling display from logic), the helper is the single point of change.
 3. Build feature-access infrastructure — **DONE Session 14**. `src/lib/tiers.js` (`getTier`, `compareTiers`, `TIERS` constant) and `src/config/featureAccess.js` (`FEATURES` matrix, `canSeeFeature`, `isLockedForTier`). The matrix doc translated into runtime-checkable rules. Nothing wired to UI yet — pure plumbing. Default-allow for undeclared features. Default-to-gold for unset programType.
 4. Demo data scaffolding — Chase Kalisz athlete record (`ath_chase`) populated with 251 historical meet results across 28 events. **DONE Session 14**. Loaded via the existing bulk-import system. Chase's data is what non-Gold tiers see in locked sections.
-5. Wire up tier-aware nav (Performance Analysis hides for Skills) — NEXT
-6. Wire up per-section visibility within Performance Analysis (each gated section shows Chase's data + locked-section footer when user's tier doesn't have access)
+5. ~~Wire up tier-aware nav (Performance Analysis hides for Skills)~~ **Skipped — decision Session 14 to NOT hide the tab for any tier.** Discovery matters more than restriction. Skills users see Performance Analysis the same as everyone else; what changes is what's *inside* it (Chase's demo data instead of theirs). Step 5a was shipped briefly (commit 776f57d) and reverted (commit 90a47b9) when this was clarified.
+6. Wire up per-section visibility within Performance Analysis — every gated section renders for every tier, but loads Chase's data + a "this is Chase's data, ask about Gold Development →" footer when the user's tier doesn't have access. NEXT.
 7. Test with non-Gold athlete (temporarily flip Jon to Bronze, walk through, flip back)
 8. Update Squarespace appointments page copy
 9. Send-out doc announcing new system to families

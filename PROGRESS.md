@@ -82,6 +82,12 @@ Internal route key (`analysis`), URL hash, view ID, file name (`FamilyAnalysis.j
 
 Status check: Steps 1, 2, 3 (data import), 4 (plumbing) complete. Next is Step 5 — wire `canSeeFeature` into the FamilyAnalysis JSX so non-Gold tiers see Chase's demo data instead of their own where the matrix says they shouldn't have access. After that, the test loop is "flip Jon to Bronze in admin, verify Performance Analysis shows Race Pace with Jon's data and Progression with Chase's data, flip back."
 
+**Step 5a shipped, then reverted (commits 776f57d → 90a47b9).** Original Step 5a hid the Performance Analysis tab entirely for Skills tier, per the literal reading of `docs/reference/tier-access-matrix.md`. Chase pushed back: hiding the tab contradicts the whole reason we're doing demo data instead of locked previews — discovery. If a Skills family doesn't see Performance Analysis at all, they have no idea what's there to upgrade for. Earlier in Session 14 the plan was clarified: every tier sees every section; tiers that don't have access see *Chase's* data with a "this is Chase's data" footer, instead of their own. Hiding the tab for Skills is the opposite of that approach.
+
+Reverted via `git revert 776f57d` (and the paired STATE backfill `4b26dba`). Plumbing from Step 4 (`getTier`, `canSeeFeature`, `featureAccess.js`, `tiers.js`) stays in place — those become useful at the *section* level instead of the *nav* level. The matrix doc itself should also probably be updated at some point to reflect the discovery-over-hiding decision, but the doc lives separately from running code so it's not blocking.
+
+Next iteration of Step 5: wire per-section gating in FamilyAnalysis. Every gated section renders the same component, but the data passed to it depends on `canSeeFeature(athlete, '<feature>')`. If true → user's data. If false → Chase's data, plus a footer with the "ask about Gold Development" CTA. Gating happens inside the page, not on access to the page.
+
 ### Decisions made
 - The Squarespace "topic checklist per tier" copy is misleading — every tier can request any topic; the difference is who decides. Squarespace copy needs rewriting alongside tier launch.
 - Times & Goals stays universal (mostly public swimming-data, presented well — gating it would be theater).
