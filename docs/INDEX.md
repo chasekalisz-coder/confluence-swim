@@ -2,7 +2,7 @@
 
 This file lists every document in `docs/`. Claude reads this after the four top-level context files to know what reference material exists.
 
-**Updated:** 2026-04-24 (Session 6)
+**Updated:** 2026-04-27 (Session 14 — added family-login-credentials.md)
 
 ---
 
@@ -45,9 +45,13 @@ Reserved for implementation plans on upcoming work (Step 11 bulk-load plan, Step
 
 ## Reference
 
-Location: `docs/reference/` (currently empty)
+Location: `docs/reference/`
 
-Reserved for standing reference material: methodology docs, style guides, sample outputs, onboarding materials. Anything Chase wants every Claude to have access to permanently.
+Standing reference material: methodology docs, style guides, sample outputs, onboarding materials. Anything Chase wants every Claude to have access to permanently.
+
+| File | Purpose |
+|---|---|
+| family-login-credentials.md | Temp passwords + Clerk metadata JSON for each family. Chase's reference when setting up or resetting accounts. |
 
 To add: Chase sends reference material → Claude commits to `docs/reference/{name}.md` → adds entry here.
 
