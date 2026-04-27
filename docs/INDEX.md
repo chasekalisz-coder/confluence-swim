@@ -2,7 +2,7 @@
 
 This file lists every document in `docs/`. Claude reads this after the four top-level context files to know what reference material exists.
 
-**Updated:** 2026-04-27 (Session 14 — added family-login-credentials.md)
+**Updated:** 2026-04-27 (Session 14 — added tier-access-matrix.md)
 
 ---
 
@@ -52,6 +52,7 @@ Standing reference material: methodology docs, style guides, sample outputs, onb
 | File | Purpose |
 |---|---|
 | family-login-credentials.md | Temp passwords + Clerk metadata JSON for each family. Chase's reference when setting up or resetting accounts. |
+| tier-access-matrix.md | Source of truth for what each program tier (Skills/Bronze/Silver/Gold) gets — both as coaching deliverable and as in-app feature. Drives Squarespace copy, app gating logic, and send-out documents. |
 
 To add: Chase sends reference material → Claude commits to `docs/reference/{name}.md` → adds entry here.
 
