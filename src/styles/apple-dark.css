@@ -2100,6 +2100,27 @@ body.v2-active #root {
   position: relative;
   top: -2px;
 }
+/* Silver variant — same shape as section-tier-badge, silver color tones.
+   Used on sections that Silver and Gold tiers both have access to (e.g.,
+   Progression, Age-Up Preview). Pairs with .section-tier-badge sitting
+   next to it ("Silver" then "Gold Development"). Color tokens match the
+   existing .program-badge-silver Hero badge. */
+.v2 .section-tier-badge-silver {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 9px;
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 0.5px solid rgba(148, 163, 184, 0.35);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
 
 /* Recent analyses section */
 .v2 .recent-header {

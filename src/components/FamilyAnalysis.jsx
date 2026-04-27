@@ -272,7 +272,11 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
 
         {/* ===== Progression chart (moved from Profile) ===== */}
         <section>
-          <h2 className="section-title">Progression</h2>
+          <h2 className="section-title">
+            Progression
+            <span className="section-tier-badge-silver">Silver</span>
+            <span className="section-tier-badge">Gold Development</span>
+          </h2>
           <p className="section-lede">
             How {athlete.first}'s times have dropped over past meets. Each line is
             one event. Lower on the chart = faster.
@@ -351,7 +355,10 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
 
         {/* ===== Range / Specialty bloom (moved from Profile) ===== */}
         <section>
-          <h2 className="section-title">Range</h2>
+          <h2 className="section-title">
+            Range
+            <span className="section-tier-badge">Gold Development</span>
+          </h2>
           <p className="section-lede">
             The whole swimmer in one look. Each glowing petal is an event,
             grouped by stroke around the circle. Petal length climbs the full

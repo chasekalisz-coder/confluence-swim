@@ -828,6 +828,8 @@ export function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, be
           <div className="caption au-caption-row">
             Age-Up Preview
             <span className="age-pill age-pill-mobile">{nextAgeBucket}</span>
+            <span className="section-tier-badge-silver">Silver</span>
+            <span className="section-tier-badge">Gold Development</span>
           </div>
           <div className="title">
             Current times in the next age group
