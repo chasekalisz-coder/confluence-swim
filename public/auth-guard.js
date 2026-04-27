@@ -91,14 +91,17 @@
   // The publishable key is base64-encoded JSON-ish that contains the
   // frontend API hostname. Decoding gives us the host to load Clerk from.
   // Format: "pk_test_<base64>" or "pk_live_<base64>"
+  // The base64 payload decodes to "<host>$" where '$' is Clerk's terminator —
+  // strip that AFTER decoding, not before. (Earlier version stripped '$' from
+  // the base64 string itself, but the encoded form rarely ends in '$' — the
+  // '$' is inside the decoded result, not appended to the encoded form.
+  // That bug produced URLs like 'https://host.dev$/npm/...' and the hostname
+  // didn't resolve, blocking all tool pages.)
   function parseFrontendApi(key) {
     try {
       var b64 = key.replace(/^pk_(test|live)_/, '')
-      // Strip trailing '$' which Clerk uses as a terminator
-      b64 = b64.replace(/\$$/, '')
-      // base64 decode → "sharp-honeybee-57.clerk.accounts.dev"
-      var decoded = atob(b64)
-      return decoded
+      var decoded = atob(b64)           // → "sharp-honeybee-57.clerk.accounts.dev$"
+      return decoded.replace(/\$$/, '') // → "sharp-honeybee-57.clerk.accounts.dev"
     } catch (e) {
       console.error('[auth-guard] Could not parse publishable key:', e)
       return 'clerk.accounts.dev' // fallback, won't actually work but won't crash
