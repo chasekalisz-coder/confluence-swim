@@ -131,7 +131,7 @@ export default function FamilyMeets({ athlete, onBack, onNavigate, onLogoClick, 
           </div>
         ) : (
           <div className="empty-state" style={{ marginBottom: '56px' }}>
-            No upcoming meet on the calendar yet. Coach will add meets here as they're confirmed.
+            No upcoming meet on the calendar yet. New meets will appear here as they're confirmed.
           </div>
         )}
 

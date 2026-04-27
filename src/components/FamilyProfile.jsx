@@ -391,7 +391,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
             <UpcomingMeetsList meets={athlete.upcomingMeets} />
           ) : (
             <div className="empty-state">
-              No meets scheduled yet. Coach will add meets here as they're confirmed.
+              No meets scheduled yet. New meets will appear here as they're confirmed.
             </div>
           )}
         </section>
