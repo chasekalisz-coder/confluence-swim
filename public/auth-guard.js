@@ -122,8 +122,23 @@
         // — pace.html does this since it's part of the family Analysis flow.
         // All other tools are admin-only by default.
         var allowFamily = document.documentElement.getAttribute('data-allow-family') === 'true'
-        var role = (window.Clerk.user.publicMetadata && window.Clerk.user.publicMetadata.role) || 'family'
-        var isAdmin = role === 'admin'
+
+        // Temporary email allowlist mirroring the same fallback in App.jsx —
+        // Clerk's dev-instance metadata editor is silently failing to persist
+        // role values, so we identify the admin by primary email until that's
+        // resolved. Keep this in sync with ADMIN_EMAILS in src/App.jsx.
+        var ADMIN_EMAILS = ['chasekalisz@yahoo.com']
+        var userEmail = ''
+        try {
+          userEmail = (window.Clerk.user.primaryEmailAddress &&
+            window.Clerk.user.primaryEmailAddress.emailAddress || '').toLowerCase()
+        } catch (e) {}
+        var isAllowlistAdmin = ADMIN_EMAILS.indexOf(userEmail) !== -1
+
+        var metaRole = (window.Clerk.user.publicMetadata &&
+          window.Clerk.user.publicMetadata.role) || ''
+        var isAdmin = isAllowlistAdmin || metaRole === 'admin'
+
         if (!isAdmin && !allowFamily) {
           // Family user trying to access an admin-only tool — bounce them
           // back to the app root, which routes them to their athlete profile.
