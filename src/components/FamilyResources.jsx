@@ -231,10 +231,8 @@ export default function FamilyResources({ athlete, onBack, onNavigate, onLogoCli
               <div className="ab-title">Elite private lessons in Dallas, built around the athlete.</div>
               <div className="ab-body">
                 <p>
-                  Every session is one-on-one. Every session is built for the swimmer
-                  in front of Chase. No generic programs, no age-group templates — just
-                  elite-level work applied to the specific needs of each athlete, their
-                  events, and their goals.
+                  Every session is one-on-one. Every session is built around the
+                  athlete — their events, their goals, what they need that day.
                 </p>
                 <p>
                   Training is grounded in the Urbanchek color zone system, modern race craft,
