@@ -355,6 +355,31 @@ function SchedulingBlock({ athlete, slotData }) {
   const primaryCount = Object.values(picks).filter(v => v === 'primary').length
   const secondaryCount = Object.values(picks).filter(v => v === 'secondary').length
 
+  // Flatten picks into a chronological list for the running summary.
+  // Walks all days/slots, picks out the ones the user has marked, and
+  // returns them sorted by date+time so the list reads top-down naturally.
+  const pickedList = useMemo(() => {
+    const items = []
+    for (const day of slotData.days) {
+      for (const slot of day.slots) {
+        const priority = picks[slot.id]
+        if (!priority) continue
+        items.push({
+          slotId: slot.id,
+          date: day.date,        // 'YYYY-MM-DD'
+          label: slot.label,     // '8:00am–8:30am'
+          priority,              // 'primary' | 'secondary'
+        })
+      }
+    }
+    // Sort by date string then by slot id (which encodes time within the day)
+    items.sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date)
+      return a.slotId.localeCompare(b.slotId)
+    })
+    return items
+  }, [picks, slotData.days])
+
   const handleSubmit = async () => {
     if (!athleteId) {
       alert('Cannot submit — no athlete selected.')
@@ -539,6 +564,42 @@ function SchedulingBlock({ athlete, slotData }) {
                     className={`sb-slot-btn secondary ${pick === 'secondary' ? 'active' : ''}`}
                     onClick={() => setPick(s.id, 'secondary')}
                   >A</button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Running list — every picked slot in chronological order, with quick-clear */}
+      {pickedList.length > 0 && (
+        <div className="sb-picked-list">
+          <div className="sb-picked-header">
+            <span className="sb-picked-title">Your picks</span>
+            <span className="sb-picked-summary">
+              {primaryCount} {primaryCount === 1 ? 'Request' : 'Requests'}
+              {secondaryCount > 0 && <> · {secondaryCount} {secondaryCount === 1 ? 'Alternative' : 'Alternatives'}</>}
+            </span>
+          </div>
+          <div className="sb-picked-rows">
+            {pickedList.map(item => {
+              const dateObj = new Date(item.date + 'T12:00:00')
+              const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+              return (
+                <div key={item.slotId} className={`sb-picked-row ${item.priority}`}>
+                  <span className={`sb-picked-tag ${item.priority}`}>
+                    {item.priority === 'primary' ? 'R' : 'A'}
+                  </span>
+                  <span className="sb-picked-time">{item.label}</span>
+                  <span className="sb-picked-sep">·</span>
+                  <span className="sb-picked-date">{dateStr}</span>
+                  <button
+                    type="button"
+                    className="sb-picked-clear"
+                    onClick={() => setPick(item.slotId, item.priority)}
+                    aria-label={`Remove ${item.label} on ${dateStr}`}
+                    title="Remove"
+                  >×</button>
                 </div>
               )
             })}
