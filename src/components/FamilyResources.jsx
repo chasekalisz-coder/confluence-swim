@@ -205,7 +205,7 @@ export default function FamilyResources({ athlete, onBack, onNavigate, onLogoCli
 
   return (
     <div className="v2">
-      <FamilyNav active="Resources" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
+      <FamilyNav active="Resources" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} currentAthlete={athlete} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
       <main className="v2-main">
         {openArticle ? (
           // ============ ARTICLE VIEW ============
@@ -281,7 +281,7 @@ export default function FamilyResources({ athlete, onBack, onNavigate, onLogoCli
         )}
       </main>
       <FamilyFooter />
-      <FamilyTabBar active="resources" onNavigate={onNavigate} />
+      <FamilyTabBar active="resources" onNavigate={onNavigate} currentAthlete={athlete} />
     </div>
   )
 }

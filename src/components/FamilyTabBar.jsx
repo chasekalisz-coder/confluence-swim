@@ -2,7 +2,8 @@
 // FamilyTabBar.jsx
 // ============================================================
 // Mobile-only bottom tab bar for the family-facing side of the app.
-// Five tabs: Profile, Sessions, Meets, Analysis, Resources.
+// Five tabs: Profile, Sessions, Performance Analysis, Meets, Resources.
+// Performance Analysis hides for tiers that don't have access (Skills).
 //
 // Hidden on desktop via CSS media query (the existing top nav handles
 // desktop navigation). On mobile, this stays fixed at the bottom of
@@ -12,14 +13,24 @@
 // stroke and label. Inactive tabs are slate gray.
 // ============================================================
 
-export default function FamilyTabBar({ active = 'profile', onNavigate }) {
-  const tabs = [
+import { canSeeFeature } from '../config/featureAccess.js'
+
+export default function FamilyTabBar({ active = 'profile', onNavigate, currentAthlete = null }) {
+  // All possible tabs. Tabs with a `feature` key get filtered against the
+  // current athlete's tier. If currentAthlete is missing (e.g., admin home),
+  // everything renders.
+  const allTabs = [
     { id: 'profile',   label: 'Profile',   icon: ProfileIcon },
     { id: 'notes',     label: 'Sessions',  icon: SessionsIcon },
-    { id: 'analysis',  label: 'Performance\nAnalysis',  icon: AnalysisIcon },
+    { id: 'analysis',  label: 'Performance\nAnalysis',  icon: AnalysisIcon, feature: 'performance_analysis_tab' },
     { id: 'meets',     label: 'Meets',     icon: MeetsIcon },
     { id: 'resources', label: 'Resources', icon: ResourcesIcon },
   ]
+  const tabs = allTabs.filter(tab => {
+    if (!tab.feature) return true
+    if (!currentAthlete) return true
+    return canSeeFeature(currentAthlete, tab.feature)
+  })
 
   const handle = (id) => () => {
     if (onNavigate) onNavigate(id)

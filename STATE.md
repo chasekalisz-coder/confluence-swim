@@ -7,7 +7,7 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`3a26e75 Step 4 of tier matrix: feature-access plumbing` — Two new files, no UI wiring, zero behavior change. `src/lib/tiers.js` exports `getTier(athlete)` (derives `gold/silver/bronze/skills/single` from `programType` first-word-lowercased — same logic the badge already uses, just centralized) and `compareTiers(a, b)` for "minimum tier" gates. `src/config/featureAccess.js` encodes the matrix doc as a `FEATURES` map (feature_name → array of allowed tiers) and exports `canSeeFeature(athlete, featureName)` and `isLockedForTier(athlete, featureName)` as the gate. Defaults: unset/unknown `programType` → `gold`; undeclared feature → universal access (default-allow). Step 5+ wires these into the FamilyAnalysis sections to render Chase's demo data when locked.
+`<pending>` — Step 5a of tier matrix: hide Performance Analysis tab for Skills tier. Wired `canSeeFeature(athlete, 'performance_analysis_tab')` into `FamilyNav.jsx` and `FamilyTabBar.jsx`. Both components now take a `currentAthlete` prop (full record) and filter their links/tabs against the athlete's tier. Updated all 5 family pages (Profile, Notes, Meets, Analysis, Resources) to pass `currentAthlete={athlete}` to both Nav and TabBar. Added route-level guard in `App.jsx` for `view === 'family-analysis'` — non-admin users whose athlete doesn't have Performance Analysis access get redirected to Profile if they hit the route directly. Currently only Skills tier is hidden — Bronze/Silver/Gold all see the tab.
 
 Earlier commits worth knowing about:
 - `94ef7b8` — STATE backfill for Chase progression import
@@ -116,8 +116,8 @@ Per `docs/reference/tier-access-matrix.md`:
 2. Add `tier` field + `features` object to athlete data model in Neon — **NOT NEEDED in initial implementation**. Decision Session 14: derive tier from existing `programType` field (e.g. "Gold Development" → "gold") via `getTier()` helper. If a separate field becomes necessary later (typo safety, decoupling display from logic), the helper is the single point of change.
 3. Build feature-access infrastructure — **DONE Session 14**. `src/lib/tiers.js` (`getTier`, `compareTiers`, `TIERS` constant) and `src/config/featureAccess.js` (`FEATURES` matrix, `canSeeFeature`, `isLockedForTier`). The matrix doc translated into runtime-checkable rules. Nothing wired to UI yet — pure plumbing. Default-allow for undeclared features. Default-to-gold for unset programType.
 4. Demo data scaffolding — Chase Kalisz athlete record (`ath_chase`) populated with 251 historical meet results across 28 events. **DONE Session 14**. Loaded via the existing bulk-import system. Chase's data is what non-Gold tiers see in locked sections.
-5. Wire up tier-aware nav (Performance Analysis hides for Skills) — NEXT
-6. Wire up per-section visibility within Performance Analysis (each gated section shows Chase's data + locked-section footer when user's tier doesn't have access)
+5. Wire up tier-aware nav (Performance Analysis hides for Skills) — **DONE Session 14**. `FamilyNav.jsx` and `FamilyTabBar.jsx` both take `currentAthlete` prop and filter their links/tabs via `canSeeFeature`. All 5 family pages pass it through. App.jsx route guard redirects Skills users from `family-analysis` view to `family-profile` if they hit the route directly.
+6. Wire up per-section visibility within Performance Analysis (each gated section shows Chase's data + locked-section footer when user's tier doesn't have access) — NEXT
 7. Test with non-Gold athlete (temporarily flip Jon to Bronze, walk through, flip back)
 8. Update Squarespace appointments page copy
 9. Send-out doc announcing new system to families
