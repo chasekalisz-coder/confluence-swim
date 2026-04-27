@@ -3,10 +3,27 @@ import { ELITE_SPLITS, RACE_INSIGHTS, DANGER_SPLITS } from '../data/elite-splits
 import { getTier } from '../lib/tiers.js'
 import { updateAthlete } from '../lib/db.js'
 
-const COURSE_FULL = { scy: 'Short Course Yards', lcm: 'Long Course Meters', scm: 'Short Course Meters' }
+// ============================================================
+// RacePaceCalculator
+//
+// Full visual port of the legacy public/pace.html standalone
+// page into a React component. Same atmospheric background,
+// same hero, same selectors, same chart bars + animations,
+// same insight/IM notice — minus the standalone page chrome
+// (topbar, footer, tabbar) which is provided by the parent
+// view (RacePaceTool in FamilyAnalysis.jsx).
+//
+// Design tokens, CSS classes, and the markup structure are
+// scoped under .pace-tool (defined in apple-dark.css) so the
+// styles don't collide with the rest of the v2 design system.
+//
+// The lock logic (non-Gold throttle, 2 runs per 5 days) lives
+// here too — see DEMO_LOCK_MS and DEMO_RUNS_ALLOWED below.
+// ============================================================
 
-const DEMO_LOCK_MS = 5 * 24 * 60 * 60 * 1000  // 5 days in ms — demo throttle window for non-Gold tiers
-const DEMO_RUNS_ALLOWED = 2  // non-Gold tiers can generate this many times within the window
+const COURSE_FULL = { scy: 'Short Course Yards', lcm: 'Long Course Meters', scm: 'Short Course Meters' }
+const DEMO_LOCK_MS = 5 * 24 * 60 * 60 * 1000
+const DEMO_RUNS_ALLOWED = 2
 
 // Returns "N days" / "N hours" / "less than an hour" from a millisecond
 // count. Rounds up — see Session 14 conversation: rounding up reads as
@@ -24,13 +41,6 @@ function formatLockRemaining(ms) {
   return `${days} day${days === 1 ? '' : 's'}`
 }
 
-function parseTime(s) {
-  if (!s) return null
-  s = s.trim().replace(/[^\d:.]/g, '')
-  if (s.includes(':')) { const p = s.split(':'); return parseFloat(p[0]) * 60 + parseFloat(p[1]) }
-  return parseFloat(s) || null
-}
-
 function fmtTime(s) {
   if (s >= 60) { const m = Math.floor(s / 60), sc = (s % 60).toFixed(2).padStart(5, '0'); return `${m}:${sc}` }
   return s.toFixed(2)
@@ -41,6 +51,21 @@ function fmtPace(s) {
   return s.toFixed(1)
 }
 
+// Bar color matches the legacy pace.html palette: cyan first bar,
+// green last bar, smooth blend through the middle.
+function barColor(idx, total) {
+  if (idx === 0) return 'rgba(0, 186, 230, 0.85)'
+  if (idx === total - 1) return 'rgba(0, 230, 138, 0.75)'
+  const ratio = idx / Math.max(1, total - 1)
+  const r = Math.round(180 + ratio * 75)
+  const g = Math.round(210 - ratio * 50)
+  const b = Math.round(240 - ratio * 120)
+  return `rgba(${r}, ${g}, ${b}, 0.7)`
+}
+
+// Map ELITE_SPLITS keys (_25s, _50s, etc) to display labels and unit text.
+const UNIT_FROM_KEY = { _25s: '25', _50s: '50', _100s: '100', _200s: '200', _500s: '500' }
+
 export default function RacePaceCalculator({ athlete = null }) {
   const [course, setCourse] = useState('scy')
   const [gender, setGender] = useState('men')
@@ -48,39 +73,25 @@ export default function RacePaceCalculator({ athlete = null }) {
   const [minutes, setMinutes] = useState('')
   const [seconds, setSeconds] = useState('')
   const [result, setResult] = useState(null)
-
-  // In-session list of run timestamps that haven't been written to the DB
-  // yet (fire-and-forget save round-trips). Combined with the persisted
-  // list from athlete.racePaceDemoRuns to compute the lock state, so
-  // multiple Generates within the same page load count correctly.
+  // In-session run timestamps not yet persisted — combined with the
+  // athlete record's racePaceDemoRuns to drive the lock state.
   const [localRuns, setLocalRuns] = useState([])
 
-  // Demo throttle for non-Gold tiers. Gold athletes bypass entirely.
-  // Non-Gold tiers get DEMO_RUNS_ALLOWED generations per DEMO_LOCK_MS
-  // window, with the window starting from the timestamp of their oldest
-  // active run. Stored on the athlete record as `racePaceDemoRuns`
-  // (array of ISO timestamps). Last result is also persisted so the
-  // tool shows the most recent plan when locked.
+  // ---- Tier + lock state ----
   const isGold = !athlete || getTier(athlete) === 'gold'
   const now = Date.now()
   const persistedRuns = Array.isArray(athlete?.racePaceDemoRuns)
     ? athlete.racePaceDemoRuns.map(ts => new Date(ts).getTime()).filter(t => !isNaN(t))
     : []
-  // Combine persisted + in-session local runs, dedupe, keep only those
-  // inside the active 5-day window.
   const allRuns = [...new Set([...persistedRuns, ...localRuns])].sort((a, b) => a - b)
   const activeRuns = allRuns.filter(t => now - t < DEMO_LOCK_MS)
   const isLocked = !isGold && activeRuns.length >= DEMO_RUNS_ALLOWED
-  // When locked, the unlock time is when the *oldest* active run falls
-  // out of the window — that frees up one slot for a new generation.
-  const msRemaining = isLocked
-    ? (activeRuns[0] + DEMO_LOCK_MS) - now
-    : 0
+  const msRemaining = isLocked ? (activeRuns[0] + DEMO_LOCK_MS) - now : 0
   const runsLeftInWindow = isGold ? Infinity : Math.max(0, DEMO_RUNS_ALLOWED - activeRuns.length)
 
   // Hydrate the rendered result from the saved demo result while locked,
   // so non-Gold users see the plan they generated last time even after
-  // navigating away and coming back. Gold users start fresh every visit.
+  // navigating away and coming back.
   useEffect(() => {
     if (isLocked && athlete?.lastRacePaceDemoResult && !result) {
       setResult(athlete.lastRacePaceDemoResult)
@@ -89,29 +100,29 @@ export default function RacePaceCalculator({ athlete = null }) {
 
   const events = useMemo(() => Object.keys(ELITE_SPLITS[course]?.[gender] || {}), [course, gender])
 
+  const goalSeconds = useMemo(() => {
+    const m = minutes ? parseFloat(minutes) : 0
+    const s = seconds ? parseFloat(seconds) : 0
+    if (isNaN(m) || isNaN(s)) return null
+    const total = m * 60 + s
+    return total > 0 ? total : null
+  }, [minutes, seconds])
+
+  const isReady = !isLocked && event && goalSeconds && goalSeconds > 0
+
   const generate = async () => {
-    if (isLocked) return
-    const totalSec = parseTime(`${minutes || '0'}:${seconds || '0'}`)
-    if (!event || !totalSec || totalSec <= 0) return
+    if (!isReady) return
     const pcts = ELITE_SPLITS[course]?.[gender]?.[event]
     if (!pcts) return
-    const newResult = { event, course, gender, totalSec, pcts }
+    const newResult = { event, course, gender, totalSec: goalSeconds, pcts }
     setResult(newResult)
 
-    // For non-Gold tiers, append this run's timestamp to the demo runs
-    // list AND persist to the DB so the lock survives page loads. Local
-    // append fires synchronously so a second Generate click within the
-    // same session counts immediately, before the DB save round-trips.
-    // Gold tier skips both (no lock to maintain).
+    // Non-Gold: append run timestamp + persist.
     if (!isGold && athlete?.id) {
       const runAt = Date.now()
       const newLocalRuns = [...localRuns, runAt]
       setLocalRuns(newLocalRuns)
-      // Build the new persisted list: existing active runs + the new one,
-      // pruning anything older than the window so the array doesn't grow
-      // forever.
-      const newPersistedRuns = [...activeRuns, runAt]
-        .map(t => new Date(t).toISOString())
+      const newPersistedRuns = [...activeRuns, runAt].map(t => new Date(t).toISOString())
       try {
         await updateAthlete(athlete.id, {
           ...athlete,
@@ -124,162 +135,164 @@ export default function RacePaceCalculator({ athlete = null }) {
     }
   }
 
-  const resetEvent = () => { setEvent(''); setResult(null) }
-
-  const btn = (active, onClick, label) => (
-    <button
-      onClick={onClick}
-      style={{
-        padding: '10px 20px', borderRadius: 8, border: '1px solid',
-        cursor: 'pointer', fontSize: 13, fontWeight: 500, transition: 'all 0.15s',
-        background: active ? 'var(--v2-gold)' : 'transparent',
-        borderColor: active ? 'var(--v2-gold)' : 'rgba(148,163,184,0.2)',
-        color: active ? '#000' : 'var(--text-primary)',
-      }}
-    >{label}</button>
-  )
+  const handleCourseChange = (c) => {
+    setCourse(c)
+    setEvent('')
+    if (!isLocked) setResult(null)
+  }
+  const handleGenderChange = (g) => {
+    setGender(g)
+    setEvent('')
+    if (!isLocked) setResult(null)
+  }
+  const handleEventChange = (e) => {
+    setEvent(e)
+    if (!isLocked) setResult(null)
+  }
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto', padding: '0 0 40px' }}>
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: 11, letterSpacing: '0.08em', color: 'var(--v2-gold)', fontWeight: 500, marginBottom: 8 }}>TOOL</div>
-        <h1 style={{ fontSize: 28, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>Race Pace Calculator</h1>
-        <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>
-          Target race splits modeled from elite performance data across NCAA and World Championship finals.
+    <div className="pace-tool">
+      {/* ─── Hero ─── */}
+      <div className="pt-hero">
+        <div className="pt-pill">
+          <span className="pt-pill-dot" />
+          <span className="pt-pill-label">Race Pace Calculator</span>
+        </div>
+        <h1>Optimize your race using the pacing of the world's best swimmers.</h1>
+        <p className="pt-sub">
+          Enter your goal time and the tool returns the optimal way to pace your race.
+          The pacing pattern is modeled from the fastest swims in history for your event,
+          broken down split-by-split, averaged together, and scaled to the time you're chasing.
         </p>
-        <div style={{ marginTop: 10, display: 'inline-block', background: 'rgba(0,186,230,0.08)', border: '1px solid rgba(0,186,230,0.2)', borderRadius: 20, padding: '4px 12px', fontSize: 12, color: '#00bae6' }}>
-          50+ elite performances per event · 3 courses
+      </div>
+
+      {/* ─── Course ─── */}
+      <div className="pt-selector-group">
+        <div className="pt-section-label">Course</div>
+        <div className="pt-selector-row">
+          {['scy', 'lcm', 'scm'].map(c => (
+            <button
+              key={c}
+              type="button"
+              className={`pt-selector-btn ${course === c ? 'active' : ''}`}
+              onClick={() => handleCourseChange(c)}
+            >{c.toUpperCase()}</button>
+          ))}
         </div>
       </div>
 
-      {/* Course */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 11, letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 10 }}>COURSE</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {['scy','lcm','scm'].map(c => btn(course === c, () => { setCourse(c); resetEvent() }, c.toUpperCase()))}
+      {/* ─── Gender ─── */}
+      <div className="pt-selector-group">
+        <div className="pt-section-label">Gender</div>
+        <div className="pt-selector-row">
+          {['men', 'women'].map(g => (
+            <button
+              key={g}
+              type="button"
+              className={`pt-selector-btn ${gender === g ? 'active' : ''}`}
+              onClick={() => handleGenderChange(g)}
+            >{g === 'men' ? 'Men' : 'Women'}</button>
+          ))}
         </div>
       </div>
 
-      {/* Gender */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 11, letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 10 }}>GENDER</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {btn(gender === 'men', () => { setGender('men'); resetEvent() }, 'Men')}
-          {btn(gender === 'women', () => { setGender('women'); resetEvent() }, 'Women')}
+      {/* ─── Event ─── */}
+      <div className="pt-selector-group">
+        <div className="pt-section-label">Event</div>
+        <div className="pt-event-grid">
+          {events.map(e => (
+            <button
+              key={e}
+              type="button"
+              className={`pt-event-btn ${event === e ? 'active' : ''}`}
+              onClick={() => handleEventChange(e)}
+            >{e}</button>
+          ))}
         </div>
       </div>
 
-      {/* Event */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 11, letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 10 }}>EVENT</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {events.map(e => btn(event === e, () => { setEvent(e); setResult(null) }, e))}
-        </div>
-      </div>
-
-      {/* Goal time */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 11, letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 10 }}>GOAL TIME</div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(8,12,22,0.9)', border: '1px solid rgba(148,163,184,0.15)', borderRadius: 8, padding: '0 4px' }}>
+      {/* ─── Goal time + Generate ─── */}
+      <div className="pt-selector-group">
+        <div className="pt-section-label">Goal Time</div>
+        <div className="pt-time-row">
+          <div className="pt-time-input-wrap">
             <input
-              type="text" placeholder="M" maxLength={2} value={minutes}
+              type="text"
+              className="pt-time-input pt-min"
+              placeholder="M"
+              maxLength={2}
+              value={minutes}
               onChange={e => setMinutes(e.target.value.replace(/\D/g, ''))}
-              style={{ width: 48, padding: '14px 8px', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: 20, fontWeight: 600, fontFamily: 'monospace', letterSpacing: 2, outline: 'none', textAlign: 'center' }}
+              onKeyDown={e => { if (e.key === 'Enter') generate() }}
             />
-            <span style={{ fontSize: 22, fontWeight: 700, color: '#334155', fontFamily: 'monospace' }}>:</span>
+            <span className="pt-time-colon">:</span>
             <input
-              type="text" placeholder="SS.00" maxLength={5} value={seconds}
+              type="text"
+              className="pt-time-input pt-sec"
+              placeholder="SS.00"
+              maxLength={5}
+              value={seconds}
               onChange={e => setSeconds(e.target.value.replace(/[^\d.]/g, ''))}
-              style={{ flex: 1, padding: '14px 8px', background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: 20, fontWeight: 600, fontFamily: 'monospace', letterSpacing: 2, outline: 'none' }}
+              onKeyDown={e => { if (e.key === 'Enter') generate() }}
             />
           </div>
           <button
+            type="button"
+            className={`pt-generate-btn ${isReady ? 'ready' : ''}`}
             onClick={generate}
-            disabled={isLocked || !event || (!minutes && !seconds)}
-            style={{
-              padding: '14px 28px', borderRadius: 8, border: 'none',
-              cursor: !isLocked && event && (minutes || seconds) ? 'pointer' : 'not-allowed',
-              background: !isLocked && event && (minutes || seconds) ? 'var(--v2-gold)' : 'rgba(212,168,83,0.3)',
-              color: !isLocked && event && (minutes || seconds) ? '#000' : 'rgba(212,168,83,0.5)',
-              fontSize: 15, fontWeight: 600, transition: 'all 0.15s',
-            }}
+            disabled={!isReady}
           >Generate</button>
         </div>
       </div>
 
-      {/* Demo throttle notice — non-Gold tiers see this above their last
-          result during the 5-day lock window. Wording per Session 14:
-          factual ("Demo limit reached") with a forward-looking countdown
-          that recomputes on each page load (no live ticker). */}
+      {/* ─── Demo throttle notices ─── */}
       {isLocked && (
-        <div style={{
-          marginBottom: 20,
-          padding: '14px 18px',
-          background: 'rgba(212, 168, 83, 0.08)',
-          border: '0.5px solid rgba(212, 168, 83, 0.25)',
-          borderRadius: 10,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-          flexWrap: 'wrap',
-        }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--v2-gold)', marginBottom: 2 }}>
-              Demo limit reached
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-              Try again in {formatLockRemaining(msRemaining)}. Race Pace is part of Gold Development — ask Chase about adding it any time.
-            </div>
+        <div className="pt-demo-lock">
+          <div className="pt-demo-lock-title">Demo limit reached</div>
+          <div className="pt-demo-lock-body">
+            Try again in {formatLockRemaining(msRemaining)}. Race Pace is part of Gold Development —
+            ask Chase about adding it any time.
           </div>
         </div>
       )}
-
-      {/* Soft demo-window indicator — shown to non-Gold users who have
-          generations left but are inside the active window. Tells them
-          how many demo runs remain without blocking anything. Gold users
-          and brand-new non-Gold users (zero runs) don't see this. */}
       {!isGold && !isLocked && activeRuns.length > 0 && (
-        <div style={{
-          marginBottom: 20,
-          padding: '10px 14px',
-          background: 'rgba(212, 168, 83, 0.05)',
-          border: '0.5px solid rgba(212, 168, 83, 0.18)',
-          borderRadius: 8,
-          fontSize: 12,
-          color: 'var(--text-muted)',
-        }}>
+        <div className="pt-demo-hint">
           {runsLeftInWindow === 1
             ? '1 demo generation left in this 5-day window.'
             : `${runsLeftInWindow} demo generations left in this 5-day window.`}
         </div>
       )}
 
-      {/* Results */}
+      {/* ─── Results ─── */}
       {result && <Results result={result} />}
     </div>
   )
 }
 
+// ============================================================
+// Results — split tables, animated bar charts, indicators,
+// practice pace cards, insight, IM notice. Mirrors the markup
+// structure that pace.html builds via innerHTML.
+// ============================================================
 function Results({ result }) {
   const { event, course, gender, totalSec, pcts } = result
 
-  const splitSets = []
-  const unitLabels = { _25s: '25', _50s: '50', _100s: '100', _200s: '200', _500s: '500' }
-
+  // For each split-level key in pcts, render a section-marker + table + chart.
+  const splitGroups = []
   for (const [key, arr] of Object.entries(pcts)) {
-    const unit = unitLabels[key]
-    const vals = arr.map(p => p * totalSec / 100)
-    const avg = totalSec / vals.length
-    const minP = Math.min(...arr), maxP = Math.max(...arr)
-    splitSets.push({ key, unit, vals, arr, avg, minP, maxP })
+    const unit = UNIT_FROM_KEY[key] || key.replace(/[_s]/g, '')
+    const label = key.replace('_', '').replace('s', '')
+    const splits = arr.map((p, i) => ({ pct: p, time: totalSec * p / 100, idx: i }))
+    const minP = Math.min(...arr)
+    const maxP = Math.max(...arr)
+    const avg = totalSec / splits.length
+    splitGroups.push({ key, unit, label, splits, minP, maxP, avg })
   }
 
   const insight = RACE_INSIGHTS[event]
   const danger = DANGER_SPLITS[event]
 
-  // Practice paces
+  // Practice pace math (pace clocks). Distance derived from event name.
   const dist = parseInt(event)
   let p50 = null, p100 = null
   if (dist >= 100) {
@@ -290,109 +303,191 @@ function Results({ result }) {
   }
 
   return (
-    <div style={{ background: 'rgba(12,18,30,0.6)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 12, padding: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+    <div className="pt-results">
+      {/* Header card — event name, course/gender, big goal time */}
+      <div className="pt-results-header">
         <div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{event}</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{COURSE_FULL[course]} · {result.gender === 'men' ? 'Men' : 'Women'}</div>
+          <div className="pt-results-event">{event}</div>
+          <div className="pt-results-meta">
+            {COURSE_FULL[course]} · {gender === 'men' ? 'Men' : 'Women'}
+          </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: '#00bae6', fontFamily: 'monospace' }}>{fmtTime(totalSec)}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>GOAL TIME</div>
+          <div className="pt-results-goal">{fmtTime(totalSec)}</div>
+          <div className="pt-results-goal-label">GOAL TIME</div>
         </div>
       </div>
 
-      {splitSets.map(({ key, unit, vals, arr, avg, minP, maxP }) => {
-        const twoRows = vals.length > 10
-        const half = twoRows ? Math.ceil(vals.length / 2) : vals.length
-        const barColor = (p, idx) => {
-          if (idx === 0) return '#00bae6'
-          if (idx === vals.length - 1) return '#00e68a'
-          const ratio = idx / (vals.length - 1)
-          return `rgba(${Math.round(180 + ratio * 75)},${Math.round(210 - ratio * 50)},${Math.round(240 - ratio * 120)},0.85)`
-        }
+      {/* Split groups */}
+      {splitGroups.map(group => (
+        <SplitGroup key={group.key} group={group} />
+      ))}
 
-        const range = maxP - minP
-        const safeRange = range < 0.01 ? 1 : range
-        const minH = 20
-        const span = 85
-        const avgPct = arr.reduce((s, p) => s + p, 0) / arr.length
-        const avgH = range < 0.01 ? minH + span/2 : minH + ((avgPct - minP) / safeRange) * span
-
-        const renderBars = (slice, startIdx) => (
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 140, position: 'relative' }}>
-            <div style={{ position: 'absolute', left: 0, right: 0, bottom: avgH + 'px', borderTop: '2px dashed rgba(0,186,230,0.45)', zIndex: 2, pointerEvents: 'none' }}>
-              <span style={{ position: 'absolute', right: 0, top: -16, fontSize: 9, color: 'rgba(0,186,230,0.7)', fontWeight: 600, fontFamily: 'monospace' }}>AVG</span>
+      {/* Critical split indicator (if event has one) */}
+      {danger && (
+        <div className="pt-indicator pt-indicator-danger">
+          <div className="pt-indicator-circle">!</div>
+          <div>
+            <div className="pt-indicator-title">Critical Split</div>
+            <div className="pt-indicator-desc">
+              Split #{danger} is where the race separates. Biggest deceleration point —
+              hold here and the back half takes care of itself.
             </div>
-            {slice.map((v, i) => {
-              const idx = startIdx + i
-              const p = arr[idx]
-              const h = range < 0.01 ? minH + span/2 : minH + ((p - minP) / safeRange) * span
-              const col = barColor(p, idx)
-              return (
-                <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{fmtTime(v)}</span>
-                  <div style={{ width: '100%', height: h, background: col, borderRadius: '3px 3px 0 0', minWidth: 20 }} />
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{unit}#{idx + 1}</span>
-                </div>
-              )
-            })}
           </div>
-        )
+        </div>
+      )}
 
-        return (
-          <div key={key} style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 11, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 12 }}>TARGET SPLITS — PER {unit}</div>
-            {renderBars(vals.slice(0, half), 0)}
-            {twoRows && <div style={{ marginTop: 16 }}>{renderBars(vals.slice(half), half)}</div>}
-            <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-muted)', textAlign: 'right' }}>
-              AVG {fmtTime(avg)}/{unit}
-            </div>
-            {vals.length >= 2 && (
-              <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(0,186,230,0.06)', border: '1px solid rgba(0,186,230,0.12)', borderRadius: 8, padding: '12px 16px' }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,186,230,0.15)', border: '1px solid rgba(0,186,230,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#00bae6', flexShrink: 0 }}>
-                  {(avg - vals[0]).toFixed(1)}
+      {/* Practice pace clocks */}
+      {(p50 || p100) && (
+        <>
+          <div className="pt-section-marker">
+            <div className="pt-section-marker-bar" style={{ background: 'linear-gradient(180deg,#a78bfa,#818cf8)' }} />
+            <span className="pt-section-marker-text">Practice Pace</span>
+          </div>
+          <div className="pt-pace-row">
+            {p50 && (
+              <div className="pt-pace-card">
+                <div className="pt-pace-clock">
+                  <span className="pt-pace-clock-value">{fmtPace(p50)}</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Go-Out Speed</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>First {unit} is {Math.abs(avg - vals[0]).toFixed(1)}s faster than average {unit} pace</div>
+                <div className="pt-pace-label">Avg /50</div>
+              </div>
+            )}
+            {p100 && (
+              <div className="pt-pace-card">
+                <div className="pt-pace-clock">
+                  <span className="pt-pace-clock-value">{fmtPace(p100)}</span>
                 </div>
+                <div className="pt-pace-label">Avg /100</div>
               </div>
             )}
           </div>
+        </>
+      )}
+
+      {/* Race intelligence insight */}
+      {insight && (
+        <div className="pt-insight">
+          <div className="pt-insight-label">Race Intelligence</div>
+          <div className="pt-insight-text">{insight}</div>
+        </div>
+      )}
+
+      {/* IM notice */}
+      <div className="pt-im-notice">
+        Individual Medley events are currently in development and will be available in a future update.
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// SplitGroup — section marker + split table + bar chart +
+// go-out indicator for one ELITE_SPLITS level. Bars expand
+// from 0px to target height with a 2.2s transition; the
+// useEffect kicks in 50ms after mount to trigger the
+// animation, mirroring the IntersectionObserver pattern in
+// pace.html.
+// ============================================================
+function SplitGroup({ group }) {
+  const { unit, label, splits, minP, maxP, avg } = group
+  const range = maxP - minP
+  const safeRange = range < 0.01 ? 1 : range
+  const minH = 25
+  const span = 105
+  const avgPct = 100 / splits.length
+  const avgH = range < 0.01 ? minH + span / 2 : minH + ((avgPct - minP) / safeRange) * span
+  const twoRows = splits.length > 10
+  const halfIdx = twoRows ? Math.ceil(splits.length / 2) : splits.length
+
+  const [animated, setAnimated] = useState(false)
+  useEffect(() => {
+    const id = setTimeout(() => setAnimated(true), 50)
+    return () => clearTimeout(id)
+  }, [])
+
+  const computeH = (pct) =>
+    range < 0.01 ? minH + span / 2 : minH + ((pct - minP) / safeRange) * span
+
+  const renderBarRow = (slice, startIdx, isFirstRow) => (
+    <div className="pt-chart-bars" style={{ position: 'relative' }}>
+      <div className="pt-chart-avg-line" style={{ bottom: `${avgH}px` }}>
+        {isFirstRow && <span className="pt-chart-avg-tag">AVG</span>}
+      </div>
+      {slice.map((s, i) => {
+        const realIdx = startIdx + i
+        const targetH = computeH(s.pct)
+        const c = barColor(realIdx, splits.length)
+        const shadow = c.replace(/[\d.]+\)$/, '0.2)')
+        const fontSize = twoRows ? 8 : 10
+        const labelSize = twoRows ? 7 : 8
+        return (
+          <div key={realIdx} className="pt-chart-bar-col">
+            <span className="pt-chart-bar-time" style={{ fontSize: `${fontSize}px` }}>{fmtTime(s.time)}</span>
+            <div
+              className="pt-chart-bar"
+              style={{
+                height: animated ? `${targetH}px` : '0px',
+                background: c,
+                boxShadow: `0 0 14px ${shadow}`,
+                transitionDelay: `${realIdx * 130}ms`,
+              }}
+            />
+            <span className="pt-chart-bar-label" style={{ fontSize: `${labelSize}px` }}>
+              {label}#{realIdx + 1}
+            </span>
+          </div>
         )
       })}
-
-      {danger && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,71,87,0.06)', border: '1px solid rgba(255,71,87,0.15)', borderRadius: 8, padding: '12px 16px', marginBottom: 20 }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,71,87,0.15)', border: '1px solid rgba(255,71,87,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#ff4757', flexShrink: 0 }}>!</div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Critical Split</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Split #{danger} is where the race separates. Hold here and the back half takes care of itself.</div>
-          </div>
-        </div>
-      )}
-
-      {(p50 || p100) && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, letterSpacing: '0.06em', color: '#a78bfa', marginBottom: 12 }}>PRACTICE PACE</div>
-          <div style={{ display: 'flex', gap: 12 }}>
-            {[['Avg /50', p50], ['Avg /100', p100]].filter(([, v]) => v).map(([label, val]) => (
-              <div key={label} style={{ flex: 1, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: 10, padding: '16px', textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: '#a78bfa', fontFamily: 'monospace' }}>{fmtPace(val)}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {insight && (
-        <div style={{ background: 'rgba(148,163,184,0.04)', border: '1px solid rgba(148,163,184,0.08)', borderRadius: 10, padding: '16px 20px' }}>
-          <div style={{ fontSize: 11, letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 }}>RACE INTELLIGENCE</div>
-          <div style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>{insight}</div>
-        </div>
-      )}
     </div>
+  )
+
+  const goOutDelta = splits.length >= 2 ? (avg - splits[0].time).toFixed(1) : null
+
+  return (
+    <>
+      {/* Section marker */}
+      <div className="pt-section-marker">
+        <div className="pt-section-marker-bar" style={{ background: 'linear-gradient(180deg,#00e68a,#00bae6)' }} />
+        <span className="pt-section-marker-text">Target Splits — per {unit}</span>
+      </div>
+
+      {/* Split table */}
+      <div className="pt-split-table">
+        {splits.map((s, i) => (
+          <div key={i} className={`pt-split-row${i === 0 ? ' first' : ''}`}>
+            <span className="pt-split-label">{label}#{i + 1}</span>
+            <span className="pt-split-time">{fmtTime(s.time)}</span>
+            <span className="pt-split-pct">{s.pct.toFixed(1)}%</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Chart */}
+      <div className="pt-chart">
+        {renderBarRow(splits.slice(0, halfIdx), 0, true)}
+        {twoRows && (
+          <div style={{ marginTop: 20 }}>
+            {renderBarRow(splits.slice(halfIdx), halfIdx, false)}
+          </div>
+        )}
+        <div className="pt-chart-avg">
+          <span className="pt-chart-avg-text">AVG {fmtTime(avg)}/{unit}</span>
+        </div>
+      </div>
+
+      {/* Go-out speed indicator */}
+      {goOutDelta && (
+        <div className="pt-indicator pt-indicator-goout">
+          <div className="pt-indicator-circle">{goOutDelta}</div>
+          <div>
+            <div className="pt-indicator-title">Go-Out Speed</div>
+            <div className="pt-indicator-desc">
+              First {unit} is {goOutDelta}s faster than your average {unit.toLowerCase()} pace
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

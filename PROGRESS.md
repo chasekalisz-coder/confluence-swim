@@ -152,6 +152,27 @@ Also closed out two missing-UI gaps Chase flagged at the same time:
 
 **Doc-update friction recurrence (third call-out this session):** Chase explicitly called out (again) that doc updates need to land in the same commit as code, not as a separate batch later. CLAUDE.md line 88 covers this. This commit pairs code + STATE/PROGRESS in the same push. New rule for this Claude going forward: doc updates are part of the commit, not a follow-up step.
 
+### Race Pace visual port (final piece of the gating arc this session)
+
+Chase tested the new React tool with the lock, confirmed the lock works (Bronze profile blocked at "Demo limit reached. Try again in 5 days." after the second generation), but called the visual design "looks like shit" compared to the legacy `public/pace.html` page. He wanted the same look.
+
+The earlier-flagged risk landed: when the click target flipped from `/pace.html` to the React component, we lost the polished design that pace.html had spent ~1,200 lines of CSS building. The React port had inline styles for the bare essentials (course/gender/event buttons, goal time input, basic results card) but none of pace.html's atmospheric background gradients, hero typography, animated bar charts, indicator cards, practice pace clocks, or race-intelligence insight panels.
+
+The decision was to fully port the design rather than revert the click target. Reverting would mean adding athlete-loading code to a static HTML page (no React hooks, no shared component state, would essentially require rebuilding the auth/athlete-fetch pipeline in vanilla JS). The forward path was cleaner: port the CSS once, scoped under a `.pace-tool` namespace, and rebuild the React component to match pace.html's markup structure.
+
+Implementation:
+- **CSS port** (~360 lines appended to `src/styles/apple-dark.css` under `.pace-tool`). Local design tokens copied from pace.html's `:root` so the tool's palette is self-contained — `--pt-bg-primary`, `--pt-accent`, `--pt-gold`, etc. Atmospheric background applied to the tool wrapper itself (radial cyan glow + grid texture) rather than `body` so it doesn't bleed onto the rest of the v2 page. All component styles use the `.pt-` class prefix to avoid collisions.
+- **Font load** — added DM Sans, Fraunces, and JetBrains Mono to the global Google fonts link in `index.html`. These are the three fonts pace.html uses (DM Sans for body, Fraunces for the hero title, JetBrains Mono for times/splits/labels). They're loaded once globally so any page can use them.
+- **Component rewrite** — RacePaceCalculator.jsx fully rewritten to use the new className structure. Same hero (`pt-pill` + Fraunces h1 + sub-copy), same selectors (`pt-selector-row` for course/gender, `pt-event-grid` for events), same goal time + Generate (`pt-time-row`, `pt-generate-btn` with the `.ready` cyan→green gradient state). Results component splits into a header card, then a `SplitGroup` per ELITE_SPLITS level, then critical split indicator (if event has one), practice pace clocks, insight card, IM notice.
+- **Bar chart animation** — pace.html used IntersectionObserver to trigger the 0→target-height transition when the chart scrolls into view. The React port uses a `useEffect` + `setTimeout(50)` to trigger the same animation right after mount. Same 2.2s cubic-bezier, same 130ms-per-bar stagger. Same AVG dashed-white line overlay.
+- **Lock styling** — the demo-limit notice and the "1 demo left" hint now use `.pt-demo-lock` and `.pt-demo-hint` classes that match the new design language (gold-tinted backgrounds, matching border treatment). Lock logic itself is unchanged from the prior commit.
+
+What got dropped (not ported):
+- The clock-spin / hand-sweep animations on the practice pace cards. Pace.html had an SVG-based animated clock face that swept around the dial as the value faded in. The React port shows the static value in the same circular card. This was a deliberate trade — porting the animation faithfully would have meant another 50+ lines of SVG + keyframes + IntersectionObserver mimicking, and the static version reads fine.
+- The `circlePopIn` / `textSlideIn` go-out indicator animations. Same reason — static version reads fine, animation work was disproportionate to the win.
+
+The result: same general feel, same color palette, same typography, same chart structure, same indicator/insight/IM-notice ordering. Bar chart still animates from zero. A power user who memorized pace.html might notice the missing clock-sweep, but the casual visitor experience is indistinguishable.
+
 ### Friction worth naming
 Chase had to call out (again) that PROGRESS.md and STATE.md were not being kept current during the session. CLAUDE.md is explicit on line 88: "Never let STATE.md or PROGRESS.md fall behind during a session." This was already noted as a Session 12 failure — it recurred in Session 14, and recurred *again* during the late-afternoon batch (eight commits shipped without doc updates between them). Pattern is: Claude makes a commit, pushes the relevant code/feature, but skips the STATE/PROGRESS update until end-of-session or until Chase asks. Need a stronger trigger pattern in CLAUDE.md or in the session-start protocol so this doesn't keep happening. Honest acknowledgment from this Claude: I let it slide once Chase was iterating fast and didn't catch up. The fix is to stop treating doc updates as separate commits that batch up at the end and start treating them as part of the commit itself — every commit goes out paired.
 

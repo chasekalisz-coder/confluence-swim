@@ -7,23 +7,22 @@ Last updated: 2026-04-27 (Session 14 — Step 5b Race Pace tier gating shipped, 
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`<pending>` — Race Pace fix + 2-runs-per-window + tool-card badges. Three things in one commit:
+`<pending>` — Race Pace visual port. Brought the React `RacePaceCalculator` up to feature parity with the legacy `public/pace.html` design. Same atmospheric background (radial cyan glow + grid texture, scoped to the tool wrapper instead of body), same hero (Fraunces serif title + cyan pill + sub-copy), same selectors (Course/Gender/Event), same goal-time input (JetBrains Mono), same Generate button (cyan→green gradient when ready). Same results structure: gradient header card with goal time, section markers between split groups, split tables, animated bar charts with AVG line, go-out speed indicator, critical split (danger) indicator, practice pace clocks, race-intelligence insight card, IM notice. New CSS lives in `src/styles/apple-dark.css` under a `.pace-tool` namespace (~360 lines appended) so it doesn't collide with v2. Three Google fonts (DM Sans, Fraunces, JetBrains Mono) added to `index.html` head.
 
-1. **Click target fix.** The Race Pace card on Performance Analysis was sending users to `/pace.html` (a 1,354-line standalone HTML page with no athlete awareness) instead of the React `RacePaceCalculator` component where the lock lives. That's why Jon (Bronze) could generate at will — the lock worked, but on a tool nobody opened. Flipped the onClick from `window.location.href = '/pace.html'` to `setView('pace')` so the card opens the React tool. The HTML page still exists on disk but is no longer reachable from the app navigation.
+The lock logic + tier gating from the previous commit is preserved unchanged — same 2-runs-per-5-days throttle, same `racePaceDemoRuns` schema, same hydration of last-result while locked. The lock notice and "demos left in window" hint were re-styled to use `.pt-demo-lock` / `.pt-demo-hint` classes that match the new design language.
 
-2. **2 runs per 5 days, not 1.** Reworked the throttle from a single-timestamp model (`lastRacePaceDemoAt`) to a runs-list model (`racePaceDemoRuns` array of ISO timestamps). New logic: prune to the active 5-day window, lock when count >= 2. Unlock time is when the *oldest* active run falls out of the window (frees up one slot). Adds a soft "1 demo generation left in this 5-day window" hint when non-Gold users have used 1 of 2.
-
-3. **Tier badges on tool cards.** New `.tc-tier-badge` CSS class. Meet Analyzer card now wears Soon + Gold Development (stacked, Soon on top). Race Pace card wears Gold Development. Race Pace card meta line for non-Gold users replaced with "2 demo runs available every 5 days" so they know what they have available before clicking.
+Bar chart animation: instead of pace.html's IntersectionObserver triggering bar growth on scroll-into-view, the React port uses a `useEffect` + `setTimeout(50)` to trigger the 0px → target-height transition right after mount. Same 2.2s cubic-bezier, same staggered 130ms-per-bar delay.
 
 Earlier this session, in chronological order (newest at top):
+- `b0f5d1b` — Race Pace fix batch (click target, 2-runs-per-window, tool card badges)
 - `80bfc9b` — STATE/PROGRESS catch-up commit
-- `2ce321d` — Race Pace lock immediate-trigger hot fix (within-session second click was bypassing the lock)
-- `590acb7` — Race Pace 5-day demo throttle (1-run version, superseded by this commit)
-- `0f81550` — Tier badges on Event Power Rankings and Championship Standards (Bronze + Silver + Gold)
-- `86fc2b8` — Tier badges on Progression, Age-Up Preview (Silver + Gold), and Range (Gold only)
+- `2ce321d` — Race Pace lock immediate-trigger hot fix
+- `590acb7` — Race Pace 5-day demo throttle (1-run version, superseded)
+- `0f81550` — Tier badges on Power Rankings + Championship Standards (Bronze + Silver + Gold)
+- `86fc2b8` — Tier badges on Progression, Age-Up Preview, and Range
 - `fb663e9` — Session Notes Workout chip Gold pill
-- `e2115fa` — Gold Development badge on Profile Last Race + Training Metrics cards
-- `564e77f` — Switched all Soon badges from gold to blue (visual separation from gold tier badges)
+- `e2115fa` — Gold Development badge on Profile Last Race + Training Metrics
+- `564e77f` — Switched all Soon badges from gold to blue
 - `4b0c088` — Gold Development tier badge on all six Coming Soon sections
 - `2fe7994` — Four Coming Soon sections at bottom of Performance Analysis
 - `94ef7b8` — STATE backfill for Chase progression import
