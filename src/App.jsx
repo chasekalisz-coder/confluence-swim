@@ -83,12 +83,75 @@ function SignInPage() {
         afterSignInUrl={redirectUrl}
         afterSignUpUrl={redirectUrl}
         appearance={{
+          variables: {
+            colorPrimary: '#D4A853',
+            colorBackground: '#0a0d14',
+            colorText: '#f5f5f7',
+            colorTextSecondary: 'rgba(255,255,255,0.7)',
+            colorInputBackground: 'rgba(255,255,255,0.04)',
+            colorInputText: '#f5f5f7',
+            colorNeutral: '#f5f5f7',
+            colorDanger: '#ef4444',
+            borderRadius: '10px',
+            fontFamily: 'inherit',
+          },
           elements: {
             rootBox: { width: '100%', maxWidth: 420 },
             card: {
               background: '#0a0d14',
-              border: '0.5px solid rgba(255,255,255,0.08)',
+              border: '0.5px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+              padding: '32px 28px',
+            },
+            headerTitle: {
+              color: '#f5f5f7',
+              fontSize: '22px',
+              fontWeight: 600,
+              letterSpacing: '-0.02em',
+            },
+            headerSubtitle: {
+              color: 'rgba(255,255,255,0.6)',
+              fontSize: '14px',
+            },
+            formFieldLabel: {
+              color: 'rgba(255,255,255,0.85)',
+              fontSize: '13px',
+              fontWeight: 500,
+            },
+            formFieldInput: {
+              background: 'rgba(255,255,255,0.04)',
+              border: '0.5px solid rgba(255,255,255,0.16)',
+              color: '#f5f5f7',
+              fontSize: '15px',
+              padding: '12px 14px',
+            },
+            formButtonPrimary: {
+              background: '#D4A853',
+              color: '#0a0d14',
+              fontWeight: 600,
+              fontSize: '15px',
+              padding: '12px 18px',
+              textTransform: 'none',
               boxShadow: 'none',
+              '&:hover': { background: '#e0b96a' },
+              '&:focus': { background: '#e0b96a', boxShadow: 'none' },
+            },
+            footerActionText: { color: 'rgba(255,255,255,0.6)' },
+            footerActionLink: { color: '#D4A853' },
+            identityPreviewText: { color: '#f5f5f7' },
+            identityPreviewEditButton: { color: '#D4A853' },
+            socialButtonsBlockButton: {
+              background: 'rgba(255,255,255,0.04)',
+              border: '0.5px solid rgba(255,255,255,0.16)',
+              color: '#f5f5f7',
+            },
+            dividerLine: { background: 'rgba(255,255,255,0.1)' },
+            dividerText: { color: 'rgba(255,255,255,0.5)' },
+            formResendCodeLink: { color: '#D4A853' },
+            otpCodeFieldInput: {
+              background: 'rgba(255,255,255,0.04)',
+              border: '0.5px solid rgba(255,255,255,0.16)',
+              color: '#f5f5f7',
             },
           },
         }}
