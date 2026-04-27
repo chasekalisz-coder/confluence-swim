@@ -165,27 +165,27 @@ body.v2-active #root {
   appearance: none;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 14px 6px 6px;
-  background: rgba(255,255,255,0.04);
-  border: 0.5px solid rgba(255,255,255,0.12);
+  gap: 12px;
+  padding: 8px 18px 8px 8px;
+  background: rgba(255,255,255,0.06);
+  border: 0.5px solid rgba(255,255,255,0.16);
   border-radius: 999px;
   color: var(--v2-text);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
 }
 .v2 .as-trigger:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.28);
 }
 .v2 .as-avatar {
-  width: 30px; height: 30px;
+  width: 36px; height: 36px;
   border-radius: 50%;
-  background: rgba(212, 168, 83, 0.18);
+  background: rgba(212, 168, 83, 0.22);
   color: var(--v2-gold);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -193,13 +193,15 @@ body.v2-active #root {
   flex: 0 0 auto;
 }
 .v2 .as-name {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--v2-text);
   letter-spacing: -0.01em;
 }
 .v2 .as-caret {
-  color: var(--v2-text-3);
+  color: var(--v2-text-2);
   flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
 }
 
 .v2 .as-menu {
@@ -280,9 +282,9 @@ body.v2-active #root {
 /* Mobile breakpoint — switcher trigger becomes more compact (avatar-only) */
 @media (max-width: 720px) {
   .v2 .athlete-switcher { margin-right: 4px; }
-  .v2 .as-trigger { padding: 4px; gap: 0; font-size: 12px; }
+  .v2 .as-trigger { padding: 5px; gap: 0; font-size: 13px; }
   .v2 .as-name { display: none; }
-  .v2 .as-avatar { width: 28px; height: 28px; }
+  .v2 .as-avatar { width: 34px; height: 34px; font-size: 12px; }
   .v2 .as-menu { min-width: 220px; right: -4px; }
 }
 
