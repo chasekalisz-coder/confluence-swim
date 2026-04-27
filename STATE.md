@@ -7,7 +7,7 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`{TBD-after-push} CLAUDE.md: explicit update protocol to prevent STATE/PROGRESS drift` — adds a "READ CAREFULLY" section to CLAUDE.md citing the Session 12 and Session 14 failures by name. Defines acceptable vs unacceptable commit patterns and gives a concrete trigger ("after every git push, before responding to Chase, verify each commit has a matching PROGRESS entry"). Goal: stop the recurring "code shipped, docs stale" pattern.
+`5f8eb02 CLAUDE.md: explicit update protocol to prevent STATE/PROGRESS drift` — adds a "READ CAREFULLY" section to CLAUDE.md citing the Session 12 and Session 14 failures by name. Defines acceptable vs unacceptable commit patterns and gives a concrete trigger ("after every git push, before responding to Chase, verify each commit has a matching PROGRESS entry"). Goal: stop the recurring "code shipped, docs stale" pattern.
 
 Earlier Session 14 commits worth knowing about:
 - `0a08cd7` — backfill of STATE.md + PROGRESS.md for Session 14 (caught up after Chase flagged the drift)
