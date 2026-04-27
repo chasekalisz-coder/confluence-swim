@@ -268,6 +268,9 @@ export default function FamilyNotes({ athlete, onBack, onNavigate, onViewSession
                   onClick={() => setActiveFilter(chip.id)}
                 >
                   {chip.label}
+                  {chip.id === 'workout' && (
+                    <span className="chip-tier-pill">Gold</span>
+                  )}
                   {count > 0 && <span className="count-badge">{count}</span>}
                 </button>
               )

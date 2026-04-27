@@ -1544,6 +1544,28 @@ body.v2-active #root {
   background: rgba(0, 0, 0, 0.15);
   color: rgba(0, 0, 0, 0.7);
 }
+/* Tier marker shown inside a chip label (e.g., "Workout · Gold") to flag
+   the chip's content as a tier-restricted feature. Matches the gold pill
+   language used elsewhere on the site (section-tier-badge on Performance
+   Analysis Coming Soon sections). Stays gold even when the chip is active
+   so the tier signal doesn't disappear when the chip is selected. */
+.v2 .filter-chips .chip .chip-tier-pill {
+  display: inline-block;
+  padding: 1px 7px;
+  background: rgba(212, 168, 83, 0.18);
+  color: var(--v2-gold);
+  border: 0.5px solid rgba(212, 168, 83, 0.35);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.v2 .filter-chips .chip.active .chip-tier-pill {
+  background: rgba(212, 168, 83, 0.22);
+  color: var(--v2-gold);
+  border-color: rgba(212, 168, 83, 0.5);
+}
 
 .v2 .search-input {
   flex: 0 0 260px;
