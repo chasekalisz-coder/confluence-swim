@@ -7,11 +7,13 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`27fba07 Rename Analysis tab to 'Performance Analysis'; stack on mobile` — user-visible label only. Desktop top nav and page title get the full "Performance Analysis"; mobile tab bar stacks it on two lines via `\n` in the label string + `white-space: pre-line` + reserved 24px label height so the bar doesn't grow vertically. Internal route key, URL hash, view ID, file name, prop names, comments — all unchanged.
+`992f2b6 Performance Analysis: rewrite page subtitle` — old subtitle described the page narrowly as "tools to break down races and plan target paces"; new subtitle ("Performance Analysis lays out the swimming data that defines where Jon is and where he's headed. Faster swims start with knowing what's underneath them.") frames the page as a strategy layer over swimming data broadly, since the page now holds Times & Goals, Progression, Power Rankings, Championship Standards, Age-Up Preview, Range, Aerobic Development, Race Pace, and Meet Analyzer. Added subjectPronoun() helper alongside existing pronounThem/possessive helpers so he/she/they renders correctly.
 
 Earlier commits worth knowing about:
-- `6250e9e` — backfilled commit hash for Step 2 restructure
-- `489c037` — Step 2 of tier matrix: restructure FamilyProfile.jsx and FamilyAnalysis.jsx to match the page architecture in `docs/reference/tier-access-matrix.md`. Profile keeps Hero/Chasing Next/Times & Goals/Last Race/Upcoming Meets/Training Metrics (Coming Soon)/Scheduling. Analysis adds Times & Goals mirror + Progression + Event Power Rankings + Championship Standards + Age-Up Preview + Range. 7 sub-components in FamilyProfile.jsx exported and imported by FamilyAnalysis.jsx for the mirrored sections. Zero CSS changes; mobile formatting preserved. No tier gating yet — all users still see everything since they're all Gold.
+- `1a0ecb7` — STATE.md backfill for the rename
+- `27fba07` — rename Analysis → Performance Analysis (desktop full label, mobile stacked over two lines)
+- `6250e9e` — STATE backfill for Step 2
+- `489c037` — Step 2 of tier matrix: Profile + Analysis page restructure
 
 Earlier Session 14 commits worth knowing about:
 - `5f8eb02` — CLAUDE.md update protocol section (acceptable vs unacceptable commit patterns; matched-PROGRESS-entry trigger after every push)
