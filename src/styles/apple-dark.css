@@ -2939,6 +2939,29 @@ body.v2-active #root {
   text-transform: uppercase;
 }
 
+/* Locked playbook card — applied to every card pre-launch. The article view
+   itself isn't deleted, just made unreachable from the grid. Kills hover,
+   pointer cursor, and the click handler. The Soon badge (.rc-status) is
+   already rendered for every card via the JSX while the gate is on. */
+.v2 .resource-card-locked {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.55;
+}
+.v2 .resource-card-locked:hover {
+  background: var(--v2-surface);
+  border-color: var(--v2-border);
+  transform: none;
+}
+.v2 .resource-card-locked .rc-cta {
+  color: var(--v2-text-3);
+  font-weight: 500;
+}
+.v2 .resource-card-locked .rc-status {
+  background: rgba(212, 168, 83, 0.12);
+  color: var(--v2-gold);
+}
+
 /* Contact card */
 .v2 .contact-card {
   background: var(--v2-surface);

@@ -246,19 +246,26 @@ export default function FamilyResources({ athlete, onBack, onNavigate, onLogoCli
             <SchedulingBlock athlete={athlete} slotData={maySlots} />
 
             {/* ===== Playbook grid ===== */}
+            {/* All Playbook entries are gated until launch — onClick is a no-op
+                and every card shows the "Soon" badge. The articles still exist
+                in src/data/resources.js and the article view renders fine when
+                navigated to directly; we just don't let users get there from
+                the grid. Remove the gate (restore onClick + drop the unconditional
+                badge) when content is approved for release. */}
             <h2 className="section-title">The Playbook</h2>
             <div className="resource-grid">
               {RESOURCES.map(r => (
                 <div
                   key={r.id}
-                  className="resource-card"
-                  onClick={() => openResource(r)}
+                  className="resource-card resource-card-locked"
+                  aria-disabled="true"
+                  title="Coming soon"
                 >
-                  {r.status === 'soon' && <span className="rc-status">Soon</span>}
+                  <span className="rc-status">Soon</span>
                   <div className="rc-icon">{r.icon}</div>
                   <div className="rc-title">{r.title}</div>
                   <div className="rc-desc">{r.desc}</div>
-                  <div className="rc-cta">Read →</div>
+                  <div className="rc-cta">Coming soon</div>
                 </div>
               ))}
             </div>
