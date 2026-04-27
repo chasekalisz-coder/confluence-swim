@@ -24,16 +24,6 @@ None currently.
   tab inside the existing pace.html, could be its own tool. Needs
   Chase to outline what data is available per event before build.
 
-- [ ] **Race Pace Calculator — better description of what the tool does**
-  Found by Chase during Pomper test login on Session 14. The page
-  (`public/pace.html`) opens with "Your race pace." + a single sentence
-  about elite performances. Parents need more context about what the
-  tool actually produces for them — what is a race pace breakdown, why
-  would they use it, what do they do with the output, what does goal
-  time mean here. Discoverability into the tool is fine; the in-page
-  intro is too sparse. Rewrite the lede + add a brief "What you'll get"
-  block above the form. Keep visual style as-is (cyan accent, dark theme).
-
 - [~] **Auth — finish making it production-ready**
 
   **Done (Session 13 cont'd):**
