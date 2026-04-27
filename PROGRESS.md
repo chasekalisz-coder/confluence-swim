@@ -164,8 +164,15 @@ Both deleted from TODO.md.
 ### Stale project-attached handoff — verified gone, deleted from TODO
 TODO.md had a longstanding item asking Chase to replace/delete `/mnt/project/CONFLUENCE_HANDOFF__1_.md` (an old handoff doc that referenced Supabase + 9 athletes and was feeding wrong context into every new chat via the project's Files attachment). Chase confirmed via screenshot of the project's Files section that no files are currently attached — the handoff was already removed at some point. The current project Instructions point new chats at the repo's CLAUDE.md correctly. Item deleted from TODO.md.
 
+### Scheduling system — built end-to-end (Session 13 late addition)
+Family side and coach side both shipped. Resolver is the default admin view with three tiers (conflict / easy / alts-only) and a per-family progress scorecard. Auto-poll every 20s + manual Refresh + diagnostic panel with force-delete. Family flow: dual `[R]` / `[A]` buttons per slot, day cell tinting, running picks list, persistent confirmation card post-submit, robust clear flow with retry + DB-confirms-before-UI-clears.
+
+**Real bug debugged in Session 13:** Jon's row was sticking around in admin even after the family tapped 'Clear and start fresh'. Root cause: handleReset was clearing local state instantly while firing the DB delete async — if the call failed silently (cold start, network blip), the UI looked clear but the row stayed. User refreshed, useEffect re-fetched the still-existing row, picks came back, admin still showed them. Fix: handleReset now waits for the DB delete to succeed BEFORE clearing UI, retries once on failure, and surfaces real failures via alert. Also added 'submit zero picks' = clear-saved-request path so users who deselect everything in the calendar instead of using the explicit clear link still get a working save action. Force-delete in admin diagnostic panel served as the emergency cleanup tool throughout.
+
+**Persistence boundary:** Resolver assignments live in component-local state for now (refresh wipes them). DB persistence to a `slot_assignments` table is held until Chase has used the resolver in at least one real scheduling cycle and confirms the workflow holds up. No point committing to a schema for something we may iterate on.
+
 ### Next up
-Phase 2 (desktop optimization across the whole site) and Phase 3 (TODO.md cleanup) are the next phases per STATE.md. Top P1 items on TODO.md: Scheduling request flow (Resources page block), Meet Analyzer direction decision, SwimCloud rankings integration, Upcoming meets admin entry, Session count fix, Program type field. Phase 4 is Clerk auth + invites + Squarespace integration.
+Phase 2 (desktop optimization across the whole site) and Phase 3 (TODO.md cleanup) are the next phases per STATE.md. Top P1 items on TODO.md: Resolver assignment persistence + family-side schedule-confirmed view + by-day Acuity export (next session of scheduling work — wait until Chase uses what's there now), Meet Analyzer direction decision, SwimCloud rankings integration, Upcoming meets admin entry. Phase 4 is Clerk auth + invites + Squarespace integration.
 
 ---
 

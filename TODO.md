@@ -15,27 +15,32 @@ None currently.
 
 ## P1 — NEXT UP
 
-- [ ] **Scheduling request flow — Resources page block (TOMORROW)**
-  Built: May 2026 slot data is in `src/data/may-2026-slots.json` (160 slots).
-  Profile Scheduling card already links to Resources page with updated copy.
+- [~] **Scheduling request flow — Resources page block**
 
-  **Still to build:**
-  - **Family side (on Resources page, block sized slightly bigger than About):**
-    - Calendar view for the month with all available slots shown
-    - Family clicks slots to mark as PRIMARY picks (slots they really want)
-    - Then marks SECONDARY/backup picks (slots that would also work)
-    - Submit button — saves request to DB
-  - **Coach side (admin):**
-    - Per-family view: see one family's primary + secondary picks
-    - Combined view: ALL families' requests overlaid on same calendar
-    - Print/export option
-  - **Phase 2 (later):** AI optimizer that takes all requests + assigns slots,
-    maximizing primary picks first, falling back to secondary, balanced
+  **Built (Session 13):**
+  - Family-side: SchedulingBlock on Resources page renders the May 2026 calendar in compact dot-summary cells (date + colored dots for picked slots). Tap any day → drawer panel below with full slot rows.
+  - Each slot has dual `[R]` (Request, gold) and `[A]` (Alternative, gray) buttons. Tap to set, tap same to clear, tap other to swap.
+  - Day cells tint based on highest-priority pick (gold = has Request, gray = only Alternatives).
+  - Running 'Your picks' list below calendar in chronological order with per-row clear button.
+  - Persistent confirmation card replaces calendar after submit. Stays as the default view on every page load while a saved request exists. 'Add more requests' button reopens the calendar with existing picks pre-loaded.
+  - Submit button at zero picks acts as 'Clear my request' when a saved request exists. handleReset confirms DB delete BEFORE clearing UI, with one retry on transient failure, and surfaces real failures via alert.
+  - Copy: 'Mark the slots you'd like as Requests. If you have flexibility, mark a few additional times as Alternatives. Every effort goes into giving each family their full set of Requests — Alternatives only come into play if a Request needs to shift.'
+  - Disclaimer: 'Once schedule requests are set, Chase will reach out to review all dates before sessions are confirmed.'
+  - DB schema: `slot_requests` table (athlete_id, month, picks jsonb, note, submitted_at). One row per athlete per month, upsert-on-write. `deleteSlotRequest` endpoint added for the clear flow.
 
-  **Open design decisions:**
-  - How many primary picks per family per month? (cap or open?)
-  - How does coach mark a slot as "scheduled in Acuity" so it disappears from view?
-  - New Neon table `slot_requests` schema (athlete_id, slot_id, priority, requested_at)?
+  **Coach-side admin (Session 13):**
+  - SlotRequestsAdmin component with three views: Resolver (default, actionable), Combined (calendar overlay), Per Family (one at a time).
+  - **Resolver:** every requested slot in a sortable list. Conflicts first (red bar, 2+ Requests on same slot), easy wins next (gold, single Request), Alts-only at bottom (gray). Each row shows family chips with Assign button. Right rail Family Progress scorecard with X/Y assigned-of-requested fractions and progress bars.
+  - Auto-poll every 20 seconds + manual Refresh button + 'Updated Xs ago' indicator so coach sees family submissions land in near-realtime.
+  - Diagnostic panel at the top: collapsible 'raw data' view listing every DB row with a Force delete button per athlete (red, with confirm). Emergency cleanup tool — useful while testing; pull when stable.
+  - Print-friendly via `window.print()` for paper copy into Acuity.
+
+  **Still to build (P1):**
+  - Persist Resolver assignments to DB (new `slot_assignments` table). Currently in-memory only — refresh wipes them. Hold until Chase has used the resolver in one real scheduling cycle and confirms the workflow.
+  - Family-side post-confirmation update: when coach confirms the schedule, surface the assigned slots back to the family on the confirmation card ('Confirmed: 8am Mon May 4', etc).
+  - By-day Acuity export view: chronological list of all assignments across all families for entry into Acuity.
+  - Per-family final schedule export: 'Smith family, here's your May schedule, please confirm.'
+  - Admin UI terminology: still uses 'primary/backup' internally and in some admin labels. Migrate to 'Request/Alternative' for consistency with family side.
 
 - [ ] **Meet Analyzer / Last Race section — decide direction (TOMORROW)**
   Currently a placeholder section on Athlete Performance Profile. Original

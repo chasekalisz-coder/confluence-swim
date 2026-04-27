@@ -7,7 +7,7 @@ Last updated: 2026-04-26 (Session 13)
 ## Live URL: confluence-swim.vercel.app
 
 ## Last commit on main
-Meet Analyzer placeholder: clean Coming Soon card (no fake disabled form, no timeline promise).
+Family-side clear flow: confirms DB delete BEFORE clearing UI, with retry. Submit button at zero picks now functions as 'Clear my request' if a saved request exists. Eliminates the silent-fail case that caused Jon's row to stick around in admin even after the family tapped 'Clear and start fresh'.
 
 ## Workflow
 All fixes go to v2-redesign first, then immediately pushed to main.
