@@ -1,5 +1,49 @@
 # PROGRESS.md — Session Log
 
+## Session 13 cont'd — 2026-04-26 evening (Auth scaffold, end-to-end)
+
+### Approach
+Took the site from "no auth, anyone with a URL gets in" to "Clerk login on every page, admin email allowlist, family scoping wired but not yet active." Built incrementally with Chase confirming each step. End state is admin-locked production.
+
+### Done
+
+**Clerk install + main app gate** (commit 3185347). Installed `@clerk/clerk-react` v5.61.6. main.jsx wraps App in `<ClerkProvider>` with `VITE_CLERK_PUBLISHABLE_KEY` env var (Vercel Production only). App.jsx splits on `<SignedOut>`/`<SignedIn>`. Branded sign-in card centered on dark bg. Header (admin) and FamilyNav (family pages) both got `<UserButton>` for sign-out access.
+
+**Tool-page gate** (commit d2589b0). Standalone HTML tool pages (test-ai, sprint, technique, workout, meetprep, pace) live outside the React app, so the React-side ClerkProvider doesn't reach them. New `/public/auth-guard.js` loads Clerk's vanilla JS from CDN, hides body until auth resolves, bounces unauthenticated users to `/sign-in?redirect_url=<original>`. Injected as first script in head of all 6 tool HTMLs via sed. App.jsx SignInPage now reads `?redirect_url=...` and feeds it to Clerk's SignIn component as afterSignInUrl/afterSignUpUrl.
+
+**Family scope + multi-athlete switcher + tool role gates** (commit 2abc62b). Role-based access via Clerk publicMetadata:
+- `{ role: 'admin' }` — full access, sees AthleteGrid + everything
+- `{ role: 'family', linkedAthletes: ['ath_jon', 'ath_lana', 'ath_ben'] }` — scoped to those athletes only
+- No metadata or no linked athletes — "Account pending" screen with sign-out button
+
+App.jsx routing tree on mount: admin honors URL; family is forced into family-profile of either URL athlete (if in linkedAthletes) or first linked athlete, with replaceState normalizing the URL. setTimeout safety net bounces a family user back if state ever drifts to admin view.
+
+New `<AthleteSwitcher>` component in FamilyNav.jsx — dropdown with avatars, family-last-name header, gold-tinted current row + checkmark. Hidden when family has 0 or 1 linked athletes. Click switches `selectedAthlete` + URL, preserves the current tab hash. Outside-click closes. Mobile breakpoint compacts the trigger to avatar-only.
+
+Tool role gates: auth-guard.js checks `Clerk.user.publicMetadata.role`. Tools require admin by default. `pace.html` opts in via `<html data-allow-family="true">` since it's part of the family Analysis flow. Other 5 tools bounce non-admin users to `/`.
+
+Prop threading: App.jsx builds `linkedAthletesData` (full athlete records, not just IDs) and bundles `{ linkedAthletes, onSwitchAthlete }` as `familyScopeProps`. Spreads into FamilyProfile, FamilyNotes, FamilyMeets, FamilyAnalysis, FamilyResources via sed bulk pass on each component's signature + FamilyNav usage.
+
+CSS additions to apple-dark.css: `.athlete-switcher`, `.as-trigger`, `.as-avatar`, `.as-name`, `.as-caret`, `.as-menu`, `.as-menu-header`, `.as-item` (with .as-item-current variant), `.as-item-text`, `.as-item-name`, `.as-item-meta`, `.as-check`. Mobile breakpoint at 720px hides `.as-name`.
+
+**Diagnostic logging + unsafeMetadata fallback** (commit c255c6c). Chase hit "Account pending" despite saving role:admin. Added `console.log` of user.id / publicMetadata / unsafeMetadata to surface what Clerk was actually returning. Also added unsafeMetadata fallback for role read since Clerk's dev-instance editor sometimes writes there.
+
+**Admin email allowlist** (commits e7c33d1, ec974e9). Console showed `user.publicMetadata = {}` despite multiple saves — Clerk's dev-instance metadata editor was silently failing to persist. Added `ADMIN_EMAILS = ['chasekalisz@yahoo.com']` allowlist to App.jsx (any email in list gets role='admin' regardless of metadata). Same allowlist mirrored in auth-guard.js so tool pages work too.
+
+**Auth-guard URL fix** (commit 2094c19). Tools were timing out and bouncing back to `/`. Console showed `Failed to load resource: A server with the specified hostname could not be found — https://sharp-honeybee-57.clerk.accounts.dev$/npm/...` — note the stray `$` mid-URL. Root cause: `parseFrontendApi()` was stripping trailing `$` from the base64-encoded publishable key BEFORE decoding. But `$` isn't on the encoded form — it's inside the decoded value as Clerk's terminator. Regex never matched, encoded value passed through, atob() decoded to `<host>$`, the `$` rode along into the script URL. Fixed: strip the trailing `$` AFTER atob() decodes the value.
+
+### Persistence boundary (still in effect from earlier today)
+Slot Requests Resolver assignments are still component-local state only; no `slot_assignments` table yet. Held until Chase uses the Resolver in a real scheduling cycle.
+
+### What's NOT done (next session candidates)
+- Family invites — blocked on Clerk metadata persistence. Need to either spin up a fresh Clerk app, upgrade to production keys, or write metadata via Clerk REST API directly bypassing the dashboard editor.
+- Pull the email allowlist + console.log debug statements once metadata persistence is verified. Right now both App.jsx and auth-guard.js have `chasekalisz@yahoo.com` hardcoded.
+- Vercel env vars (CLERK_SECRET_KEY, VITE_CLERK_PUBLISHABLE_KEY) only set for Production. Add to Preview + Development before any branch deploys.
+- Clerk email typo on chase user (was `chasekalisz@yahoo.com.com`, eventually corrected to `chasekalisz@yahoo.com`). Note for Chase to verify on the user record.
+- Diagnostic panel + force-delete buttons on SlotRequestsAdmin.jsx (added during scheduling debug, kept for safety, can be pulled when scheduling proven stable).
+
+---
+
 ## Session 13 — 2026-04-26 (Phase 2 mobile sweep — Athlete Performance Profile)
 
 ### Approach

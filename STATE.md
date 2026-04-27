@@ -1,18 +1,34 @@
 # STATE.md — Current Branch State
 
-Last updated: 2026-04-26 (Session 13)
+Last updated: 2026-04-26 (Session 13 cont'd — Auth scaffold)
 
 ## Active branch: v2-redesign
 ## Production branch: main
 ## Live URL: confluence-swim.vercel.app
 
 ## Last commit on main
-Family-side clear flow: confirms DB delete BEFORE clearing UI, with retry. Submit button at zero picks now functions as 'Clear my request' if a saved request exists. Eliminates the silent-fail case that caused Jon's row to stick around in admin even after the family tapped 'Clear and start fresh'.
+`2094c19 Auth-guard: fix malformed Clerk script URL on tool pages` — closes the auth work for tonight. Clerk login is live across the entire site (React app + 6 standalone tool HTMLs). Chase's email is hardcoded as admin in two places (App.jsx ADMIN_EMAILS and public/auth-guard.js ADMIN_EMAILS) because Clerk's dev-instance metadata editor was failing to persist values. Family scope/switcher code is wired but no family users have been invited yet.
 
 ## Workflow
 All fixes go to v2-redesign first, then immediately pushed to main.
 Do NOT leave fixes only on v2-redesign — always merge to main after every commit.
 Push command: git push [PAT] HEAD:main
+
+## Auth state (Session 13 cont'd)
+- Provider: Clerk (`@clerk/clerk-react` v5.61.6)
+- Publishable key: `pk_test_c2hhcnAtaG9uZXliZWUtNTcuY2xlcmsuYWNjb3VudHMuZGV2JA` (Vercel env var `VITE_CLERK_PUBLISHABLE_KEY`, Production only)
+- Secret key: Vercel env var `CLERK_SECRET_KEY`, Production only
+- Frontend API host derived from key: `sharp-honeybee-57.clerk.accounts.dev`
+- Admin user: chasekalisz@yahoo.com (Clerk user_id `user_3CvEkA6og3HK6rBy1WtW5ygVnIS`)
+- Admin metadata is stored in Clerk publicMetadata as `{ "role": "admin" }` — was broken at first save attempts but eventually persisted on the third edit. Email allowlist in code is the belt-and-suspenders fallback.
+- Auth gate locations:
+  1. `src/main.jsx` — wraps App in `<ClerkProvider>` with afterSignInUrl='/'
+  2. `src/App.jsx` — outer `<SignedOut>/<SignedIn>` split. Branded sign-in card on dark bg.
+  3. `src/App.jsx AppContent()` — role check, family scope routing, "Account pending" screen for unconfigured family users.
+  4. `public/auth-guard.js` — loads Clerk vanilla JS from CDN, hides body until auth resolves, role-gates each tool. Same email allowlist as App.jsx.
+  5. Each tool HTML has `<script src="/auth-guard.js"></script>` injected as the first script in head.
+  6. `pace.html` has `<html data-allow-family="true">` opt-in so families using the Analysis tab's Race Pace link aren't bounced.
+- Vercel env vars are Production only — Preview/Development not set yet. Will need to be added before any branch deploys.
 
 ## Current state of key systems
 - Athlete data: DB only, single source of truth, fixture is seed-only

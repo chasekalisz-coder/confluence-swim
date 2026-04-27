@@ -15,6 +15,27 @@ None currently.
 
 ## P1 — NEXT UP
 
+- [~] **Auth — finish making it production-ready**
+
+  **Done (Session 13 cont'd):**
+  - Clerk installed end-to-end. Main app + 6 standalone tool HTMLs all gated.
+  - Admin login working for chasekalisz@yahoo.com.
+  - Family scope routing wired (App.jsx routing tree, scoped athlete switcher).
+  - Tool role gates working (5 admin-only, pace.html family-allowed).
+  - "Account pending" screen for unconfigured family users.
+  - URL guard: family typing another family's URL silently bounces.
+
+  **Blocked / outstanding:**
+  - **Clerk metadata persistence is broken on the dev instance.** Saving `{ "role": "admin" }` in the dashboard editor either doesn't persist, partially persists, or persists after multiple attempts. This MUST be resolved before inviting families. Options:
+    1. Spin up a fresh Clerk app (sometimes dev instances get into a bad state — clean slate often clears it). Personal workspace → Create application → swap keys in Vercel.
+    2. Upgrade to a Clerk production instance (separate API keys, separate user pool, different tier of metadata reliability).
+    3. Build an in-app admin tool that calls Clerk's REST API directly to set `publicMetadata` for a user. Bypasses the dashboard editor entirely. Form: email + role + linkedAthletes → POST to Clerk. Probably the cleanest long-term.
+  - **Pull the email allowlist hardcode** — `ADMIN_EMAILS = ['chasekalisz@yahoo.com']` lives in two places (`src/App.jsx` and `public/auth-guard.js`). Once metadata persistence is verified, delete those constants and the related `isAllowlistAdmin` branches. Keep the metadata path only.
+  - **Pull the diagnostic console.log statements** — added in commit c255c6c (App.jsx) and commit 797a350 (auth-guard.js). Useful for tonight's debug, no value in production.
+  - **Add Vercel env vars to Preview + Development.** Currently only set for Production. Branch deploys / preview deploys would fail at startup.
+  - **Verify the Clerk user email is correct.** Was originally `chasekalisz@yahoo.com.com` (typo, double `.com`). Eventually appeared as `chasekalisz@yahoo.com` — confirm on the user record in Clerk dashboard.
+  - **Family invite flow.** Once metadata works, build a small admin UI for inviting families: enter email + select linkedAthletes → Clerk sends invite + sets metadata atomically. Right now it'd be manual through the Clerk dashboard, which we've established is unreliable.
+
 - [~] **Scheduling request flow — Resources page block**
 
   **Built (Session 13):**
