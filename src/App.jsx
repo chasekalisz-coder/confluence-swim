@@ -115,6 +115,24 @@ function AppContent() {
     console.log('[App] user.unsafeMetadata:', user.unsafeMetadata)
   }
 
+  // ---- TEMPORARY ADMIN ALLOWLIST ----
+  // Clerk's dev-instance metadata editor has been failing to persist values
+  // — the dashboard accepts JSON, claims it saved, but reading it via the
+  // React SDK returns {}. Until that's resolved (likely needs an upgrade to
+  // a production instance, or using the Clerk REST API to set metadata
+  // directly), we hardcode the admin emails so Chase can use the app.
+  //
+  // This fallback is explicit-allowlist only — every email here gets admin.
+  // Family users still flow through the metadata path, so we have to fix the
+  // metadata bug before inviting families. But Chase being locked out of his
+  // own app is the urgent problem to unblock.
+  const ADMIN_EMAILS = [
+    'chasekalisz@yahoo.com',
+    // Add additional admin emails here if needed.
+  ]
+  const userEmail = user?.primaryEmailAddress?.emailAddress?.toLowerCase() || ''
+  const isAllowlistAdmin = ADMIN_EMAILS.includes(userEmail)
+
   // Read role from publicMetadata. Clerk normalizes the property name to
   // publicMetadata in the React SDK. We also accept unsafeMetadata as a fallback
   // because the dashboard's "Public" editor sometimes writes to unsafeMetadata
@@ -122,7 +140,9 @@ function AppContent() {
   // shouldn't accidentally land on "Account pending" because of that.
   const pubMeta = user?.publicMetadata || {}
   const unsafeMeta = user?.unsafeMetadata || {}
-  const role = pubMeta.role || unsafeMeta.role || 'family'
+  const metaRole = pubMeta.role || unsafeMeta.role
+  // Allowlist email always wins; otherwise fall back to metadata; otherwise family.
+  const role = isAllowlistAdmin ? 'admin' : (metaRole || 'family')
   const isAdmin = role === 'admin'
   const rawLinked = Array.isArray(pubMeta.linkedAthletes)
     ? pubMeta.linkedAthletes
@@ -132,6 +152,7 @@ function AppContent() {
   const linkedAthletes = rawLinked
 
   if (typeof window !== 'undefined' && user) {
+    console.log('[App] email:', userEmail, '| isAllowlistAdmin:', isAllowlistAdmin)
     console.log('[App] resolved role:', role, '| linkedAthletes:', linkedAthletes)
   }
 
