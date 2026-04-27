@@ -7,14 +7,11 @@ Last updated: 2026-04-27 (Session 14 — Step 5b Race Pace tier gating shipped, 
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`<pending>` — Race Pace tool polish: lock notice copy + Gold badge in hero + IM dev banner. Three small tweaks to the React Race Pace tool after the visual port landed:
-
-1. **Lock notice copy:** removed "— ask Chase about adding it any time" tail. Notice now reads "Try again in N days. Race Pace is part of Gold Development." Chase: "and whats this bullshit." The conversational soft-sell felt out of place once the rest of the tool was polished; the bare statement reads cleaner.
-2. **Gold Development badge in the hero.** New `.pt-gold-badge` sits next to the existing cyan "Race Pace Calculator" pill in a flex row. Matches `.section-tier-badge` color palette but sized to align with the pill it sits beside. Reinforces the tier inside the tool itself, not just on the card outside.
-3. **"IM race pace is in development." banner at the top.** New `.pt-im-banner` below the sub-copy, above the Course selector. Gold-tinted, reads as a status notice. The existing IM dev notice at the bottom of results stays — it surfaces only after a generation; this new banner is visible from the moment the tool opens.
+`<pending>` — Race Pace: restored the practice pace clock animation. Chase tested the polished tool, called out that the spinning hand + sweeping track on the two practice pace clocks (Avg /50 and Avg /100) was missing — I'd dropped it during the visual port and called it intentional. Putting it back. Three animations restored: `ptClockSpin` (purple track ring rotates 360° and fades over 2s), `ptHandSweep` (gradient hand sweeps 360° over the same 2s), `ptFadeInValue` (time value fades in at 1.8s). Added the four DOM elements (track, hand, dot, value) inside each `.pt-pace-clock` and the `.pt-pace-animate` trigger class on each `.pt-pace-card`. Keyframes scoped under `.pace-tool` so they don't collide with the rest of the v2 design system.
 
 Earlier this session, in chronological order (newest at top):
-- `bad5345` — Race Pace full visual port from /pace.html to React (atmospheric background, hero, animated bars, indicators, practice pace clocks, insight, IM notice)
+- `3511464` — Race Pace tool polish (lock copy, in-hero gold badge, IM dev banner)
+- `bad5345` — Race Pace full visual port from /pace.html to React
 - `b0f5d1b` — Race Pace fix batch (click target flip, 2-runs-per-window throttle, tool card badges)
 - `80bfc9b` — STATE/PROGRESS catch-up commit
 - `2ce321d` — Race Pace lock immediate-trigger hot fix

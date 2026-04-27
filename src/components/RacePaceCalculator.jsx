@@ -349,16 +349,22 @@ function Results({ result }) {
           </div>
           <div className="pt-pace-row">
             {p50 && (
-              <div className="pt-pace-card">
+              <div className="pt-pace-card pt-pace-animate">
                 <div className="pt-pace-clock">
+                  <div className="pt-pace-clock-track" />
+                  <div className="pt-pace-clock-hand" />
+                  <div className="pt-pace-clock-dot" />
                   <span className="pt-pace-clock-value">{fmtPace(p50)}</span>
                 </div>
                 <div className="pt-pace-label">Avg /50</div>
               </div>
             )}
             {p100 && (
-              <div className="pt-pace-card">
+              <div className="pt-pace-card pt-pace-animate">
                 <div className="pt-pace-clock">
+                  <div className="pt-pace-clock-track" />
+                  <div className="pt-pace-clock-hand" />
+                  <div className="pt-pace-clock-dot" />
                   <span className="pt-pace-clock-value">{fmtPace(p100)}</span>
                 </div>
                 <div className="pt-pace-label">Avg /100</div>

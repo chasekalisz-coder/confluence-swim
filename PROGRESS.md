@@ -181,6 +181,20 @@ Three small tweaks landed right after the visual port — Chase tested the new t
 2. **Gold Development badge in the hero of the tool.** The Race Pace card on Performance Analysis already wore the badge; the tool itself didn't. Added `.pt-gold-badge` next to the cyan "Race Pace Calculator" pill in a flex row inside the hero. Reinforces the tier inside the tool, not just on the card outside.
 3. **"IM race pace is in development." banner.** New `.pt-im-banner` between the hero sub-copy and the Course selector. Gold-tinted to read as a status notice. The existing IM dev notice at the bottom of results stays — it surfaces only after a generation; this banner is visible from the moment the tool opens, so a parent looking for a 200 IM realizes immediately that the tool doesn't cover it yet.
 
+### Race Pace: practice pace clock animation restored
+
+Chase tested the polished tool again and immediately spotted what I'd dropped: "the spinning line on the two circles at the bottom is gone." Right — during the visual port I called the clock-spin/hand-sweep animation a deliberate trade-off and skipped it. He wants it back.
+
+Restored all three animations from pace.html, scoped under the `.pace-tool` namespace so they don't collide:
+
+- `ptClockSpin` (2s, cubic-bezier 0.4-0-0.2-1): the purple track ring (top-color rgba(167,139,250,0.8) + right-color rgba(167,139,250,0.5), transparent on the other two sides) rotates 360° around the clock face and fades to 0 opacity. Reads as a single sweep that decays.
+- `ptHandSweep` (same 2s window, same easing): a 2px-wide purple gradient stick anchored at bottom-center sweeps 360° around the clock face. Bottom of the gradient is rgba(167,139,250,0.2), top is rgba(167,139,250,0.9), so the hand looks like it's leading a comet trail.
+- `ptFadeInValue` (0.5s ease, 1.8s delay): the time value (e.g. "38.3" or "1:16.5") fades in from opacity 0 + scale(0.8) to opacity 1 + scale(1) right as the hand finishes its sweep.
+
+The `.pt-pace-animate` class on each `.pt-pace-card` is the trigger — it's added in the React markup at mount, which means all the descendant animations fire as soon as the practice pace section renders. Pace.html used IntersectionObserver to wait for the section to scroll into view before triggering; the React port fires immediately, which is fine because the practice pace section only renders after a Generate click that scrolls into view anyway.
+
+Each clock now has four DOM elements: `.pt-pace-clock-track` (the spinning ring), `.pt-pace-clock-hand` (the sweeping stick), `.pt-pace-clock-dot` (the small purple dot at the center), and `.pt-pace-clock-value` (the time text that fades in last). Same structure as pace.html, same timing, same colors.
+
 ### Friction worth naming
 Chase had to call out (again) that PROGRESS.md and STATE.md were not being kept current during the session. CLAUDE.md is explicit on line 88: "Never let STATE.md or PROGRESS.md fall behind during a session." This was already noted as a Session 12 failure — it recurred in Session 14, and recurred *again* during the late-afternoon batch (eight commits shipped without doc updates between them). Pattern is: Claude makes a commit, pushes the relevant code/feature, but skips the STATE/PROGRESS update until end-of-session or until Chase asks. Need a stronger trigger pattern in CLAUDE.md or in the session-start protocol so this doesn't keep happening. Honest acknowledgment from this Claude: I let it slide once Chase was iterating fast and didn't catch up. The fix is to stop treating doc updates as separate commits that batch up at the end and start treating them as part of the commit itself — every commit goes out paired.
 
