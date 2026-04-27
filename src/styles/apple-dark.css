@@ -816,6 +816,44 @@ body.v2-active #root {
 .v2 .au-card-wrap:hover .au-card-inner {
   transform: rotateY(180deg);
 }
+/* Locked Age-Up card — non-Silver/non-Gold viewer, event isn't the
+   demo unlock. Stays flat (no hover flip), opacity dropped, content
+   shows event name + placeholder dashes. The cursor reverts to default
+   so it doesn't suggest interactivity that doesn't exist. */
+.v2 .au-card-wrap.au-card-locked {
+  opacity: 0.45;
+  cursor: default;
+}
+.v2 .au-card-wrap.au-card-locked:hover .au-card-inner {
+  transform: none;
+}
+.v2 .au-card-wrap.au-card-locked .au-time,
+.v2 .au-card-wrap.au-card-locked .au-stds {
+  color: #475569;
+}
+/* Demo pill on the one unlocked card — small gold corner marker so
+   the family knows that one card is a sample of what they'd see for
+   every event with Silver/Gold. Sits in the top-right of the card,
+   above the .au-card-inner so it doesn't get caught in the flip. */
+.v2 .au-card-wrap.au-card-demo {
+  position: relative;
+}
+.v2 .au-demo-pill {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 2px 7px;
+  background: rgba(212, 168, 83, 0.22);
+  color: var(--v2-gold);
+  border: 0.5px solid rgba(212, 168, 83, 0.4);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
 .v2 .au-front, .v2 .au-back {
   position: absolute; inset: 0;
   backface-visibility: hidden;

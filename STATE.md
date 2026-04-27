@@ -7,14 +7,18 @@ Last updated: 2026-04-27 (Session 14 — Step 5b Race Pace tier gating shipped, 
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`<pending>` — Range / Specialty Bloom demo for Skills/Bronze/Silver (Gold-only feature). Second section wired with the demo data swap pattern. Non-Gold viewers see Chase Kalisz's bloom rendered against OPEN/Senior age-bucket standards — a fully developed bloom across all five strokes (28 best times pulled from `api/data/ath_chase.json`, derived as the minimum time per event from his progression history). Same `.demo-banner` pattern as Progression, with the section lede modified to use "Chase" in place of `athlete.first`. Gold tier sees the section unchanged.
+`<pending>` — Age-Up Preview demo for Skills/Bronze. Third gated section to land its data swap. Different pattern than Progression and Range — instead of swapping in Chase's data, this one shows the family's own kid's data but only for **one event** (50 Free), with all other event cards dimmed and locked. Frames the upgrade as "you're seeing 1 of 6 cards your kid has, the rest unlock with Silver."
+
+50 Free was chosen because every athlete tier has a 50 Free time recorded, so the demo card is guaranteed to populate with real data instead of "—". Course toggle (SCY/LCM) still works for everyone — the demo unlock follows whichever course is selected.
 
 Implementation:
-- Extended `src/data/progression-demo.js` with `CHASE_BEST_TIMES` (28 events), `CHASE_DEMO_AGE` (32, routes to OPEN/Senior bucket), `CHASE_DEMO_GENDER` ('M'), and `CHASE_DEMO_ATHLETE` (full athlete shape so the SpecialtyBloom prop doesn't break if it starts reading more fields).
-- New `hasRangeAccess` derivation in FamilyAnalysis (`tier === 'gold'`). Conditional in the JSX swaps the entire `<SpecialtyBloom>` props block — athlete, age, gender, bestTimes all become Chase's values for non-Gold viewers — and replaces the section lede with the demo banner + Chase-personalized copy.
-- Earlier concern that Chase's age (32) might break the chart was wrong — Chase's profile page already renders correctly, so the existing standards-lookup OPEN-bucket path handles his data fine.
+- `AgeUpPreview` component (in `src/components/FamilyProfile.jsx`) gained an `isDemo` prop (defaults to `false`). When set, renders the grid with all cards EXCEPT 50 Free passed `isLocked={true}`. The 50 Free card gets `isDemoUnlocked={true}` which renders the small gold "DEMO" pill in the top-right corner.
+- `AgeUpCard` gained `isLocked` and `isDemoUnlocked` props. Locked cards skip the front/back flip markup entirely — chrome stays (event name, dash placeholders for time/standards), opacity drops to 0.45, hover flip is disabled, cursor reverts to default. Unlocked card behaves exactly as before, just with the corner DEMO pill above the flip surface.
+- New CSS: `.au-card-locked` (dim + flat), `.au-card-demo` (relative positioning context for the pill), `.au-demo-pill` (gold corner marker, same color tokens as `.section-tier-badge`).
+- FamilyAnalysis passes `isDemo={!hasProgressionAccess}` since Age-Up sits in the same access tier as Progression (Silver + Gold).
 
 Earlier this session, in chronological order (newest at top):
+- `cf8f1be` — Range/Specialty Bloom demo for Skills/Bronze/Silver (Gold-only feature)
 - `dd40848` — Progression demo for non-Silver/non-Gold tiers (Chase's LCM career)
 - `760570b` — Race Pace: restored practice pace clock animations
 - `3511464` — Race Pace tool polish (lock copy, in-hero gold badge, IM dev banner)

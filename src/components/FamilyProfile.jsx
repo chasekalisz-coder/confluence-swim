@@ -756,7 +756,7 @@ export function ChampionshipTable({ age, gender, course, bestTimes }) {
   )
 }
 
-export function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, bestTimes }) {
+export function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, bestTimes, isDemo = false }) {
   // Unified grid — every event gets the same treatment. No accordion,
   // no "primary events get a different layout" split. Dense 6-per-row
   // so the family can scan every event at once without scrolling.
@@ -842,17 +842,29 @@ export function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, be
         </div>
       </div>
 
-      {/* Unified grid — 6 cards per row, events that exist in next age group only */}
+      {/* Unified grid — 6 cards per row, events that exist in next age group only.
+           In demo mode (non-Silver/non-Gold viewer), only the "50 Free" card
+           shows real data and flips. Every other event renders as a locked
+           placeholder — chrome visible (event name) but dimmed, no hover flip. */}
       <div className="age-up-grid">
-        {displayEvents.map(ev => (
-          <AgeUpCard key={ev} data={project(ev)} />
-        ))}
+        {displayEvents.map(ev => {
+          // Match "50 Free" regardless of course suffix or formatting variations
+          const isUnlocked = !isDemo || /^50\s*Free\b/i.test(ev)
+          return (
+            <AgeUpCard
+              key={ev}
+              data={project(ev)}
+              isLocked={!isUnlocked}
+              isDemoUnlocked={isDemo && isUnlocked}
+            />
+          )
+        })}
       </div>
     </div>
   )
 }
 
-function AgeUpCard({ data }) {
+function AgeUpCard({ data, isLocked = false, isDemoUnlocked = false }) {
   const { ev, timeSec, currentLevel, projLevel, backSteps } = data
 
   // Color rule for gap: same as Times & Goals
@@ -866,8 +878,30 @@ function AgeUpCard({ data }) {
   // Short event name for card (just the distance + stroke abbreviation)
   const shortEv = ev.replace('Free','Fr').replace('Butterfly','Fly').replace('Backstroke','Bk').replace('Breaststroke','Br').replace('Individual Medley','IM')
 
+  // Locked card — non-Silver/non-Gold viewer, event isn't the demo unlock.
+  // Chrome stays (event name visible) but everything else dims and the
+  // hover flip is disabled. Class .au-card-locked handles the styling.
+  if (isLocked) {
+    return (
+      <div className="au-card-wrap au-card-locked" aria-hidden="true">
+        <div className="au-card-inner">
+          <div className="au-front">
+            <div className="au-ev">{shortEv}</div>
+            <div className="au-time mono">— : — —</div>
+            <div className="au-stds">
+              <span className="std none">—</span>
+              <span className="au-arrow">→</span>
+              <span className="std none">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="au-card-wrap">
+    <div className={`au-card-wrap${isDemoUnlocked ? ' au-card-demo' : ''}`}>
+      {isDemoUnlocked && <span className="au-demo-pill">Demo</span>}
       <div className="au-card-inner">
         {/* FRONT */}
         <div className="au-front">

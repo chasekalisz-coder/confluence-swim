@@ -398,7 +398,14 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
           </section>
         )}
 
-        {/* ===== Age-Up Preview (moved from Profile) ===== */}
+        {/* ===== Age-Up Preview (moved from Profile) =====
+             Silver + Gold see the full grid with all events filled in.
+             Skills + Bronze see one card filled (50 Free) with a "Demo"
+             pill, the rest dimmed and locked. 50 Free was chosen because
+             every athlete tier has a 50 Free time recorded, so the demo
+             card is guaranteed to populate. Course toggle (SCY/LCM)
+             still works for everyone — the demo unlock follows the
+             toggled course. */}
         <section>
           <AgeUpPreview
             age={effectiveAge}
@@ -407,6 +414,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             setCourse={setCourseAgeUp}
             primaryEvents={athlete.events || []}
             bestTimes={bestTimes}
+            isDemo={!hasProgressionAccess}
           />
         </section>
 
