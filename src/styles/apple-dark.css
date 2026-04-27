@@ -2656,6 +2656,215 @@ body.v2-active #root {
   color: #0f172a;
 }
 
+/* ============================================================
+   Resolver view — actionable list + family scorecard
+   ============================================================ */
+.adm-resolver {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .adm-resolver { grid-template-columns: 1fr; }
+}
+.adm-resolver-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Each row = one slot. Tier classes give a left-border accent so you can
+   scan: red bar = conflict, gold = easy 1-Request, gray = alternates only. */
+.adm-row {
+  background: rgba(255,255,255,0.02);
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-left-width: 3px;
+  border-radius: 8px;
+  padding: 12px 14px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.adm-row.tier-conflict { border-left-color: #ef4444; }
+.adm-row.tier-easy     { border-left-color: #D4A853; }
+.adm-row.tier-alts     { border-left-color: #475569; }
+.adm-row.assigned {
+  background: rgba(212, 168, 83, 0.05);
+  border-color: rgba(212, 168, 83, 0.3);
+  border-left-color: #D4A853;
+}
+.adm-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.adm-row-time {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.adm-row-clock {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f1f5f9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.adm-row-date {
+  font-size: 12px;
+  color: #94a3b8;
+}
+.adm-row-counts {
+  display: flex;
+  gap: 6px;
+}
+.adm-count-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.adm-count-pill.primary {
+  background: rgba(212, 168, 83, 0.15);
+  color: #D4A853;
+}
+.adm-count-pill.primary.conflict {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+.adm-count-pill.secondary {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+}
+.adm-row-families {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adm-family-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.12s;
+  border: 0.5px solid;
+  background: transparent;
+}
+.adm-family-chip.primary {
+  border-color: rgba(212, 168, 83, 0.4);
+  color: #D4A853;
+}
+.adm-family-chip.primary:hover {
+  background: rgba(212, 168, 83, 0.1);
+  border-color: rgba(212, 168, 83, 0.7);
+}
+.adm-family-chip.secondary {
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #94a3b8;
+}
+.adm-family-chip.secondary:hover {
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.6);
+}
+.adm-family-chip.assigned {
+  background: #D4A853;
+  border-color: #D4A853;
+  color: #06080d;
+  font-weight: 500;
+}
+.adm-family-chip.assigned:hover {
+  background: #c79839;
+}
+.adm-family-chip.locked-out {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.adm-family-chip.locked-out:hover {
+  background: transparent;
+}
+.adm-chip-tag {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(0,0,0,0.2);
+}
+.adm-family-chip.assigned .adm-chip-tag {
+  background: rgba(0,0,0,0.18);
+  color: #06080d;
+}
+.adm-chip-name { font-weight: 500; }
+.adm-chip-check { font-size: 12px; }
+
+/* Right rail scorecard */
+.adm-scorecard {
+  position: sticky;
+  top: 16px;
+  background: rgba(255,255,255,0.02);
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.adm-scorecard-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid rgba(255,255,255,0.06);
+}
+.adm-score-row {
+  margin-bottom: 14px;
+}
+.adm-score-row:last-child { margin-bottom: 0; }
+.adm-score-name {
+  font-size: 13px;
+  color: #f1f5f9;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.adm-score-stats {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.adm-score-fraction { color: #cbd5e1; }
+.adm-score-fraction strong {
+  color: #f1f5f9;
+  font-weight: 600;
+}
+.adm-score-fraction span { color: #64748b; }
+.adm-score-alts {
+  color: #64748b;
+  font-size: 11px;
+}
+.adm-score-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.adm-score-bar-fill {
+  height: 100%;
+  background: #D4A853;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+.adm-score-row.complete .adm-score-bar-fill { background: #22c55e; }
+.adm-score-row.over .adm-score-bar-fill { background: #ef4444; }
+
 @media print {
   .btn, .app-footer, header { display: none !important; }
   .adm-cal-cell { min-height: 100px; }

@@ -3,11 +3,19 @@
 // ============================================================
 // Coach-side view of all slot requests for the current month.
 //
-// Two views:
-//   - "Combined" — all families overlaid on one calendar. Each slot
-//     shows stacked initials/badges of who picked it (with primary
-//     vs backup distinction). At-a-glance conflict view.
+// Three views:
+//   - "Resolver" (default) — actionable list. Every requested slot in
+//     order of contention (most Requests → fewest → Alternatives-only).
+//     Each row shows the families competing for that slot and an
+//     "Assign" button per family. Used to actually do the puzzle work.
+//   - "Combined" — calendar overlay of all families' picks. Read-only
+//     scan view, useful for checking distribution across the month.
 //   - "Per family" — pick a family, see their picks isolated.
+//
+// Assignments live in local UI state (not yet persisted to DB).
+// Once we know the workflow holds up in real use, assignments will
+// be saved to a new `slot_assignments` table for the family-side
+// confirmation card and the Acuity export view.
 //
 // Print-friendly (browser print). Built for Chase to take one
 // printout into Acuity and assign sessions.
@@ -20,8 +28,12 @@ import { listSlotRequests } from '../lib/db.js'
 export default function SlotRequestsAdmin({ athletes, onBack }) {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
-  const [view, setView] = useState('combined') // 'combined' | 'per-family'
+  const [view, setView] = useState('resolver') // 'resolver' | 'combined' | 'per-family'
   const [selectedAthleteId, setSelectedAthleteId] = useState(null)
+  // Local assignment state: slotId → athleteId (null/undef = unassigned).
+  // Currently in-memory only — refreshing the page wipes assignments.
+  // Persistence comes after the workflow is validated in real use.
+  const [assignments, setAssignments] = useState({})
 
   useEffect(() => {
     let active = true
@@ -65,6 +77,76 @@ export default function SlotRequestsAdmin({ athletes, onBack }) {
     return m
   }, [requests, athletes])
 
+  // Resolver list: every slot anyone touched, flattened and sorted by demand.
+  // Sort order: Requests count DESC (conflicts first), then Alternatives count
+  // DESC, then date ASC. So the top of the list is "Mon May 4 8am — 3 families
+  // want it" and the bottom is "Sat May 30 6pm — 2 alternatives, no requests".
+  // Slot date+label come from the static slot definitions; we look them up by id.
+  const resolverList = useMemo(() => {
+    // First, build a slotId → { date, label } lookup from the slot-data file.
+    const slotLookup = {}
+    maySlots.days.forEach(day => {
+      day.slots.forEach(slot => {
+        slotLookup[slot.id] = { date: day.date, label: slot.label }
+      })
+    })
+
+    const items = []
+    Object.entries(slotMap).forEach(([slotId, picks]) => {
+      const meta = slotLookup[slotId]
+      if (!meta) return // shouldn't happen but defensive
+      const requestPicks = picks.filter(p => p.priority === 'primary')
+      const alternativePicks = picks.filter(p => p.priority === 'secondary')
+      items.push({
+        slotId,
+        date: meta.date,
+        label: meta.label,
+        requestPicks,
+        alternativePicks,
+        totalPicks: picks.length,
+        requestCount: requestPicks.length,
+      })
+    })
+
+    items.sort((a, b) => {
+      // Conflicts first
+      if (b.requestCount !== a.requestCount) return b.requestCount - a.requestCount
+      // Then by total demand (alternatives still matter for fill decisions)
+      if (b.totalPicks !== a.totalPicks) return b.totalPicks - a.totalPicks
+      // Tie-break by date for stable readability
+      if (a.date !== b.date) return a.date.localeCompare(b.date)
+      return a.slotId.localeCompare(b.slotId)
+    })
+
+    return items
+  }, [slotMap])
+
+  // Per-family scorecard: how many they Requested vs how many we've assigned.
+  // Drives the right-rail "Smith 6/8 assigned" status during the puzzle work.
+  const scorecard = useMemo(() => {
+    return athletesWithRequests.map(a => {
+      const req = requestsByAthlete[a.id]
+      const picks = req?.picks || {}
+      const requested = Object.values(picks).filter(v => v === 'primary').length
+      const alternates = Object.values(picks).filter(v => v === 'secondary').length
+      const assigned = Object.values(assignments).filter(athId => athId === a.id).length
+      return { athlete: a, requested, alternates, assigned }
+    })
+  }, [athletesWithRequests, requestsByAthlete, assignments])
+
+  const assignSlot = (slotId, athleteId) => {
+    setAssignments(prev => {
+      const next = { ...prev }
+      if (next[slotId] === athleteId) {
+        // Clicking the already-assigned chip clears the assignment
+        delete next[slotId]
+      } else {
+        next[slotId] = athleteId
+      }
+      return next
+    })
+  }
+
   const monthLabel = useMemo(() => {
     const [y, mo] = maySlots.month.split('-').map(Number)
     return new Date(y, mo - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -96,7 +178,13 @@ export default function SlotRequestsAdmin({ athletes, onBack }) {
       </div>
 
       {/* View toggle */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        <button
+          className={view === 'resolver' ? 'btn btn-primary' : 'btn btn-outline'}
+          onClick={() => setView('resolver')}
+        >
+          Resolver
+        </button>
         <button
           className={view === 'combined' ? 'btn btn-primary' : 'btn btn-outline'}
           onClick={() => setView('combined')}
@@ -124,6 +212,113 @@ export default function SlotRequestsAdmin({ athletes, onBack }) {
       {!loading && requests.length === 0 && (
         <div style={{ padding: 40, textAlign: 'center', color: '#64748b', background: 'rgba(255,255,255,0.02)', borderRadius: 12 }}>
           No families have submitted slot requests for {monthLabel} yet.
+        </div>
+      )}
+
+      {!loading && requests.length > 0 && view === 'resolver' && (
+        <div className="adm-resolver">
+          {/* Left: the slot list, sorted by contention. Each row is one decision. */}
+          <div className="adm-resolver-list">
+            {resolverList.map(item => {
+              const dateObj = new Date(item.date + 'T12:00:00')
+              const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+              const startLabel = item.label.split('–')[0]
+              const isConflict = item.requestCount > 1
+              const isEasy = item.requestCount === 1
+              const isAltsOnly = item.requestCount === 0
+              const assignedTo = assignments[item.slotId]
+              const tier = isConflict ? 'conflict' : isEasy ? 'easy' : 'alts'
+              return (
+                <div key={item.slotId} className={`adm-row tier-${tier} ${assignedTo ? 'assigned' : ''}`}>
+                  <div className="adm-row-head">
+                    <div className="adm-row-time">
+                      <span className="adm-row-clock">{startLabel}</span>
+                      <span className="adm-row-date">{dateStr}</span>
+                    </div>
+                    <div className="adm-row-counts">
+                      {item.requestCount > 0 && (
+                        <span className={`adm-count-pill primary ${isConflict ? 'conflict' : ''}`}>
+                          {item.requestCount} {item.requestCount === 1 ? 'Request' : 'Requests'}
+                        </span>
+                      )}
+                      {item.alternativePicks.length > 0 && (
+                        <span className="adm-count-pill secondary">
+                          {item.alternativePicks.length} {item.alternativePicks.length === 1 ? 'Alt' : 'Alts'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="adm-row-families">
+                    {item.requestPicks.map(p => {
+                      const isAssigned = assignedTo === p.athleteId
+                      const isLockedOther = assignedTo && assignedTo !== p.athleteId
+                      return (
+                        <button
+                          key={p.athleteId}
+                          className={`adm-family-chip primary ${isAssigned ? 'assigned' : ''} ${isLockedOther ? 'locked-out' : ''}`}
+                          onClick={() => assignSlot(item.slotId, p.athleteId)}
+                          title={isAssigned ? 'Click to unassign' : `Assign ${p.name}`}
+                        >
+                          <span className="adm-chip-tag">R</span>
+                          <span className="adm-chip-name">{p.name}</span>
+                          {isAssigned && <span className="adm-chip-check">✓</span>}
+                        </button>
+                      )
+                    })}
+                    {item.alternativePicks.map(p => {
+                      const isAssigned = assignedTo === p.athleteId
+                      const isLockedOther = assignedTo && assignedTo !== p.athleteId
+                      return (
+                        <button
+                          key={p.athleteId}
+                          className={`adm-family-chip secondary ${isAssigned ? 'assigned' : ''} ${isLockedOther ? 'locked-out' : ''}`}
+                          onClick={() => assignSlot(item.slotId, p.athleteId)}
+                          title={isAssigned ? 'Click to unassign' : `Fill with ${p.name} (Alternative)`}
+                        >
+                          <span className="adm-chip-tag">A</span>
+                          <span className="adm-chip-name">{p.name}</span>
+                          {isAssigned && <span className="adm-chip-check">✓</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+            {resolverList.length === 0 && (
+              <div style={{ padding: 30, color: '#64748b', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: 8 }}>
+                No slots requested yet.
+              </div>
+            )}
+          </div>
+
+          {/* Right rail: per-family scorecard. Watch progress as you assign. */}
+          <aside className="adm-scorecard">
+            <div className="adm-scorecard-header">Family progress</div>
+            {scorecard.map(({ athlete, requested, alternates, assigned }) => {
+              const complete = assigned >= requested && requested > 0
+              const over = assigned > requested
+              return (
+                <div key={athlete.id} className={`adm-score-row ${complete ? 'complete' : ''} ${over ? 'over' : ''}`}>
+                  <div className="adm-score-name">{athlete.first} {athlete.last}</div>
+                  <div className="adm-score-stats">
+                    <span className="adm-score-fraction">
+                      <strong>{assigned}</strong>/<span>{requested}</span>
+                    </span>
+                    {alternates > 0 && (
+                      <span className="adm-score-alts">+{alternates} alts</span>
+                    )}
+                  </div>
+                  <div className="adm-score-bar">
+                    <div
+                      className="adm-score-bar-fill"
+                      style={{ width: `${Math.min(100, (assigned / Math.max(1, requested)) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </aside>
         </div>
       )}
 
