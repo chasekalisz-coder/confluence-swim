@@ -43,10 +43,28 @@ None currently.
 - [ ] **Squarespace integration — central tab on main Confluence Sport site**
   Make the app discoverable from the main Squarespace site so families
   always know where to find it. Options: external link tab, subdomain
-  (e.g. app.confluencesport.com), or embed. Needs a broader conversation
-  with Chase about what each site's role is — main site for marketing/
-  recruiting, app site for current families. Existing P2 task "Link site
-  to main Squarespace site" is the placeholder for this.
+  (e.g. app.confluencesport.com — already live as of Session 14), or
+  embed. Needs a broader conversation with Chase about what each site's
+  role is — main site for marketing/recruiting, app site for current
+  families.
+
+  **Note on access (Session 14):** Chase asked about giving Claude
+  programmatic access to Squarespace. Conclusion: not practical. No
+  Squarespace MCP server exists, the Squarespace API doesn't cover
+  page editing, and browser automation isn't worth the setup cost for
+  infrequent edits. Workflow stays: Chase sends screenshots, Claude
+  walks him through the Squarespace UI step by step (same as the DNS
+  edit flow used to set up app.confluencesport.com).
+
+  When this conversation actually happens, scope likely includes:
+  - Adding a nav link/tab on the Squarespace site pointing at
+    app.confluencesport.com
+  - Possibly a CTA on homepage ("Current families: log in here")
+  - Larger architectural question: what does each site DO? Main =
+    marketing + recruiting + lead capture? App = current families
+    only? Some hybrid?
+  - Branding consistency between the two (same fonts, same accent
+    colors, same voice)
 
 - [ ] **End-to-end profile audit — verify each athlete is ready for invite**
   Before sending real invites, walk every athlete profile and check:
