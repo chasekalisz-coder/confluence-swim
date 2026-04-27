@@ -7,11 +7,13 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`6420c2f Add Chase Kalisz progression data to bulk import system` — 251 historical meet entries across 28 events (14 SCY, 14 LCM) compiled from Chase's USA Swimming public results, capped at 10 per event. Covers ages 13-32: NBAC, UGA college career, Olympic Trials cycles (Rio 2016, Tokyo 2020, Paris 2024), Worlds, Pan Pacs, Pro Series, NCAA finals. Added `api/data/ath_chase.json`; registered chase in the existing `/api/import-progression` endpoint; bumped admin "Import progression data" confirm dialog from 11 → 12 athletes. Run that button to load. Why: Chase's profile becomes the demo athlete for tier gating — Performance Analysis sections a non-Gold tier doesn't have access to will render Chase's data instead of the user's, so the demo experience needs his profile fully populated.
+`<pending>` — Step 4 of tier matrix: feature-access plumbing. Two new files, nothing wired up to UI yet (zero behavior change). `src/lib/tiers.js` exports `getTier(athlete)` (derives `gold/silver/bronze/skills/single` from `programType` first-word-lowercased — same logic the badge already uses, just centralized) and `compareTiers(a, b)` for "minimum tier" gates. `src/config/featureAccess.js` encodes the matrix doc as a `FEATURES` map (feature_name → array of allowed tiers) and exports `canSeeFeature(athlete, featureName)` and `isLockedForTier(athlete, featureName)` as the gate. Defaults: unset/unknown `programType` → `gold`; undeclared feature → universal access (default-allow). Step 5+ wires these into the FamilyAnalysis sections to render Chase's demo data when locked.
 
 Earlier commits worth knowing about:
+- `94ef7b8` — STATE backfill for Chase progression import
+- `6420c2f` — Add Chase Kalisz progression data to bulk import system (251 entries, 28 events)
 - `a00767d` — STATE backfill for admin-logo bugfix
-- `edb8f3c` — Fix: admin clicking logo from athlete profile bounces to admin home (was suppressing logo-home for any URL with athlete ID; now only suppressed for family deep-links)
+- `edb8f3c` — Fix: admin clicking logo from athlete profile bounces to admin home
 - `5c99e4a` — STATE backfill for subtitle rewrite
 - `992f2b6` — Performance Analysis page subtitle rewrite + subjectPronoun helper
 - `1a0ecb7` — STATE backfill for the rename
@@ -108,14 +110,14 @@ TODO.md is the source of truth for what's left. P1 candidates: Scheduling reques
 - Tier matrix designed and committed to `docs/reference/tier-access-matrix.md` ✓
 - Tier feature gating: NOT BUILT (Phase 5)
 
-### Phase 5 — Tier system implementation (IN PROGRESS — Step 2 done Session 14)
+### Phase 5 — Tier system implementation (IN PROGRESS — Steps 2 + 4 done; data + plumbing complete)
 Per `docs/reference/tier-access-matrix.md`:
 1. Restructure Profile + Analysis page contents (no gating yet — Profile slims down, Analysis fills out) — **DONE Session 14**. Profile = Hero/Chasing Next/Times & Goals/Last Race/Upcoming Meets/Training Metrics (Coming Soon)/Scheduling. Analysis = Hero/Times & Goals (mirror)/Tools/Progression/Power Rankings/Championship Standards/Age-Up Preview/Range/Aerobic Development/Recent Analyses. 7 sub-components in FamilyProfile.jsx now exported and shared with FamilyAnalysis.jsx (TimesTable, ChampionshipTable, AgeUpPreview, ProgressionChart, PowerRankingsList, SpecialtyBloom, ColorLegend).
-2. Add `tier` field + `features` object to athlete data model in Neon
-3. Build feature-access infrastructure (`src/lib/featureAccess.js`, `src/config/featureFlags.js`)
-4. Wire up tier-aware nav (Analysis hides for Skills)
-5. Wire up per-section visibility within Analysis (Bronze sees Race Pace only; Silver sees most; Gold sees all)
-6. Locked-section "Available with Gold Development Program" cards on Profile (Approach 1 — restraint matters)
+2. Add `tier` field + `features` object to athlete data model in Neon — **NOT NEEDED in initial implementation**. Decision Session 14: derive tier from existing `programType` field (e.g. "Gold Development" → "gold") via `getTier()` helper. If a separate field becomes necessary later (typo safety, decoupling display from logic), the helper is the single point of change.
+3. Build feature-access infrastructure — **DONE Session 14**. `src/lib/tiers.js` (`getTier`, `compareTiers`, `TIERS` constant) and `src/config/featureAccess.js` (`FEATURES` matrix, `canSeeFeature`, `isLockedForTier`). The matrix doc translated into runtime-checkable rules. Nothing wired to UI yet — pure plumbing. Default-allow for undeclared features. Default-to-gold for unset programType.
+4. Demo data scaffolding — Chase Kalisz athlete record (`ath_chase`) populated with 251 historical meet results across 28 events. **DONE Session 14**. Loaded via the existing bulk-import system. Chase's data is what non-Gold tiers see in locked sections.
+5. Wire up tier-aware nav (Performance Analysis hides for Skills) — NEXT
+6. Wire up per-section visibility within Performance Analysis (each gated section shows Chase's data + locked-section footer when user's tier doesn't have access)
 7. Test with non-Gold athlete (temporarily flip Jon to Bronze, walk through, flip back)
 8. Update Squarespace appointments page copy
 9. Send-out doc announcing new system to families

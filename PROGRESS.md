@@ -70,6 +70,18 @@ Mobile tab bar gets the label *stacked* on two lines — "Performance" over "Ana
 
 Internal route key (`analysis`), URL hash, view ID, file name (`FamilyAnalysis.jsx`), prop names, comments — all unchanged. Only user-visible labels updated. Touched: FamilyNav.jsx (desktop nav), FamilyAnalysis.jsx (page title + 2× active-prop matches), FamilyTabBar.jsx (mobile label), apple-dark.css (`.ftb-label` block extended for stacked-label support).
 
+**Step 4 of tier matrix — feature-access plumbing.** Two new files, no UI changes, zero behavior change. Pure infrastructure for the tier gates that come next.
+
+`src/lib/tiers.js` — single source of truth for "what tier is this athlete?" Exports `getTier(athlete)` which derives `gold|silver|bronze|skills|single` from the existing `programType` display string (first word, lowercased). Same logic the program-badge CSS class already uses for color, just centralized so future changes touch one function. Defaults to `gold` for unset/unknown values so existing athletes don't break. Also exports `TIERS` constant (ordered most→least premium) and `compareTiers(a, b)` for "minimum tier" gates like "athlete is at least Silver."
+
+`src/config/featureAccess.js` — encodes the matrix doc as a runtime `FEATURES` map, where each feature name maps to an array of allowed tiers. Plus `canSeeFeature(athlete, featureName)` (the gate) and `isLockedForTier(athlete, featureName)` (its inverse, named for clarity at call sites that load demo data). Features declared so far: `performance_analysis_tab`, `race_pace`, `progression_chart`, `power_rankings`, `championship_standards`, `age_up_preview`, `range_bloom`, `meet_analyzer`, `aerobic_development`, `training_metrics`. Anything *not* in FEATURES defaults to universal access (default-allow), so a typo or omission errs on the side of "show it" rather than "break the section."
+
+**Decision: stick with `programType` instead of adding a separate `tier` field.** Considered both. Pros of adding a field: typo safety (dropdown enum can't drift), decouples display copy from gate logic, keeps the per-athlete `features` override pattern (Sprint Lab for Jelena specifically) on a sibling field. Pros of using existing field: zero schema work, zero migration, one source of truth. Land: helper-with-derivation gives speed-of-existing with an easy upgrade path — if a real `tier` field becomes necessary later (because Chase wants to rename "Gold Development" without rewriting gates, or anything else), only `getTier()` changes. None of those concerns are real today, so YAGNI wins.
+
+**Decision: default to gold instead of failing on unset programType.** Existing athlete records pre-date the tier system. Defaulting to gold keeps their app experience identical until Chase explicitly sets a tier, vs. silently locking them out of features they previously had. Once every athlete has a tier set, the default becomes irrelevant.
+
+Status check: Steps 1, 2, 3 (data import), 4 (plumbing) complete. Next is Step 5 — wire `canSeeFeature` into the FamilyAnalysis JSX so non-Gold tiers see Chase's demo data instead of their own where the matrix says they shouldn't have access. After that, the test loop is "flip Jon to Bronze in admin, verify Performance Analysis shows Race Pace with Jon's data and Progression with Chase's data, flip back."
+
 ### Decisions made
 - The Squarespace "topic checklist per tier" copy is misleading — every tier can request any topic; the difference is who decides. Squarespace copy needs rewriting alongside tier launch.
 - Times & Goals stays universal (mostly public swimming-data, presented well — gating it would be theater).
