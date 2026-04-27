@@ -109,8 +109,33 @@ Next iteration of Step 5: wire per-section gating in FamilyAnalysis. Every gated
 - Vercel env vars need to be added to Preview/Development environments before branch deploys can work.
 - Montgomery family test (2-athlete family flow validation) was discussed but never run.
 
+### Tier-marketing badge system + Race Pace gating (late afternoon batch)
+
+After landing the Coming Soon section block at the bottom of Performance Analysis (Event Rankings, Sprint vs Endurance, IMX Score Tracker, Tempo / DPS / Velocity Tracker — `2fe7994`), the rest of this stretch was a sustained sweep to make tier-membership visible everywhere it should be, and to actually gate one feature for real (Race Pace).
+
+**Visual language landed:**
+- Gold tier badge on a section heading = "this section belongs to Gold Development." Existing `.section-tier-badge` class. Visible on all six Coming Soon sections + Last Race / Meet Analyzer card on Profile + Training Metrics (Coming Soon) on Profile + Range / Specialty Bloom on Performance Analysis.
+- Silver + Gold pair on Progression and Age-Up Preview = "Silver and Gold both have access." New `.section-tier-badge-silver` class.
+- Bronze + Silver + Gold trio on Event Power Rankings and Championship Standards = "Bronze, Silver, and Gold all have access." New `.section-tier-badge-bronze` class. `.section-header-row` adjusted to flex-wrap with 8px gap so three pills + the section title + the SCY/LCM toggle don't crowd each other on mobile.
+- Workout filter chip on Session Notes gets a small "Gold" pill inline (`.chip-tier-pill`) so families see at a glance which note category is Gold-only.
+- All Soon badges flipped from gold to blue (`.section-soon-badge`, `.tc-soon-badge`, `.coming-soon-card .cs-tag`). The two pills now read as different things at a glance: blue = "not built yet" (status), gold = "tier this belongs to" (positioning). Before the swap, both pills were gold and they blurred together visually.
+
+**Decision: visible to all tiers.** Chase's call. Every athlete sees the badges on every section regardless of whether their tier has access. The badge tells everyone what tier each section needs. Bronze viewing Range sees the gold pill — they don't have access (will see demo data, separate work) but they know it's a Gold feature. Earlier in the session we'd considered "only show when locked" — moved off that because the badge functions as a marketing label, not just a gate.
+
+**Race Pace 5-day demo throttle (`590acb7` + hot-fix `2ce321d`):** First section where tier gating actually changes behavior, not just visuals.
+
+The conversation that led here: Chase asked what Race Pace would cost per use if we let everyone hit it. I checked — Race Pace doesn't call the AI API at all, it's pure local computation against `ELITE_SPLITS` data. Cost per use is literally $0. Initially I argued that meant we should let everyone use it freely. Chase pushed back: "I'm protecting the gold families value." Engineered scarcity here is a positioning decision, not a cost decision. Landed at: 1 demo run per 5 days for non-Gold tiers, time-of-use strict (5×24h from the moment they generate, not calendar days).
+
+Implementation: `RacePaceCalculator` now takes an athlete prop and uses `getTier()` from Step 4 plumbing. Lock is derived from `athlete.lastRacePaceDemoAt` (ISO timestamp). When locked, the user's last result stays visible read-only and a friendly notice appears above it: "Demo limit reached. Try again in N days. Race Pace is part of Gold Development — ask Chase about adding it any time." Display rolls down: "N days" > 24h, "N hours" 1-24h, "less than an hour" < 1h. All recompute on page load — no live ticker. Gold athletes bypass the lock entirely.
+
+**Hot-fix `2ce321d`:** Original implementation derived `isLocked` once at render and didn't recheck after `generate()` saved the timestamp. A non-Gold user could click Generate twice in a row within a session and the second click went through. Fixed by deriving `isLocked` from a stateful `lastRunAtMs` that updates immediately on generate.
+
+The lock copy went through several drafts. Chase's framing: "a friendly way to let them know they can try again in 5 days or something in a way that isn't frustrating." Landed on the matter-of-fact "Demo limit reached. Try again in N days." pairing with the conversational "ask Chase about adding it any time" — concrete on the wait, conversational on the upgrade path. Nothing in the copy is a paywall stamp.
+
+**Status check:** Tier matrix Phase 5 progress — Step 4 plumbing done (Session 14 morning). Step 5b badge fan-out done across the entire app. Step 5b actual gating wired for Race Pace only. Remaining gated sections (Progression, Power Rankings, Championship Standards, Age-Up, Range) still render the user's own data for everyone — that demo-data swap is the next chunk.
+
 ### Friction worth naming
-Chase had to call out (again) that PROGRESS.md and STATE.md were not being kept current during the session. CLAUDE.md is explicit on line 88: "Never let STATE.md or PROGRESS.md fall behind during a session." This was already noted as a Session 12 failure — it recurred in Session 14. Pattern is: Claude makes a commit, pushes the relevant code/feature, but skips the STATE/PROGRESS update until end-of-session or until Chase asks. Need a stronger trigger pattern in CLAUDE.md or in the session-start protocol so this doesn't keep happening.
+Chase had to call out (again) that PROGRESS.md and STATE.md were not being kept current during the session. CLAUDE.md is explicit on line 88: "Never let STATE.md or PROGRESS.md fall behind during a session." This was already noted as a Session 12 failure — it recurred in Session 14, and recurred *again* during the late-afternoon batch (eight commits shipped without doc updates between them). Pattern is: Claude makes a commit, pushes the relevant code/feature, but skips the STATE/PROGRESS update until end-of-session or until Chase asks. Need a stronger trigger pattern in CLAUDE.md or in the session-start protocol so this doesn't keep happening. Honest acknowledgment from this Claude: I let it slide once Chase was iterating fast and didn't catch up. The fix is to stop treating doc updates as separate commits that batch up at the end and start treating them as part of the commit itself — every commit goes out paired.
 
 ---
 
