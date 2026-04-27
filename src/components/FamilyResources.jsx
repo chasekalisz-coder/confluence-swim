@@ -399,9 +399,10 @@ function SchedulingBlock({ athlete, slotData }) {
   }
 
   const handleReset = async () => {
-    // Local state clear is instant for UI feedback. The DB delete fires async —
-    // if it fails, the row stays but the user has already moved on. We log the
-    // error so it's visible in console but don't block the UI.
+    // Log the call so we can verify in devtools that handleReset actually fires
+    // when the user taps the link. If the row sticks around in the DB after a
+    // reset, the first thing to check is whether this log even shows up.
+    console.log('[SchedulingBlock] handleReset fired', { athleteId, month: slotData.month })
     setPicks({})
     setNote('')
     setSubmitted(false)
@@ -409,10 +410,16 @@ function SchedulingBlock({ athlete, slotData }) {
     setSelectedDayIdx(null)
     if (athleteId) {
       try {
-        await deleteSlotRequest(athleteId, slotData.month)
+        const result = await deleteSlotRequest(athleteId, slotData.month)
+        console.log('[SchedulingBlock] delete result:', result)
       } catch (err) {
         console.error('[SchedulingBlock] delete failed:', err)
+        // Surface the error visibly so we know if something went wrong rather
+        // than silently leaving the DB row in place.
+        alert('Could not clear request from server: ' + err.message + '\n\nYour picks may still be saved on the server. Please try again or contact Chase.')
       }
+    } else {
+      console.warn('[SchedulingBlock] reset skipped DB delete — no athleteId')
     }
   }
 
