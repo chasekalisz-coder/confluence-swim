@@ -877,7 +877,7 @@ function RacePaceTool({ athlete, onClose }) {
   return (
     <div className="tool-view">
       <button className="back" onClick={onClose}>← Back to Analysis</button>
-      <RacePaceCalculator />
+      <RacePaceCalculator athlete={athlete} />
     </div>
   )
 }

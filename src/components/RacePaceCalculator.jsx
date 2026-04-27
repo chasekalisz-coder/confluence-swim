@@ -1,7 +1,27 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ELITE_SPLITS, RACE_INSIGHTS, DANGER_SPLITS } from '../data/elite-splits.js'
+import { getTier } from '../lib/tiers.js'
+import { updateAthlete } from '../lib/db.js'
 
 const COURSE_FULL = { scy: 'Short Course Yards', lcm: 'Long Course Meters', scm: 'Short Course Meters' }
+
+const DEMO_LOCK_MS = 5 * 24 * 60 * 60 * 1000  // 5 days in ms — demo throttle for non-Gold tiers
+
+// Returns "N days" / "N hours" / "less than an hour" from a millisecond
+// count. Rounds up — see Session 14 conversation: rounding up reads as
+// generous and never sets up "I thought it'd unlock today" disappointment.
+function formatLockRemaining(ms) {
+  if (ms <= 0) return null
+  const oneHour = 60 * 60 * 1000
+  if (ms < oneHour) return 'less than an hour'
+  const oneDay = 24 * oneHour
+  if (ms < oneDay) {
+    const hours = Math.ceil(ms / oneHour)
+    return `${hours} hour${hours === 1 ? '' : 's'}`
+  }
+  const days = Math.ceil(ms / oneDay)
+  return `${days} day${days === 1 ? '' : 's'}`
+}
 
 function parseTime(s) {
   if (!s) return null
@@ -20,7 +40,7 @@ function fmtPace(s) {
   return s.toFixed(1)
 }
 
-export default function RacePaceCalculator() {
+export default function RacePaceCalculator({ athlete = null }) {
   const [course, setCourse] = useState('scy')
   const [gender, setGender] = useState('men')
   const [event, setEvent] = useState('')
@@ -28,14 +48,54 @@ export default function RacePaceCalculator() {
   const [seconds, setSeconds] = useState('')
   const [result, setResult] = useState(null)
 
+  // Demo throttle for non-Gold tiers. Gold athletes bypass this entirely.
+  // For everyone else, we cap at one generation per 5 days. The last result
+  // is rendered read-only during the lock window so they still see what
+  // they ran. Stored on the athlete record as `lastRacePaceDemoAt` (ISO
+  // timestamp) and `lastRacePaceDemoResult` (the result object).
+  const isGold = !athlete || getTier(athlete) === 'gold'
+  const lastRunAt = athlete?.lastRacePaceDemoAt
+    ? new Date(athlete.lastRacePaceDemoAt).getTime()
+    : 0
+  const lockUntil = lastRunAt ? lastRunAt + DEMO_LOCK_MS : 0
+  const msRemaining = lockUntil - Date.now()
+  const isLocked = !isGold && msRemaining > 0
+
+  // Hydrate the rendered result from the saved demo result while locked,
+  // so non-Gold users see the plan they generated last time even after
+  // navigating away and coming back. Gold users start fresh every visit.
+  useEffect(() => {
+    if (isLocked && athlete?.lastRacePaceDemoResult && !result) {
+      setResult(athlete.lastRacePaceDemoResult)
+    }
+  }, [isLocked, athlete, result])
+
   const events = useMemo(() => Object.keys(ELITE_SPLITS[course]?.[gender] || {}), [course, gender])
 
-  const generate = () => {
+  const generate = async () => {
+    if (isLocked) return
     const totalSec = parseTime(`${minutes || '0'}:${seconds || '0'}`)
     if (!event || !totalSec || totalSec <= 0) return
     const pcts = ELITE_SPLITS[course]?.[gender]?.[event]
     if (!pcts) return
-    setResult({ event, course, gender, totalSec, pcts })
+    const newResult = { event, course, gender, totalSec, pcts }
+    setResult(newResult)
+
+    // For non-Gold tiers, persist the demo run so we can show it back
+    // during the 5-day lock window. Fire-and-forget — if the save fails,
+    // the user still gets their plan; they just won't see it on next
+    // visit. Gold tier skips the save entirely (no lock to maintain).
+    if (!isGold && athlete?.id) {
+      try {
+        await updateAthlete(athlete.id, {
+          ...athlete,
+          lastRacePaceDemoAt: new Date().toISOString(),
+          lastRacePaceDemoResult: newResult,
+        })
+      } catch (err) {
+        console.warn('[RacePaceCalculator] failed to persist demo timestamp:', err)
+      }
+    }
   }
 
   const resetEvent = () => { setEvent(''); setResult(null) }
@@ -110,16 +170,45 @@ export default function RacePaceCalculator() {
           </div>
           <button
             onClick={generate}
-            disabled={!event || (!minutes && !seconds)}
+            disabled={isLocked || !event || (!minutes && !seconds)}
             style={{
-              padding: '14px 28px', borderRadius: 8, border: 'none', cursor: event && (minutes || seconds) ? 'pointer' : 'not-allowed',
-              background: event && (minutes || seconds) ? 'var(--v2-gold)' : 'rgba(212,168,83,0.3)',
-              color: event && (minutes || seconds) ? '#000' : 'rgba(212,168,83,0.5)',
+              padding: '14px 28px', borderRadius: 8, border: 'none',
+              cursor: !isLocked && event && (minutes || seconds) ? 'pointer' : 'not-allowed',
+              background: !isLocked && event && (minutes || seconds) ? 'var(--v2-gold)' : 'rgba(212,168,83,0.3)',
+              color: !isLocked && event && (minutes || seconds) ? '#000' : 'rgba(212,168,83,0.5)',
               fontSize: 15, fontWeight: 600, transition: 'all 0.15s',
             }}
           >Generate</button>
         </div>
       </div>
+
+      {/* Demo throttle notice — non-Gold tiers see this above their last
+          result during the 5-day lock window. Wording per Session 14:
+          factual ("Demo limit reached") with a forward-looking countdown
+          that recomputes on each page load (no live ticker). */}
+      {isLocked && (
+        <div style={{
+          marginBottom: 20,
+          padding: '14px 18px',
+          background: 'rgba(212, 168, 83, 0.08)',
+          border: '0.5px solid rgba(212, 168, 83, 0.25)',
+          borderRadius: 10,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          flexWrap: 'wrap',
+        }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--v2-gold)', marginBottom: 2 }}>
+              Demo limit reached
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+              Try again in {formatLockRemaining(msRemaining)}. Race Pace is part of Gold Development — ask Chase about adding it any time.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Results */}
       {result && <Results result={result} />}
