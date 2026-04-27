@@ -153,8 +153,10 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
 
         <div className="page-title">Performance Analysis</div>
         <div className="page-sub">
-          Tools to break down {athlete.first}'s races, plan target paces,
-          and find the exact seconds between {pronounThem(athlete)} and the next cut.
+          Performance Analysis lays out the swimming data that defines where {athlete.first} is and where {(() => {
+            const p = subjectPronoun(athlete)
+            return p === 'they' ? "they're" : `${p}'s`
+          })()} headed. Faster swims start with knowing what's underneath them.
         </div>
 
         {/* ===== Hero insight ===== */}
@@ -744,6 +746,16 @@ function possessive(athlete) {
   if (p === 'he') return 'his'
   if (p === 'she') return 'her'
   return 'their'
+}
+function subjectPronoun(athlete) {
+  if (!athlete) return 'they'
+  const g = (athlete.gender || '').toUpperCase()
+  if (g === 'M') return 'he'
+  if (g === 'F') return 'she'
+  const p = (athlete.pronouns || '').toLowerCase()
+  if (p === 'he') return 'he'
+  if (p === 'she') return 'she'
+  return 'they'
 }
 
 // ============================================================
