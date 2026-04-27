@@ -23,7 +23,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import maySlots from '../data/may-2026-slots.json'
-import { listSlotRequests } from '../lib/db.js'
+import { listSlotRequests, deleteSlotRequest } from '../lib/db.js'
 
 export default function SlotRequestsAdmin({ athletes, onBack }) {
   const [requests, setRequests] = useState([])
@@ -257,6 +257,50 @@ export default function SlotRequestsAdmin({ athletes, onBack }) {
         <div style={{ padding: 40, textAlign: 'center', color: '#64748b', background: 'rgba(255,255,255,0.02)', borderRadius: 12 }}>
           No families have submitted slot requests for {monthLabel} yet.
         </div>
+      )}
+
+      {/* DIAGNOSTIC PANEL — temporary. Shows raw data fetched from DB so we can
+          tell whether stale-cache, stale-DB, or stale-state is the actual cause
+          when admin shows requests that should have been cleared. Each row also
+          has a "force delete" button to clear that athlete's row directly from
+          the admin (bypassing the family-side flow entirely). Remove once the
+          flow is stable. */}
+      {!loading && requests.length > 0 && (
+        <details style={{ marginBottom: 20, fontSize: 12, padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '0.5px solid rgba(255,255,255,0.08)' }}>
+          <summary style={{ cursor: 'pointer', color: '#94a3b8' }}>
+            Diagnostics — raw data ({requests.length} {requests.length === 1 ? 'row' : 'rows'} in DB)
+          </summary>
+          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {requests.map(r => {
+              const ath = athletes.find(a => a.id === r.athlete_id)
+              const pCount = Object.values(r.picks || {}).filter(v => v === 'primary').length
+              const sCount = Object.values(r.picks || {}).filter(v => v === 'secondary').length
+              return (
+                <div key={r.athlete_id} style={{ padding: 8, background: 'rgba(0,0,0,0.2)', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ flex: 1, fontFamily: 'ui-monospace, monospace', fontSize: 11 }}>
+                    <div><strong style={{ color: '#f1f5f9' }}>{ath ? `${ath.first} ${ath.last}` : '(unknown athlete)'}</strong> · <span style={{ color: '#94a3b8' }}>{r.athlete_id}</span></div>
+                    <div style={{ color: '#64748b' }}>{pCount} R · {sCount} A · submitted {new Date(r.submitted_at).toLocaleString()}</div>
+                  </div>
+                  <button
+                    className="btn btn-outline"
+                    style={{ fontSize: 11, padding: '4px 10px', color: '#f87171', borderColor: 'rgba(239,68,68,0.4)' }}
+                    onClick={async () => {
+                      if (!confirm(`Force-delete the slot_requests row for ${ath ? ath.first + ' ' + ath.last : r.athlete_id}? This cannot be undone.`)) return
+                      try {
+                        await deleteSlotRequest(r.athlete_id, r.month)
+                        await loadRequests('manual')
+                      } catch (err) {
+                        alert('Delete failed: ' + err.message)
+                      }
+                    }}
+                  >
+                    Force delete
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </details>
       )}
 
       {!loading && requests.length > 0 && view === 'resolver' && (
