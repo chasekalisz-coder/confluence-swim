@@ -77,6 +77,98 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
     onSwitchAthlete,
   }
 
+  // Initials for nav avatar
+  const initials = useMemo(() => {
+    if (!athlete) return ''
+    const f = (athlete.first || '').charAt(0).toUpperCase()
+    const l = (athlete.last || '').charAt(0).toUpperCase()
+    return f + l || '??'
+  }, [athlete?.first, athlete?.last])
+
+  // Gender is now the admin-only source of truth for standards lookups
+  // and auto-copy pronouns. Falls back to inferring from legacy `pronouns`
+  // field for any record that hasn't been migrated yet.
+  const gender = athlete?.gender
+    || (athlete?.pronouns === 'she' ? 'F' : 'M')
+
+  // Effective age: auto-updates when DOB + birthday have passed.
+  // Falls back to athlete.age if DOB is missing or unparseable.
+  // This is what drives standards lookups — when an athlete turns 13
+  // their entire profile flips from 11-12 → 13-14 automatically.
+  const effectiveAge = useMemo(() => {
+    if (!athlete) return null
+    const computed = ageFromDob({ dob: athlete.dob, fallbackAge: athlete.age })
+    return computed ?? athlete.age
+  }, [athlete?.dob, athlete?.age])
+
+  const currentBucket = ageBucket(effectiveAge)
+  const daysToBirthday = useMemo(
+    () => (athlete ? daysUntilBirthday({ dob: athlete.dob }) : null),
+    [athlete?.dob],
+  )
+
+  // Top 3 events closest to next cut — for rotating Chasing Next card
+  const topCuts = useMemo(() => {
+    if (!athlete) return []
+    return topNextCuts({
+      age: effectiveAge,
+      gender,
+      course: courseTimesGoals,
+      meetTimes: athlete.meetTimes || [],
+      n: 3,
+    })
+  }, [athlete, effectiveAge, gender, courseTimesGoals])
+
+  // Keep pickNextCut for any legacy usage
+  const nextCut = topCuts[0] || null
+
+  // Event power rankings
+  const rankings = useMemo(() => {
+    if (!athlete) return []
+    return eventPowerRankings({
+      age: effectiveAge,
+      gender,
+      course: courseRankings,
+      meetTimes: athlete.meetTimes || [],
+    })
+  }, [athlete, effectiveAge, gender, courseRankings])
+
+  // Goal times: accept two shapes for backward compatibility.
+  //   • Map format: { "50 Free SCY": "25.49", ... } — used by seed data
+  //   • Array format: [{ event: "50 Free SCY", time: "25.49" }, ...] — used by admin edit UI
+  // Normalize to map shape for the downstream lookup (goalTimes[eventKey]).
+  const goalTimes = useMemo(() => {
+    const raw = athlete?.goalTimes
+    if (!raw) return {}
+    if (Array.isArray(raw)) {
+      const out = {}
+      for (const g of raw) {
+        if (g?.event && g?.time) out[g.event] = g.time
+      }
+      return out
+    }
+    return raw
+  }, [athlete?.goalTimes])
+
+  // Meet-times lookup: { "50 Free SCY": "26.22", ... }
+  const bestTimes = useMemo(() => {
+    const out = {}
+    for (const mt of (athlete?.meetTimes || [])) {
+      const sec = parseTime(mt.time)
+      if (sec == null) continue
+      if (out[mt.event] == null || sec < parseTime(out[mt.event])) {
+        out[mt.event] = mt.time
+      }
+    }
+    return out
+  }, [athlete?.meetTimes])
+
+  // EARLY RETURN MUST COME AFTER ALL HOOKS ABOVE.
+  // React requires the same hook count on every render — calling the hooks
+  // above only when athlete is defined (and not on the bail-out render)
+  // throws "Rendered more hooks than during the previous render" (React #310)
+  // on the family-routing flow where athlete starts undefined and arrives
+  // on a later render. Hooks always run; the bail-out happens here.
   if (!athlete) {
     return (
       <div className="v2">
@@ -89,87 +181,9 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
     )
   }
 
-  // Initials for nav avatar
-  const initials = useMemo(() => {
-    const f = (athlete.first || '').charAt(0).toUpperCase()
-    const l = (athlete.last || '').charAt(0).toUpperCase()
-    return f + l || '??'
-  }, [athlete.first, athlete.last])
-
   // Primary events for hero pills — use first 2 as "primary"
   const primaryEvents = (athlete.events || []).slice(0, 2)
   const otherEvents = (athlete.events || []).slice(2)
-
-  // Gender is now the admin-only source of truth for standards lookups
-  // and auto-copy pronouns. Falls back to inferring from legacy `pronouns`
-  // field for any record that hasn't been migrated yet.
-  const gender = athlete.gender
-    || (athlete.pronouns === 'she' ? 'F' : 'M')
-
-  // Effective age: auto-updates when DOB + birthday have passed.
-  // Falls back to athlete.age if DOB is missing or unparseable.
-  // This is what drives standards lookups — when an athlete turns 13
-  // their entire profile flips from 11-12 → 13-14 automatically.
-  const effectiveAge = useMemo(() => {
-    const computed = ageFromDob({ dob: athlete.dob, fallbackAge: athlete.age })
-    return computed ?? athlete.age
-  }, [athlete.dob, athlete.age])
-
-  const currentBucket = ageBucket(effectiveAge)
-  const daysToBirthday = useMemo(
-    () => daysUntilBirthday({ dob: athlete.dob }),
-    [athlete.dob],
-  )
-
-  // Top 3 events closest to next cut — for rotating Chasing Next card
-  const topCuts = useMemo(() => topNextCuts({
-    age: effectiveAge,
-    gender,
-    course: courseTimesGoals,
-    meetTimes: athlete.meetTimes || [],
-    n: 3,
-  }), [effectiveAge, gender, courseTimesGoals, athlete.meetTimes])
-
-  // Keep pickNextCut for any legacy usage
-  const nextCut = topCuts[0] || null
-
-  // Event power rankings
-  const rankings = useMemo(() => eventPowerRankings({
-    age: effectiveAge,
-    gender,
-    course: courseRankings,
-    meetTimes: athlete.meetTimes || [],
-  }), [effectiveAge, gender, courseRankings, athlete.meetTimes])
-
-  // Goal times: accept two shapes for backward compatibility.
-  //   • Map format: { "50 Free SCY": "25.49", ... } — used by seed data
-  //   • Array format: [{ event: "50 Free SCY", time: "25.49" }, ...] — used by admin edit UI
-  // Normalize to map shape for the downstream lookup (goalTimes[eventKey]).
-  const goalTimes = useMemo(() => {
-    const raw = athlete.goalTimes
-    if (!raw) return {}
-    if (Array.isArray(raw)) {
-      const out = {}
-      for (const g of raw) {
-        if (g?.event && g?.time) out[g.event] = g.time
-      }
-      return out
-    }
-    return raw
-  }, [athlete.goalTimes])
-
-  // Meet-times lookup: { "50 Free SCY": "26.22", ... }
-  const bestTimes = useMemo(() => {
-    const out = {}
-    for (const mt of (athlete.meetTimes || [])) {
-      const sec = parseTime(mt.time)
-      if (sec == null) continue
-      if (out[mt.event] == null || sec < parseTime(out[mt.event])) {
-        out[mt.event] = mt.time
-      }
-    }
-    return out
-  }, [athlete.meetTimes])
 
   return (
     <div className="v2">
