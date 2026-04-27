@@ -15,6 +15,63 @@ None currently.
 
 ## P1 — NEXT UP
 
+- [ ] **Site organization review — possible Analysis tab consolidation**
+  Bigger conversation needed before changing anything. Current layout:
+  Profile / Session Notes / Analysis / Meets / Resources. Some data on
+  Profile (Times & Goals, Championship Standards, Event Power Rankings,
+  Age-Up Preview, Progression chart) might belong on Analysis instead,
+  letting Profile be a cleaner overview. No commits until Chase decides
+  the new structure.
+
+- [ ] **Feature tier system — Gold Development I/II/III access matrix**
+  Decide who gets what. Top program = full access to everything. Lower
+  tiers = a curated subset that still feels premium and creates a clear
+  reason to upgrade.
+
+  Open questions:
+  - What features do all tiers get baseline?
+  - What's gated to Gold Development I (top tier)?
+  - How is gating expressed visually — locked sections with "upgrade
+    to see" messaging, or just hidden?
+  - Does Clerk metadata carry the tier (`{ "role": "family", "tier": "gd1", ... }`)?
+  - How does an athlete's tier change in the system when their program changes?
+
+  Connects to existing P2 task "Program type field (Gold Development
+  tier dropdown)" — this is the bigger product decision behind that
+  field.
+
+- [ ] **Squarespace integration — central tab on main Confluence Sport site**
+  Make the app discoverable from the main Squarespace site so families
+  always know where to find it. Options: external link tab, subdomain
+  (e.g. app.confluencesport.com), or embed. Needs a broader conversation
+  with Chase about what each site's role is — main site for marketing/
+  recruiting, app site for current families. Existing P2 task "Link site
+  to main Squarespace site" is the placeholder for this.
+
+- [ ] **Domain rename — drop vercel.app, pick a premium custom domain**
+  `confluence-swim.vercel.app` doesn't feel premium and doesn't match
+  Chase's coaching system. Options:
+  - app.confluencesport.com (subdomain on existing site, no new domain)
+  - confluenceswim.com (new domain, separate brand)
+  - my.confluencesport.com (subdomain, suggests a private members area)
+  - Other ideas TBD with Chase
+
+  Needs Vercel custom domain config + DNS setup once chosen. Cheap
+  ($10-15/yr if new domain), trivial to set up.
+
+- [ ] **End-to-end profile audit — verify each athlete is ready for invite**
+  Before sending real invites, walk every athlete profile and check:
+  - All meet times current (cross-reference SwimCloud)
+  - Events list correct
+  - Goal times set where applicable
+  - Championship standards displaying right tier
+  - Upcoming meets populated
+  - DOB/age/gender accurate
+  - Program tier assigned (once tier system is built)
+  - No placeholder copy or test data leaking through
+  Athletes to audit: Jon, Lana, Ben, Grace, Hannah, Kaden, Marley, Liam,
+  Farris, Mason, Pace, Jelena.
+
 - [ ] **Auth — add SMS as a sign-in option alongside email**
   Right now sign-in is email + password only. Some parents (especially
   grandparents managing accounts) would prefer SMS code login. Clerk
