@@ -286,6 +286,23 @@ export default async function handler(req, res) {
         return res.status(200).json({ ok: true, requests: rows })
       }
 
+      case 'deleteSlotRequest': {
+        // Hard-delete a family's request row. Used when the family taps
+        // "Clear and start fresh" from the confirmation card. Without this
+        // the row hangs around in the DB and the family sees their old
+        // picks reappear next time they load the page (because getSlotRequest
+        // returns it and the UI flips submitted=true).
+        const { athleteId, month } = params
+        if (!athleteId || !month) {
+          return res.status(400).json({ error: 'athleteId, month required' })
+        }
+        await sql`
+          DELETE FROM slot_requests
+          WHERE athlete_id = ${athleteId} AND month = ${month}
+        `
+        return res.status(200).json({ ok: true })
+      }
+
       default:
         return res.status(400).json({ error: `Unknown action: ${action}` })
     }

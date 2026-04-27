@@ -34,22 +34,55 @@ export default function SlotRequestsAdmin({ athletes, onBack }) {
   // Currently in-memory only — refreshing the page wipes assignments.
   // Persistence comes after the workflow is validated in real use.
   const [assignments, setAssignments] = useState({})
+  // When was the request list last fetched. Drives the "Updated 4s ago"
+  // indicator next to the refresh button so Chase knows how stale the data is.
+  const [lastFetchedAt, setLastFetchedAt] = useState(null)
+  const [refreshing, setRefreshing] = useState(false)
+  // Tick state forces re-render every second so the relative timestamp ticks.
+  const [, setNowTick] = useState(0)
+
+  // Re-fetchable loader. Initial load shows the full loading state; manual
+  // and auto refreshes show a small spinner on the refresh button instead so
+  // the resolver list doesn't jump around while it polls.
+  const loadRequests = async (mode = 'initial') => {
+    if (mode === 'initial') setLoading(true)
+    else setRefreshing(true)
+    try {
+      const reqs = await listSlotRequests(maySlots.month)
+      setRequests(reqs || [])
+      setLastFetchedAt(Date.now())
+    } catch (err) {
+      console.error('[SlotRequestsAdmin] load failed:', err)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
 
   useEffect(() => {
-    let active = true
-    setLoading(true)
-    listSlotRequests(maySlots.month)
-      .then(reqs => {
-        if (!active) return
-        setRequests(reqs || [])
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('[SlotRequestsAdmin] load failed:', err)
-        if (active) setLoading(false)
-      })
-    return () => { active = false }
+    loadRequests('initial')
+    // Poll the DB every 20 seconds while the page is open so submissions
+    // from families show up without Chase having to refresh manually.
+    const pollId = setInterval(() => loadRequests('poll'), 20000)
+    // Tick once per second to keep the "Updated Xs ago" counter live.
+    const tickId = setInterval(() => setNowTick(n => n + 1), 1000)
+    return () => {
+      clearInterval(pollId)
+      clearInterval(tickId)
+    }
   }, [])
+
+  // Render-friendly relative time string for the freshness indicator.
+  const lastUpdatedLabel = useMemo(() => {
+    if (!lastFetchedAt) return ''
+    const seconds = Math.floor((Date.now() - lastFetchedAt) / 1000)
+    if (seconds < 5) return 'Updated just now'
+    if (seconds < 60) return `Updated ${seconds}s ago`
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `Updated ${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    return `Updated ${hours}h ago`
+  }, [lastFetchedAt])
 
   // athletes with submitted requests
   const requestsByAthlete = useMemo(() => {
@@ -198,6 +231,17 @@ export default function SlotRequestsAdmin({ athletes, onBack }) {
           Per Family
         </button>
         <div style={{ flex: 1 }} />
+        <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center', marginRight: 4 }}>
+          {lastUpdatedLabel}
+        </span>
+        <button
+          className="btn btn-outline"
+          onClick={() => loadRequests('manual')}
+          disabled={refreshing}
+          title="Refresh from server"
+        >
+          {refreshing ? '⟳ Refreshing...' : '⟳ Refresh'}
+        </button>
         <button className="btn btn-outline" onClick={() => window.print()}>
           🖨 Print
         </button>

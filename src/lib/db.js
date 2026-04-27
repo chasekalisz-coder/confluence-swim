@@ -217,3 +217,7 @@ export async function listSlotRequests(month) {
   const { requests } = await callDb('listSlotRequests', { month })
   return requests || []
 }
+
+export async function deleteSlotRequest(athleteId, month) {
+  return callDb('deleteSlotRequest', { athleteId, month })
+}

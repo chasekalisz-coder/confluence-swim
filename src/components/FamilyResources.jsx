@@ -19,7 +19,7 @@ import FamilyNav from './FamilyNav.jsx'
 import FamilyFooter from './FamilyFooter.jsx'
 import FamilyTabBar from './FamilyTabBar.jsx'
 import maySlots from '../data/may-2026-slots.json'
-import { saveSlotRequest, getSlotRequest } from '../lib/db.js'
+import { saveSlotRequest, getSlotRequest, deleteSlotRequest } from '../lib/db.js'
 
 const RESOURCES = [
   {
@@ -398,10 +398,22 @@ function SchedulingBlock({ athlete, slotData }) {
     }
   }
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    // Local state clear is instant for UI feedback. The DB delete fires async —
+    // if it fails, the row stays but the user has already moved on. We log the
+    // error so it's visible in console but don't block the UI.
     setPicks({})
     setNote('')
     setSubmitted(false)
+    setLastSubmittedAt(null)
+    setSelectedDayIdx(null)
+    if (athleteId) {
+      try {
+        await deleteSlotRequest(athleteId, slotData.month)
+      } catch (err) {
+        console.error('[SchedulingBlock] delete failed:', err)
+      }
+    }
   }
 
   // Group days into weeks for calendar grid
