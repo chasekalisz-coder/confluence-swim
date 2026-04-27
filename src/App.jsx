@@ -517,9 +517,9 @@ function AppContent() {
     return (
       <FamilyProfile
         athlete={selectedAthlete}
-        onBack={urlAthleteId ? null : goHome}
+        onBack={(isAdmin || !urlAthleteId) ? goHome : null}
         onNavigate={handleV2Navigate}
-        onLogoClick={!urlAthleteId ? goHome : undefined}
+        onLogoClick={(isAdmin || !urlAthleteId) ? goHome : undefined}
         {...familyScopeProps}
       />
     )
@@ -532,7 +532,7 @@ function AppContent() {
         athlete={selectedAthlete}
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
-        onLogoClick={!urlAthleteId ? goHome : undefined}
+        onLogoClick={(isAdmin || !urlAthleteId) ? goHome : undefined}
         onViewSession={(session) => viewSession(session, 'family-notes')}
         {...familyScopeProps}
       />
@@ -546,7 +546,7 @@ function AppContent() {
         athlete={selectedAthlete}
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
-        onLogoClick={!urlAthleteId ? goHome : undefined}
+        onLogoClick={(isAdmin || !urlAthleteId) ? goHome : undefined}
         {...familyScopeProps}
       />
     )
@@ -559,7 +559,7 @@ function AppContent() {
         athlete={selectedAthlete}
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
-        onLogoClick={!urlAthleteId ? goHome : undefined}
+        onLogoClick={(isAdmin || !urlAthleteId) ? goHome : undefined}
         {...familyScopeProps}
       />
     )
@@ -572,7 +572,7 @@ function AppContent() {
         athlete={selectedAthlete}
         onBack={() => setView('family-profile')}
         onNavigate={handleV2Navigate}
-        onLogoClick={!urlAthleteId ? goHome : undefined}
+        onLogoClick={(isAdmin || !urlAthleteId) ? goHome : undefined}
         {...familyScopeProps}
       />
     )
