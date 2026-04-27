@@ -7,9 +7,11 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`edb8f3c Fix: admin clicking logo from athlete profile bounces to admin home` — bug was that the `onLogoClick` guard in App.jsx (`!urlAthleteId ? goHome : undefined`) suppressed the home action for *anyone* whose URL had an athlete ID, including admins who reloaded on `/athlete/:id`. The guard's actual purpose was to suppress logo-home for family deep-link users (who have no home beyond their own athlete page) — admins always have the AthleteGrid. Fixed by changing the guard to `(isAdmin || !urlAthleteId)` across all five family routes (family-profile, family-notes, family-meets, family-analysis, family-resources). Same gate now applied to FamilyProfile's onBack so admin reloads on athlete URLs also get the Back button.
+`6420c2f Add Chase Kalisz progression data to bulk import system` — 251 historical meet entries across 28 events (14 SCY, 14 LCM) compiled from Chase's USA Swimming public results, capped at 10 per event. Covers ages 13-32: NBAC, UGA college career, Olympic Trials cycles (Rio 2016, Tokyo 2020, Paris 2024), Worlds, Pan Pacs, Pro Series, NCAA finals. Added `api/data/ath_chase.json`; registered chase in the existing `/api/import-progression` endpoint; bumped admin "Import progression data" confirm dialog from 11 → 12 athletes. Run that button to load. Why: Chase's profile becomes the demo athlete for tier gating — Performance Analysis sections a non-Gold tier doesn't have access to will render Chase's data instead of the user's, so the demo experience needs his profile fully populated.
 
 Earlier commits worth knowing about:
+- `a00767d` — STATE backfill for admin-logo bugfix
+- `edb8f3c` — Fix: admin clicking logo from athlete profile bounces to admin home (was suppressing logo-home for any URL with athlete ID; now only suppressed for family deep-links)
 - `5c99e4a` — STATE backfill for subtitle rewrite
 - `992f2b6` — Performance Analysis page subtitle rewrite + subjectPronoun helper
 - `1a0ecb7` — STATE backfill for the rename
