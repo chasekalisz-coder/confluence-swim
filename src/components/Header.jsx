@@ -1,3 +1,4 @@
+import { UserButton } from '@clerk/clerk-react'
 import { fullName, initials } from '../data/athletes.js'
 
 export default function Header({ view, athlete, onHome }) {
@@ -26,6 +27,11 @@ export default function Header({ view, athlete, onHome }) {
           />
         </div>
         <div className="crumb">{crumb}</div>
+        {/* Clerk UserButton — drop-in user menu with avatar, account settings,
+            and Sign out. Sits at the far right of the admin header. */}
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+          <UserButton afterSignOutUrl="/" />
+        </div>
       </div>
     </header>
   )

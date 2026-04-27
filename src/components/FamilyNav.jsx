@@ -1,6 +1,7 @@
 // FamilyNav.jsx — top nav used across family-facing pages.
 // Logo is served from /public/assets/ — reference by URL at runtime,
 // NOT via `import` (Vite/Rollup can't resolve absolute paths at build time).
+import { UserButton } from '@clerk/clerk-react'
 const SWIM_LOGO = '/assets/confluence-swim-white.png'
 
 export default function FamilyNav({ active = 'Profile', athleteInitials = '', onNavigate, onLogoClick }) {
@@ -47,7 +48,10 @@ export default function FamilyNav({ active = 'Profile', athleteInitials = '', on
           </a>
         ))}
       </div>
-      <div className="avatar">{athleteInitials || 'JP'}</div>
+      {/* Static initials circle replaced by Clerk's UserButton — user menu
+          with Sign out and account settings. The visible avatar still shows
+          the user's initials (taken from their Clerk profile). */}
+      <UserButton afterSignOutUrl="/" />
     </nav>
   )
 }

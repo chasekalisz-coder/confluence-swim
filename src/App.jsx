@@ -1,6 +1,7 @@
 
 
 import { useEffect, useState } from 'react'
+import { SignedIn, SignedOut, SignIn, useUser } from '@clerk/clerk-react'
 import { loadAthletes } from './lib/db.js'
 import Header from './components/Header.jsx'
 import AthleteGrid from './components/AthleteGrid.jsx'
@@ -16,6 +17,66 @@ import SlotRequestsAdmin from './components/SlotRequestsAdmin.jsx'
 import './styles/apple-dark.css'
 
 export default function App() {
+  // Auth gate: if not signed in, show only the sign-in card. Nothing else
+  // renders, no data loads, no URLs leak. Once signed in the existing app
+  // mounts via <AppContent /> below.
+  //
+  // This session establishes the gate and gets the admin user (Chase) signed
+  // in. Family-side per-athlete scoping happens next session — for now, any
+  // authenticated user sees the full admin view. That's safe because the
+  // only authenticated user right now will be Chase (no families have been
+  // invited yet via the Clerk dashboard).
+  return (
+    <>
+      <SignedOut>
+        <SignInPage />
+      </SignedOut>
+      <SignedIn>
+        <AppContent />
+      </SignedIn>
+    </>
+  )
+}
+
+// Branded sign-in screen. Centers Clerk's <SignIn /> drop-in component on
+// the dark page background so it matches the rest of the app aesthetically.
+// The Clerk component handles all the actual auth flow (email/password,
+// magic link, error states, verification).
+function SignInPage() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#06080d',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+    }}>
+      <img
+        src="/assets/confluence-swim-white.png"
+        alt="Confluence Swim"
+        style={{ height: 36, marginBottom: 32, opacity: 0.9 }}
+        onError={(e) => { e.currentTarget.style.display = 'none' }}
+      />
+      <SignIn
+        appearance={{
+          elements: {
+            rootBox: { width: '100%', maxWidth: 420 },
+            card: {
+              background: '#0a0d14',
+              border: '0.5px solid rgba(255,255,255,0.08)',
+              boxShadow: 'none',
+            },
+          },
+        }}
+      />
+    </div>
+  )
+}
+
+function AppContent() {
+  const { user } = useUser()
   const [view, setView] = useState('home')
   const [athletes, setAthletes] = useState([])
   const [selectedAthlete, setSelectedAthlete] = useState(null)
