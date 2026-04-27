@@ -173,6 +173,14 @@ What got dropped (not ported):
 
 The result: same general feel, same color palette, same typography, same chart structure, same indicator/insight/IM-notice ordering. Bar chart still animates from zero. A power user who memorized pace.html might notice the missing clock-sweep, but the casual visitor experience is indistinguishable.
 
+### Race Pace tool polish — lock copy, in-hero gold badge, IM dev banner
+
+Three small tweaks landed right after the visual port — Chase tested the new tool and called out three things in one go:
+
+1. **Lock notice copy.** "Try again in 5 days. Race Pace is part of Gold Development — ask Chase about adding it any time." earned a "and whats this bullshit." Removed the "ask Chase" tail. The conversational soft-sell felt out of place once the rest of the tool was polished; the bare statement reads cleaner. New copy: "Try again in N days. Race Pace is part of Gold Development."
+2. **Gold Development badge in the hero of the tool.** The Race Pace card on Performance Analysis already wore the badge; the tool itself didn't. Added `.pt-gold-badge` next to the cyan "Race Pace Calculator" pill in a flex row inside the hero. Reinforces the tier inside the tool, not just on the card outside.
+3. **"IM race pace is in development." banner.** New `.pt-im-banner` between the hero sub-copy and the Course selector. Gold-tinted to read as a status notice. The existing IM dev notice at the bottom of results stays — it surfaces only after a generation; this banner is visible from the moment the tool opens, so a parent looking for a 200 IM realizes immediately that the tool doesn't cover it yet.
+
 ### Friction worth naming
 Chase had to call out (again) that PROGRESS.md and STATE.md were not being kept current during the session. CLAUDE.md is explicit on line 88: "Never let STATE.md or PROGRESS.md fall behind during a session." This was already noted as a Session 12 failure — it recurred in Session 14, and recurred *again* during the late-afternoon batch (eight commits shipped without doc updates between them). Pattern is: Claude makes a commit, pushes the relevant code/feature, but skips the STATE/PROGRESS update until end-of-session or until Chase asks. Need a stronger trigger pattern in CLAUDE.md or in the session-start protocol so this doesn't keep happening. Honest acknowledgment from this Claude: I let it slide once Chase was iterating fast and didn't catch up. The fix is to stop treating doc updates as separate commits that batch up at the end and start treating them as part of the commit itself — every commit goes out paired.
 

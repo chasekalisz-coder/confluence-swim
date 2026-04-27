@@ -4424,6 +4424,15 @@ body.v2-active #root {
 /* Hero header — pill + Fraunces title + sub copy. Replaces the
    plain h1+p the React port had. */
 .pace-tool .pt-hero { margin-bottom: 32px; }
+/* Row container so the cyan tool pill sits next to the gold tier
+   badge with a small gap. Wraps to two lines on narrow screens. */
+.pace-tool .pt-hero-pill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
 .pace-tool .pt-pill {
   display: inline-flex;
   align-items: center;
@@ -4432,7 +4441,7 @@ body.v2-active #root {
   background: rgba(0, 186, 230, 0.08);
   border: 0.5px solid rgba(0, 186, 230, 0.25);
   border-radius: 100px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 .pace-tool .pt-pill-dot {
   width: 6px;
@@ -4463,6 +4472,36 @@ body.v2-active #root {
   max-width: 460px;
   line-height: 1.6;
   margin: 0;
+}
+/* Gold Development tier marker — sits next to the cyan tool pill
+   in the hero. Same visual language as .section-tier-badge used
+   elsewhere in the v2 design system, sized to match .pt-pill. */
+.pace-tool .pt-gold-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(212, 168, 83, 0.18);
+  color: var(--pt-gold);
+  border: 0.5px solid rgba(212, 168, 83, 0.35);
+  border-radius: 100px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+/* Hero-level dev-status banner — for "IM race pace is in development."
+   and similar high-visibility inline notices. Sits below the sub
+   paragraph but above the selectors. */
+.pace-tool .pt-im-banner {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: rgba(212, 168, 83, 0.06);
+  border: 0.5px solid rgba(212, 168, 83, 0.2);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--pt-gold);
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 @media (max-width: 480px) {
   .pace-tool .pt-hero { margin-bottom: 24px; }

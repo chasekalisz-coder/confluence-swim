@@ -7,14 +7,15 @@ Last updated: 2026-04-27 (Session 14 — Step 5b Race Pace tier gating shipped, 
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`<pending>` — Race Pace visual port. Brought the React `RacePaceCalculator` up to feature parity with the legacy `public/pace.html` design. Same atmospheric background (radial cyan glow + grid texture, scoped to the tool wrapper instead of body), same hero (Fraunces serif title + cyan pill + sub-copy), same selectors (Course/Gender/Event), same goal-time input (JetBrains Mono), same Generate button (cyan→green gradient when ready). Same results structure: gradient header card with goal time, section markers between split groups, split tables, animated bar charts with AVG line, go-out speed indicator, critical split (danger) indicator, practice pace clocks, race-intelligence insight card, IM notice. New CSS lives in `src/styles/apple-dark.css` under a `.pace-tool` namespace (~360 lines appended) so it doesn't collide with v2. Three Google fonts (DM Sans, Fraunces, JetBrains Mono) added to `index.html` head.
+`<pending>` — Race Pace tool polish: lock notice copy + Gold badge in hero + IM dev banner. Three small tweaks to the React Race Pace tool after the visual port landed:
 
-The lock logic + tier gating from the previous commit is preserved unchanged — same 2-runs-per-5-days throttle, same `racePaceDemoRuns` schema, same hydration of last-result while locked. The lock notice and "demos left in window" hint were re-styled to use `.pt-demo-lock` / `.pt-demo-hint` classes that match the new design language.
-
-Bar chart animation: instead of pace.html's IntersectionObserver triggering bar growth on scroll-into-view, the React port uses a `useEffect` + `setTimeout(50)` to trigger the 0px → target-height transition right after mount. Same 2.2s cubic-bezier, same staggered 130ms-per-bar delay.
+1. **Lock notice copy:** removed "— ask Chase about adding it any time" tail. Notice now reads "Try again in N days. Race Pace is part of Gold Development." Chase: "and whats this bullshit." The conversational soft-sell felt out of place once the rest of the tool was polished; the bare statement reads cleaner.
+2. **Gold Development badge in the hero.** New `.pt-gold-badge` sits next to the existing cyan "Race Pace Calculator" pill in a flex row. Matches `.section-tier-badge` color palette but sized to align with the pill it sits beside. Reinforces the tier inside the tool itself, not just on the card outside.
+3. **"IM race pace is in development." banner at the top.** New `.pt-im-banner` below the sub-copy, above the Course selector. Gold-tinted, reads as a status notice. The existing IM dev notice at the bottom of results stays — it surfaces only after a generation; this new banner is visible from the moment the tool opens.
 
 Earlier this session, in chronological order (newest at top):
-- `b0f5d1b` — Race Pace fix batch (click target, 2-runs-per-window, tool card badges)
+- `bad5345` — Race Pace full visual port from /pace.html to React (atmospheric background, hero, animated bars, indicators, practice pace clocks, insight, IM notice)
+- `b0f5d1b` — Race Pace fix batch (click target flip, 2-runs-per-window throttle, tool card badges)
 - `80bfc9b` — STATE/PROGRESS catch-up commit
 - `2ce321d` — Race Pace lock immediate-trigger hot fix
 - `590acb7` — Race Pace 5-day demo throttle (1-run version, superseded)

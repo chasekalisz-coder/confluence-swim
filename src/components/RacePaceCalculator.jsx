@@ -154,9 +154,12 @@ export default function RacePaceCalculator({ athlete = null }) {
     <div className="pace-tool">
       {/* ─── Hero ─── */}
       <div className="pt-hero">
-        <div className="pt-pill">
-          <span className="pt-pill-dot" />
-          <span className="pt-pill-label">Race Pace Calculator</span>
+        <div className="pt-hero-pill-row">
+          <div className="pt-pill">
+            <span className="pt-pill-dot" />
+            <span className="pt-pill-label">Race Pace Calculator</span>
+          </div>
+          <span className="pt-gold-badge">Gold Development</span>
         </div>
         <h1>Optimize your race using the pacing of the world's best swimmers.</h1>
         <p className="pt-sub">
@@ -164,6 +167,7 @@ export default function RacePaceCalculator({ athlete = null }) {
           The pacing pattern is modeled from the fastest swims in history for your event,
           broken down split-by-split, averaged together, and scaled to the time you're chasing.
         </p>
+        <div className="pt-im-banner">IM race pace is in development.</div>
       </div>
 
       {/* ─── Course ─── */}
@@ -250,8 +254,7 @@ export default function RacePaceCalculator({ athlete = null }) {
         <div className="pt-demo-lock">
           <div className="pt-demo-lock-title">Demo limit reached</div>
           <div className="pt-demo-lock-body">
-            Try again in {formatLockRemaining(msRemaining)}. Race Pace is part of Gold Development —
-            ask Chase about adding it any time.
+            Try again in {formatLockRemaining(msRemaining)}. Race Pace is part of Gold Development.
           </div>
         </div>
       )}
