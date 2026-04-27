@@ -1848,6 +1848,55 @@ body.v2-active #root {
   transform: translateX(3px);
 }
 
+/* Locked tool card — applied pre-launch to gate tools that aren't ready yet.
+   Same gating pattern as resource-card-locked: pointer-events:none kills the
+   click, hover override stops the lift, opacity dims the card. The Soon
+   badge sits in the top-right where the arrow normally lives. */
+.v2 .tool-card-locked {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.55;
+}
+.v2 .tool-card-locked:hover {
+  background: var(--v2-surface);
+  border-color: var(--v2-border);
+  transform: none;
+}
+.v2 .tool-card-locked .arrow { display: none; }
+.v2 .tc-soon-badge {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  padding: 3px 9px;
+  background: rgba(212, 168, 83, 0.14);
+  color: var(--v2-gold);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Section-title-level Soon badge — used inline next to h2 headings for sections
+   whose contents aren't ready yet (Aerobic Development, Recent Analyses). The
+   section content stays visible (empty-state copy) so users can see what's
+   coming, but the badge tells them it's not live yet. */
+.v2 .section-soon-badge {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 3px 9px;
+  background: rgba(212, 168, 83, 0.14);
+  color: var(--v2-gold);
+  border-radius: 980px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+
 /* Recent analyses section */
 .v2 .recent-header {
   display: flex;

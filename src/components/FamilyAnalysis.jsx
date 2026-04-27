@@ -126,10 +126,15 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
 
         {/* ===== Tool cards ===== */}
         <div className="tools-grid">
+          {/* Meet Analyzer is gated until launch — onClick removed, Soon badge
+              shown. The MeetAnalyzerTool placeholder remains in the file but
+              is no longer reachable. Restore onClick when the tool ships. */}
           <div
-            className="tool-card analyzer"
-            onClick={() => { setView('analyzer'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+            className="tool-card analyzer tool-card-locked"
+            aria-disabled="true"
+            title="Coming soon"
           >
+            <span className="tc-soon-badge">Soon</span>
             <div className="icon-ring">
               <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 3v18h18" />
@@ -143,16 +148,8 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             </div>
             <div className="tc-meta">
               <span className="status-dot" />
-              <span>
-                {(() => {
-                  const races = recentAnalyses.filter(a => a.tool === 'analyzer').length
-                  if (races === 0) return 'No races analyzed yet'
-                  if (races === 1) return '1 race analyzed'
-                  return `${races} races analyzed`
-                })()}
-              </span>
+              <span>Coming soon</span>
             </div>
-            <div className="arrow">›</div>
           </div>
 
           <div
@@ -192,7 +189,10 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
         {/* ===== Recent Analyses ===== */}
         <section>
           <div className="recent-header">
-            <h2 className="section-title" style={{ marginBottom: 0 }}>Recent Analyses</h2>
+            <h2 className="section-title" style={{ marginBottom: 0 }}>
+              Recent Analyses
+              <span className="section-soon-badge">Soon</span>
+            </h2>
           </div>
 
           {recentAnalyses.length === 0 ? (
@@ -360,7 +360,10 @@ function AerobicDevelopmentChart({ athlete }) {
   if (loading) {
     return (
       <section style={{ margin: '32px 0' }}>
-        <h2 className="section-title">Aerobic Development</h2>
+        <h2 className="section-title">
+          Aerobic Development
+          <span className="section-soon-badge">Soon</span>
+        </h2>
         <div style={{ color:"var(--text-muted)", fontSize:13, padding:"20px 0" }}>Loading session data…</div>
       </section>
     )
@@ -369,7 +372,10 @@ function AerobicDevelopmentChart({ athlete }) {
   if (!loading && reps.length === 0) {
     return (
       <section style={{ margin: '32px 0' }}>
-        <h2 className="section-title">Aerobic Development</h2>
+        <h2 className="section-title">
+          Aerobic Development
+          <span className="section-soon-badge">Soon</span>
+        </h2>
         <div className="empty-state">
           This chart populates once aerobic training sessions with rep-level data are saved.
           Each dot will represent one rep — pace on the y-axis, HR count on the x-axis.
@@ -384,7 +390,10 @@ function AerobicDevelopmentChart({ athlete }) {
     <section style={{ margin: '32px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
         <div>
-          <h2 style={{ fontSize:16, fontWeight:500, color:"var(--text-primary)", margin:"0 0 2px" }}>Aerobic Development</h2>
+          <h2 style={{ fontSize:16, fontWeight:500, color:"var(--text-primary)", margin:"0 0 2px", display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+            Aerobic Development
+            <span className="section-soon-badge">Soon</span>
+          </h2>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Each dot = one rep. Down + left = aerobic engine improving.</div>
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
