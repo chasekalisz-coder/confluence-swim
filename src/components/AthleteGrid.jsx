@@ -105,7 +105,7 @@ export default function AthleteGrid({ athletes, onSelect, onViewProfile, connect
 
   const handleImportProgression = async () => {
     const ok = window.confirm(
-      'Import progression data for all 11 athletes from the master docs?\n\n' +
+      'Import progression data for all 12 athletes from the master docs?\n\n' +
       'This MERGES new entries — anything already on each athlete is preserved.\n' +
       'Running it twice is safe (duplicates are skipped).'
     )

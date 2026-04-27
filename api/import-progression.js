@@ -21,6 +21,7 @@
 import { neon } from '@neondatabase/serverless'
 
 import ben    from './data/ath_ben.json'    with { type: 'json' }
+import chase  from './data/ath_chase.json'  with { type: 'json' }
 import farris from './data/ath_farris.json' with { type: 'json' }
 import grace  from './data/ath_grace.json'  with { type: 'json' }
 import hannah from './data/ath_hannah.json' with { type: 'json' }
@@ -34,6 +35,7 @@ import pace   from './data/ath_pace.json'   with { type: 'json' }
 
 const PARSED = {
   ath_ben:    ben,
+  ath_chase:  chase,
   ath_farris: farris,
   ath_grace:  grace,
   ath_hannah: hannah,
@@ -78,6 +80,7 @@ export default async function handler(req, res) {
     // First name + DB lookup is more forgiving.
     const NAME_FOR_ID = {
       ath_ben:    'Ben',
+      ath_chase:  'Chase',
       ath_farris: 'Farris',
       ath_grace:  'Grace',
       ath_hannah: 'Hannah',
