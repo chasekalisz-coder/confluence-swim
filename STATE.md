@@ -7,15 +7,15 @@ Last updated: 2026-04-27 (Session 14 — Step 5b Race Pace tier gating shipped, 
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`<pending>` — Progression demo for non-Silver/non-Gold tiers. First section to actually swap its data layer based on tier (rather than just decorating with badges). Skills + Bronze tiers now see Chase Kalisz's career LCM progression for 200 Fly, 200 IM, and 400 IM (10 entries each, 2016–2024) with a "DEMO · Chase Kalisz" banner above the chart. Silver + Gold tiers see their athlete's own progression unchanged.
+`<pending>` — Range / Specialty Bloom demo for Skills/Bronze/Silver (Gold-only feature). Second section wired with the demo data swap pattern. Non-Gold viewers see Chase Kalisz's bloom rendered against OPEN/Senior age-bucket standards — a fully developed bloom across all five strokes (28 best times pulled from `api/data/ath_chase.json`, derived as the minimum time per event from his progression history). Same `.demo-banner` pattern as Progression, with the section lede modified to use "Chase" in place of `athlete.first`. Gold tier sees the section unchanged.
 
 Implementation:
-- New fixture `src/data/progression-demo.js` exports `PROGRESSION_DEMO_DATA` — 30 entries pulled from `api/data/ath_chase.json`, filtered to the 3 LCM events. Same `{event, time, date}` shape that `ProgressionChart` already consumes from `athlete.progression`, so no chart changes were needed.
-- New `hasProgressionAccess` derivation in FamilyAnalysis (`tier === 'silver' || tier === 'gold'`). Conditional in the JSX swaps the `data` prop and the lede copy. Non-Silver/non-Gold get the `<div className="demo-banner">` (Demo pill + "Chase Kalisz" + sub-copy) in place of the section lede.
-- New CSS class `.demo-banner` (+ `.demo-banner-tag`, `.demo-banner-name`, `.demo-banner-sub`). Gold-tinted, prominent enough to be unmistakable that the data isn't their kid's, without blocking the experience. Will be reused on the other gated sections as their demo wiring lands.
-- Event dropdown remains visible inside `ProgressionChart` — non-Silver users can switch between the 3 LCM events. Decision was: keep the existing chart UX rather than build multi-line rendering. One line at a time, dropdown to switch, just limited to the 3 demo events because that's all the demo data has.
+- Extended `src/data/progression-demo.js` with `CHASE_BEST_TIMES` (28 events), `CHASE_DEMO_AGE` (32, routes to OPEN/Senior bucket), `CHASE_DEMO_GENDER` ('M'), and `CHASE_DEMO_ATHLETE` (full athlete shape so the SpecialtyBloom prop doesn't break if it starts reading more fields).
+- New `hasRangeAccess` derivation in FamilyAnalysis (`tier === 'gold'`). Conditional in the JSX swaps the entire `<SpecialtyBloom>` props block — athlete, age, gender, bestTimes all become Chase's values for non-Gold viewers — and replaces the section lede with the demo banner + Chase-personalized copy.
+- Earlier concern that Chase's age (32) might break the chart was wrong — Chase's profile page already renders correctly, so the existing standards-lookup OPEN-bucket path handles his data fine.
 
 Earlier this session, in chronological order (newest at top):
+- `dd40848` — Progression demo for non-Silver/non-Gold tiers (Chase's LCM career)
 - `760570b` — Race Pace: restored practice pace clock animations
 - `3511464` — Race Pace tool polish (lock copy, in-hero gold badge, IM dev banner)
 - `bad5345` — Race Pace full visual port from /pace.html to React

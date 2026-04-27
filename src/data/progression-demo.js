@@ -167,3 +167,65 @@ export const PROGRESSION_DEMO_DATA = [
   }
 ]
 
+
+// ────────────────────────────────────────────────────────────
+// Range / Specialty Bloom demo data
+//
+// Chase Kalisz's career best times per event, derived from the
+// same source as PROGRESSION_DEMO_DATA. Used by the Range section
+// for non-Gold tiers — feeds the SpecialtyBloom bestTimes prop
+// so Skills/Bronze/Silver viewers see Chase's bloom (a fully
+// developed flower spanning all five strokes) instead of their
+// athlete's.
+//
+// CHASE_DEMO_AGE = 32 routes the bloom to the OPEN/Senior age
+// bucket in the standards lookup, which is the right comparison
+// for adult/post-college times.
+// ────────────────────────────────────────────────────────────
+
+export const CHASE_DEMO_AGE = 32
+export const CHASE_DEMO_GENDER = 'M'
+export const CHASE_DEMO_FIRST_NAME = 'Chase'
+
+export const CHASE_BEST_TIMES = {
+  "100 Back LCM": "56.08",
+  "100 Back SCY": "48.74",
+  "100 Breast LCM": "1:01.64",
+  "100 Breast SCY": "52.31",
+  "100 Fly LCM": "53.52",
+  "100 Fly SCY": "47.21",
+  "100 Free LCM": "50.05",
+  "100 Free SCY": "45.10",
+  "1000 Free SCY": "9:14.54",
+  "1500 Free LCM": "15:25.52",
+  "1650 Free SCY": "15:45.32",
+  "200 Back LCM": "1:58.69",
+  "200 Back SCY": "1:42.76",
+  "200 Breast LCM": "2:09.90",
+  "200 Breast SCY": "1:53.83",
+  "200 Fly LCM": "1:54.79",
+  "200 Fly SCY": "1:40.38",
+  "200 Free LCM": "1:48.64",
+  "200 Free SCY": "1:36.60",
+  "200 IM LCM": "1:55.40",
+  "200 IM SCY": "1:41.19",
+  "400 Free LCM": "3:52.37",
+  "400 IM LCM": "4:05.90",
+  "400 IM SCY": "3:33.42",
+  "50 Free LCM": "22.96",
+  "50 Free SCY": "20.23",
+  "500 Free SCY": "4:24.27",
+  "800 Free LCM": "8:18.76",
+}
+
+// Demo athlete shape — passed as the `athlete` prop to SpecialtyBloom
+// for non-Gold viewers. SpecialtyBloom only reads athlete.first from
+// it (for tooltip text), but giving it a complete-looking object means
+// future fields don't crash if the component starts reading more.
+export const CHASE_DEMO_ATHLETE = {
+  id: 'demo_chase',
+  first: CHASE_DEMO_FIRST_NAME,
+  last: 'Kalisz',
+  age: CHASE_DEMO_AGE,
+  gender: CHASE_DEMO_GENDER,
+}

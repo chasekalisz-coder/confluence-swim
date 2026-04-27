@@ -20,7 +20,7 @@ import FamilyFooter from './FamilyFooter.jsx'
 import FamilyTabBar from './FamilyTabBar.jsx'
 import RacePaceCalculator from './RacePaceCalculator.jsx'
 import { getTier } from '../lib/tiers.js'
-import { PROGRESSION_DEMO_DATA } from '../data/progression-demo.js'
+import { PROGRESSION_DEMO_DATA, CHASE_BEST_TIMES, CHASE_DEMO_AGE, CHASE_DEMO_GENDER, CHASE_DEMO_ATHLETE } from '../data/progression-demo.js'
 import {
   TimesTable,
   ChampionshipTable,
@@ -152,6 +152,13 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
   // athlete) defaults to access (treated like Gold).
   const tier = athlete ? getTier(athlete) : 'gold'
   const hasProgressionAccess = tier === 'silver' || tier === 'gold'
+
+  // Range access — Gold only per the tier matrix. Skills/Bronze/Silver
+  // see a "DEMO · Chase Kalisz" bloom rendered against Senior/OPEN
+  // standards (Chase is 32 → routes to the OPEN age bucket in the
+  // standards lookup). Shows what a fully developed Olympic-medalist
+  // bloom looks like across all five strokes.
+  const hasRangeAccess = tier === 'gold'
 
   return (
     <div className="v2">
@@ -403,21 +410,51 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
           />
         </section>
 
-        {/* ===== Range / Specialty bloom (moved from Profile) ===== */}
+        {/* ===== Range / Specialty bloom (moved from Profile) =====
+             Gold tier only per matrix. Skills/Bronze/Silver see Chase's
+             bloom against OPEN/Senior standards as a demo — shows
+             what a fully developed bloom looks like at the top of
+             the sport. Same demo-banner pattern as Progression. */}
         <section>
           <h2 className="section-title">
             Range
             <span className="section-tier-badge">Gold Development</span>
           </h2>
-          <p className="section-lede">
-            The whole swimmer in one look. Each glowing petal is an event,
-            grouped by stroke around the circle. Petal length climbs the full
-            ladder from B → BB → A → AA → AAA → AAAA, then up through the
-            championship cuts (Futures, Sectionals, Jr Nats, Nats). The further
-            and hotter a petal, the closer {athlete.first} is to the top.
-            Untested events don't glow. SCY on the left, LCM on the right.
-          </p>
-          <SpecialtyBloom athlete={athlete} age={effectiveAge} gender={gender} bestTimes={bestTimes} />
+          {hasRangeAccess ? (
+            <>
+              <p className="section-lede">
+                The whole swimmer in one look. Each glowing petal is an event,
+                grouped by stroke around the circle. Petal length climbs the full
+                ladder from B → BB → A → AA → AAA → AAAA, then up through the
+                championship cuts (Futures, Sectionals, Jr Nats, Nats). The further
+                and hotter a petal, the closer {athlete.first} is to the top.
+                Untested events don't glow. SCY on the left, LCM on the right.
+              </p>
+              <SpecialtyBloom athlete={athlete} age={effectiveAge} gender={gender} bestTimes={bestTimes} />
+            </>
+          ) : (
+            <>
+              <div className="demo-banner">
+                <span className="demo-banner-tag">Demo</span>
+                <span className="demo-banner-name">Chase Kalisz</span>
+                <span className="demo-banner-sub">Olympic medalist career bests across all five strokes — measured against Senior/OPEN standards</span>
+              </div>
+              <p className="section-lede">
+                The whole swimmer in one look. Each glowing petal is an event,
+                grouped by stroke around the circle. Petal length climbs the full
+                ladder from B → BB → A → AA → AAA → AAAA, then up through the
+                championship cuts (Futures, Sectionals, Jr Nats, Nats). The further
+                and hotter a petal, the closer Chase is to the top.
+                Untested events don't glow. SCY on the left, LCM on the right.
+              </p>
+              <SpecialtyBloom
+                athlete={CHASE_DEMO_ATHLETE}
+                age={CHASE_DEMO_AGE}
+                gender={CHASE_DEMO_GENDER}
+                bestTimes={CHASE_BEST_TIMES}
+              />
+            </>
+          )}
         </section>
 
         {/* ===== Aerobic Development Chart ===== */}
