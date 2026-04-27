@@ -1,15 +1,16 @@
 # STATE.md — Current Branch State
 
-Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + custom domain + tier matrix doc)
+Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + custom domain + tier matrix doc + Step 2 Profile/Analysis restructure)
 
 ## Active branch: v2-redesign
 ## Production branch: main
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`5f8eb02 CLAUDE.md: explicit update protocol to prevent STATE/PROGRESS drift` — adds a "READ CAREFULLY" section to CLAUDE.md citing the Session 12 and Session 14 failures by name. Defines acceptable vs unacceptable commit patterns and gives a concrete trigger ("after every git push, before responding to Chase, verify each commit has a matching PROGRESS entry"). Goal: stop the recurring "code shipped, docs stale" pattern.
+`<pending>` — Step 2 of tier-access-matrix implementation plan: restructure FamilyProfile.jsx and FamilyAnalysis.jsx to match the page architecture in `docs/reference/tier-access-matrix.md`. Profile keeps Hero/Chasing Next/Times & Goals/Last Race/Upcoming Meets/Training Metrics (Coming Soon)/Scheduling. Analysis adds Times & Goals mirror + Progression + Event Power Rankings + Championship Standards + Age-Up Preview + Range. 7 sub-components in FamilyProfile.jsx are now exported (TimesTable, ChampionshipTable, AgeUpPreview, ProgressionChart, PowerRankingsList, SpecialtyBloom, ColorLegend) and imported by FamilyAnalysis.jsx for the mirrored sections — no duplication, no new shared file. No tier gating yet — all users still see everything since they're all Gold.
 
 Earlier Session 14 commits worth knowing about:
+- `5f8eb02` — CLAUDE.md update protocol section (acceptable vs unacceptable commit patterns; matched-PROGRESS-entry trigger after every push)
 - `0a08cd7` — backfill of STATE.md + PROGRESS.md for Session 14 (caught up after Chase flagged the drift)
 - `a08ebdb` — tier access matrix doc committed (`docs/reference/tier-access-matrix.md`); source of truth for what each program tier (Skills/Bronze/Silver/Gold) gets at both program and app level
 - `a209b7c` — custom domain `app.confluencesport.com` is now live as primary; legacy `confluence-swim.vercel.app` still works as backup
@@ -39,12 +40,12 @@ Push command: git push [PAT] HEAD:main
 - Email allowlists in App.jsx and public/auth-guard.js are still present as belt-and-suspenders fallback (no longer strictly needed since Clerk metadata works, but cheap to leave)
 - Vercel env vars: Production only — Preview/Development not set (would need to be added before any branch deploys)
 
-## Tier system (Session 14 — designed, not yet implemented)
+## Tier system (Session 14 — designed; restructure done, gating not yet built)
 The five program tiers (Gold Development, Silver High Performance, Bronze Competition, Skills Package, Single Lesson) and what each gets in the app are documented in `docs/reference/tier-access-matrix.md`. That doc is the source of truth.
 
-Implementation status: **0% built.** No `tier` field on athletes yet. No feature-access logic. No tier-aware nav. All current users (Chase as admin, Pomper test family) are effectively Gold and see everything.
+Implementation status: **Step 2 done.** Profile/Analysis page contents restructured per the matrix's page architecture; FamilyProfile.jsx slimmed (sub-components exported), FamilyAnalysis.jsx filled out (Times & Goals mirror + Progression + Power Rankings + Championship Standards + Age-Up + Range moved over). No `tier` field on athletes yet. No feature-access logic. No tier-aware nav. All current users (Chase as admin, Pomper test family) are effectively Gold and see everything — same as before.
 
-Profile/Analysis page restructure (Step 2 of the matrix doc's implementation plan) is the next concrete code task. Components to move from FamilyProfile.jsx → FamilyAnalysis.jsx: Progression chart, Event Power Rankings, Range/Specialty radar, Championship Standards detail. FamilyProfile.jsx is currently 2,225 lines; this will significantly slim it.
+Profile/Analysis page restructure (Step 2 of the matrix doc's implementation plan) is done. Step 3 (add `tier` field + `features` object to athlete data model in Neon) is the next concrete code task.
 
 ## Current state of key systems
 - Athlete data: DB only, single source of truth, fixture is seed-only
@@ -97,10 +98,10 @@ TODO.md is the source of truth for what's left. P1 candidates: Scheduling reques
 - Tier matrix designed and committed to `docs/reference/tier-access-matrix.md` ✓
 - Tier feature gating: NOT BUILT (Phase 5)
 
-### Phase 5 — Tier system implementation (NOT STARTED)
+### Phase 5 — Tier system implementation (IN PROGRESS — Step 2 done Session 14)
 Per `docs/reference/tier-access-matrix.md`:
-1. Restructure Profile + Analysis page contents (no gating yet — Profile slims down, Analysis fills out)
-2. Add `tier` field + `features` object to athlete data model
+1. Restructure Profile + Analysis page contents (no gating yet — Profile slims down, Analysis fills out) — **DONE Session 14**. Profile = Hero/Chasing Next/Times & Goals/Last Race/Upcoming Meets/Training Metrics (Coming Soon)/Scheduling. Analysis = Hero/Times & Goals (mirror)/Tools/Progression/Power Rankings/Championship Standards/Age-Up Preview/Range/Aerobic Development/Recent Analyses. 7 sub-components in FamilyProfile.jsx now exported and shared with FamilyAnalysis.jsx (TimesTable, ChampionshipTable, AgeUpPreview, ProgressionChart, PowerRankingsList, SpecialtyBloom, ColorLegend).
+2. Add `tier` field + `features` object to athlete data model in Neon
 3. Build feature-access infrastructure (`src/lib/featureAccess.js`, `src/config/featureFlags.js`)
 4. Wire up tier-aware nav (Analysis hides for Skills)
 5. Wire up per-section visibility within Analysis (Bronze sees Race Pace only; Silver sees most; Gold sees all)

@@ -20,14 +20,33 @@ import FamilyFooter from './FamilyFooter.jsx'
 import FamilyTabBar from './FamilyTabBar.jsx'
 import RacePaceCalculator from './RacePaceCalculator.jsx'
 import {
+  TimesTable,
+  ChampionshipTable,
+  AgeUpPreview,
+  ProgressionChart,
+  PowerRankingsList,
+  SpecialtyBloom,
+  ColorLegend,
+} from './FamilyProfile.jsx'
+import {
   pickNextCut,
   formatTime,
   ageFromDob,
+  parseTime,
+  eventPowerRankings,
 } from '../lib/calculations.js'
 
 export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClick, linkedAthletes, onSwitchAthlete }) {
   // View state: 'index' (default), 'analyzer', 'pace'
   const [view, setView] = useState('index')
+
+  // Course toggles for the mirrored sections moved from Profile (Session 14
+  // tier-matrix restructure). Each section has its own toggle so families
+  // can compare SCY vs LCM independently per section.
+  const [courseTimesGoals, setCourseTimesGoals] = useState('SCY')
+  const [courseChampionship, setCourseChampionship] = useState('SCY')
+  const [courseAgeUp, setCourseAgeUp] = useState('SCY')
+  const [courseRankings, setCourseRankings] = useState('SCY')
 
   useEffect(() => {
     document.body.classList.add('v2-active')
@@ -63,6 +82,44 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
       meetTimes: athlete.meetTimes || [],
     })
   }, [athlete, effectiveAge, gender])
+
+  // Goal times — accept map or array shape (same logic as FamilyProfile)
+  const goalTimes = useMemo(() => {
+    const raw = athlete?.goalTimes
+    if (!raw) return {}
+    if (Array.isArray(raw)) {
+      const out = {}
+      for (const g of raw) {
+        if (g?.event && g?.time) out[g.event] = g.time
+      }
+      return out
+    }
+    return raw
+  }, [athlete?.goalTimes])
+
+  // Best-time lookup keyed by event (same logic as FamilyProfile)
+  const bestTimes = useMemo(() => {
+    const out = {}
+    for (const mt of (athlete?.meetTimes || [])) {
+      const sec = parseTime(mt.time)
+      if (sec == null) continue
+      if (out[mt.event] == null || sec < parseTime(out[mt.event])) {
+        out[mt.event] = mt.time
+      }
+    }
+    return out
+  }, [athlete?.meetTimes])
+
+  // Event power rankings (moved from Profile)
+  const rankings = useMemo(() => {
+    if (!athlete) return []
+    return eventPowerRankings({
+      age: effectiveAge,
+      gender,
+      course: courseRankings,
+      meetTimes: athlete.meetTimes || [],
+    })
+  }, [athlete, effectiveAge, gender, courseRankings])
 
   // Past analyses — stored on athlete object if Chase has wired them,
   // otherwise empty state
@@ -124,6 +181,34 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
           </div>
         )}
 
+        {/* ===== Times & Goals (mirrored from Profile per Session 14
+             tier-matrix restructure — same component, same data, families
+             see it on both pages) ===== */}
+        <section>
+          <div className="section-header-row">
+            <h2 className="section-title">Times & Goals</h2>
+            <div className="section-pill-toggle">
+              <button className={courseTimesGoals === 'SCY' ? 'active' : ''} onClick={() => setCourseTimesGoals('SCY')}>SCY</button>
+              <button className={courseTimesGoals === 'LCM' ? 'active' : ''} onClick={() => setCourseTimesGoals('LCM')}>LCM</button>
+            </div>
+          </div>
+          <p className="section-lede">
+            Personal bests against USA Swimming motivational time standards.
+            <strong> Current</strong> shows the cut level {athlete.first}'s best time earns today.
+            <strong> Next</strong> is the cut level we're chasing.
+            The <strong>gaps</strong> are how far {athlete.first}'s best time still needs to drop
+            to hit the next cut and the goal time.
+          </p>
+          <ColorLegend />
+          <TimesTable
+            age={effectiveAge}
+            gender={gender}
+            course={courseTimesGoals}
+            bestTimes={bestTimes}
+            goalTimes={goalTimes}
+          />
+        </section>
+
         {/* ===== Tool cards ===== */}
         <div className="tools-grid">
           {/* Meet Analyzer is gated until launch — onClick removed, Soon badge
@@ -182,6 +267,99 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
             <div className="arrow">›</div>
           </div>
         </div>
+
+        {/* ===== Progression chart (moved from Profile) ===== */}
+        <section>
+          <h2 className="section-title">Progression</h2>
+          <p className="section-lede">
+            How {athlete.first}'s times have dropped over past meets. Each line is
+            one event. Lower on the chart = faster.
+          </p>
+          <ProgressionChart
+            data={athlete.progression || []}
+            athleteName={athlete.first}
+          />
+        </section>
+
+        {/* ===== Event Power Rankings (moved from Profile) ===== */}
+        <section>
+          <div className="section-header-row">
+            <h2 className="section-title">Event Power Rankings</h2>
+            <div className="section-pill-toggle">
+              <button className={courseRankings === 'SCY' ? 'active' : ''} onClick={() => setCourseRankings('SCY')}>SCY</button>
+              <button className={courseRankings === 'LCM' ? 'active' : ''} onClick={() => setCourseRankings('LCM')}>LCM</button>
+            </div>
+          </div>
+          <PowerRankingsList
+            rankings={rankings}
+            age={effectiveAge}
+            gender={gender}
+            course={courseRankings}
+            bestTimes={bestTimes}
+          />
+        </section>
+
+        {/* ===== Championship Standards (moved from Profile — toggle-gated by
+             athlete.showChampionshipCuts the same way it was on Profile) ===== */}
+        {athlete.showChampionshipCuts && (
+          <section>
+            <div className="section-header-row">
+              <h2 className="section-title">Championship Standards</h2>
+              <div className="section-pill-toggle">
+                <button className={courseChampionship === 'SCY' ? 'active' : ''} onClick={() => setCourseChampionship('SCY')}>SCY</button>
+                <button className={courseChampionship === 'LCM' ? 'active' : ''} onClick={() => setCourseChampionship('LCM')}>LCM</button>
+              </div>
+            </div>
+            <p className="section-lede">
+              {effectiveAge <= 14 ? (
+                <>
+                  The pathway beyond USA Swimming motivationals.
+                  <strong> Sectionals</strong> ·
+                  <strong> Futures</strong> · <strong>Pro Swim</strong> ·
+                  <strong> Jr Nats</strong> · <strong>Nationals</strong>.
+                </>
+              ) : (
+                <>
+                  The national pathway beyond USA Swimming motivationals.
+                  <strong> Sectionals</strong> · <strong>Futures</strong> ·
+                  <strong> Pro Swim</strong> · <strong>Jr Nats</strong> · <strong>Nationals</strong>.
+                </>
+              )}
+            </p>
+            <ChampionshipTable
+              age={effectiveAge}
+              gender={gender}
+              course={courseChampionship}
+              bestTimes={bestTimes}
+            />
+          </section>
+        )}
+
+        {/* ===== Age-Up Preview (moved from Profile) ===== */}
+        <section>
+          <AgeUpPreview
+            age={effectiveAge}
+            gender={gender}
+            course={courseAgeUp}
+            setCourse={setCourseAgeUp}
+            primaryEvents={athlete.events || []}
+            bestTimes={bestTimes}
+          />
+        </section>
+
+        {/* ===== Range / Specialty bloom (moved from Profile) ===== */}
+        <section>
+          <h2 className="section-title">Range</h2>
+          <p className="section-lede">
+            The whole swimmer in one look. Each glowing petal is an event,
+            grouped by stroke around the circle. Petal length climbs the full
+            ladder from B → BB → A → AA → AAA → AAAA, then up through the
+            championship cuts (Futures, Sectionals, Jr Nats, Nats). The further
+            and hotter a petal, the closer {athlete.first} is to the top.
+            Untested events don't glow. SCY on the left, LCM on the right.
+          </p>
+          <SpecialtyBloom athlete={athlete} age={effectiveAge} gender={gender} bestTimes={bestTimes} />
+        </section>
 
         {/* ===== Aerobic Development Chart ===== */}
         <AerobicDevelopmentChart athlete={athlete} />

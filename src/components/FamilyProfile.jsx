@@ -56,9 +56,6 @@ const toRoman = (n) => ROMAN[parseInt(n)] || String(n)
 
 export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick, linkedAthletes, onSwitchAthlete }) {
   const [courseTimesGoals, setCourseTimesGoals] = useState('SCY')
-  const [courseChampionship, setCourseChampionship] = useState('SCY')
-  const [courseAgeUp, setCourseAgeUp] = useState('SCY')
-  const [courseRankings, setCourseRankings] = useState('SCY')
 
   // While the v2 profile is mounted, flip the document body into dark mode
   // so the full viewport (including overscroll) is black — not just the
@@ -121,17 +118,6 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
 
   // Keep pickNextCut for any legacy usage
   const nextCut = topCuts[0] || null
-
-  // Event power rankings
-  const rankings = useMemo(() => {
-    if (!athlete) return []
-    return eventPowerRankings({
-      age: effectiveAge,
-      gender,
-      course: courseRankings,
-      meetTimes: athlete.meetTimes || [],
-    })
-  }, [athlete, effectiveAge, gender, courseRankings])
 
   // Goal times: accept two shapes for backward compatibility.
   //   • Map format: { "50 Free SCY": "25.49", ... } — used by seed data
@@ -270,103 +256,11 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
             goalTimes={goalTimes}
           />
 
-          {/* Championship Standards sits directly under main Times & Goals —
-              same mental model (current time vs standards), just harder tiers.
-              Toggle-gated: only visible for athletes close to or pushing
-              these levels. */}
-          {athlete.showChampionshipCuts && (
-            <div className="championship-standards-block">
-              <div className="section-header-row">
-                <div className="cs-heading">Championship Standards</div>
-                <div className="section-pill-toggle">
-                  <button className={courseChampionship === 'SCY' ? 'active' : ''} onClick={() => setCourseChampionship('SCY')}>SCY</button>
-                  <button className={courseChampionship === 'LCM' ? 'active' : ''} onClick={() => setCourseChampionship('LCM')}>LCM</button>
-                </div>
-              </div>
-              <p className="cs-lede">
-                {effectiveAge <= 14 ? (
-                  <>
-                    The pathway beyond USA Swimming motivationals.
-                    <strong> Sectionals</strong> ·
-                    <strong> Futures</strong> · <strong>Pro Swim</strong> ·
-                    <strong> Jr Nats</strong> · <strong>Nationals</strong>.
-                  </>
-                ) : (
-                  <>
-                    The national pathway beyond USA Swimming motivationals.
-                    <strong> Sectionals</strong> · <strong>Futures</strong> ·
-                    <strong> Pro Swim</strong> · <strong>Jr Nats</strong> · <strong>Nationals</strong>.
-                  </>
-                )}
-              </p>
-              <ChampionshipTable
-                age={effectiveAge}
-                gender={gender}
-                course={courseChampionship}
-                bestTimes={bestTimes}
-              />
-            </div>
-          )}
-
-          <AgeUpPreview
-            age={effectiveAge}
-            gender={gender}
-            course={courseAgeUp}
-            setCourse={setCourseAgeUp}
-            primaryEvents={athlete.events || []}
-            bestTimes={bestTimes}
-          />
         </section>
 
-        {/* ============ PROGRESSION ============ */}
-        <section>
-          <h2 className="section-title">Progression</h2>
-          <p className="section-lede">
-            How {athlete.first}'s times have dropped over past meets. Each line is
-            one event. Lower on the chart = faster.
-          </p>
-          <ProgressionChart
-            data={athlete.progression || []}
-            athleteName={athlete.first}
-          />
-        </section>
-
-        {/* ============ EVENT POWER RANKINGS ============ */}
-        <section>
-          <div className="section-header-row">
-            <h2 className="section-title">Event Power Rankings</h2>
-            <div className="section-pill-toggle">
-              <button className={courseRankings === 'SCY' ? 'active' : ''} onClick={() => setCourseRankings('SCY')}>SCY</button>
-              <button className={courseRankings === 'LCM' ? 'active' : ''} onClick={() => setCourseRankings('LCM')}>LCM</button>
-            </div>
-          </div>
-          <PowerRankingsList rankings={rankings} age={effectiveAge} gender={gender} course={courseRankings} bestTimes={bestTimes} />
-        </section>
-
-        {/* ============ SPECIALTY — radial heat bloom ============ */}
-        <section>
-          <h2 className="section-title">Range</h2>
-          <p className="section-lede">
-            The whole swimmer in one look. Each glowing petal is an event,
-            grouped by stroke around the circle. Petal length climbs the full
-            ladder from B → BB → A → AA → AAA → AAAA, then up through the
-            championship cuts (Futures, Sectionals, Jr Nats, Nats). The further
-            and hotter a petal, the closer {athlete.first} is to the top.
-            Untested events don't glow. SCY on the left, LCM on the right.
-          </p>
-          <SpecialtyBloom athlete={athlete} age={effectiveAge} gender={gender} bestTimes={bestTimes} />
-        </section>
-
-        {/* ============ TRAINING (placeholder) ============ */}
-        <section>
-          <h2 className="section-title">Training</h2>
-          <div className="empty-state">
-            Training metrics (zone distribution by distance, session categories)
-            will pull from saved session notes once the feed is wired up to this view.
-          </div>
-        </section>
-
-        {/* ============ MEET ANALYZER CARD ============ */}
+        {/* ============ LAST RACE ============ */}
+        {/* Universal across all tiers (per tier matrix). Entry point to the
+            Meet Analyzer; the analyzer itself lives on the Analysis page. */}
         <section>
           <h2 className="section-title">Last Race</h2>
           <div className="analyzer-card">
@@ -396,6 +290,28 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
           )}
         </section>
 
+        {/* ============ TRAINING METRICS (Coming Soon placeholder) ============ */}
+        {/* Per Session 14 tier matrix decision: this section is Gold-only
+            once tier gating is wired (Phase 5 step 6). Rendered universal
+            for now since all current users are Gold. */}
+        <section>
+          <div className="section-header-row">
+            <h2 className="section-title">
+              Training Metrics
+              <span className="section-soon-badge" style={{ marginLeft: 10 }}>Soon</span>
+            </h2>
+          </div>
+          <div className="coming-soon-card">
+            <div className="cs-tag">Coming Soon</div>
+            <div className="cs-title">Training Metrics feed</div>
+            <div className="cs-sub">
+              A live feed of {athlete.first}'s training — zone distribution by distance, session
+              categories, hi-lo pulse trends — pulled directly from saved session notes.
+              Wires up once enough sessions are logged to show meaningful patterns.
+            </div>
+          </div>
+        </section>
+
         {/* ============ SCHEDULING ============ */}
         <section>
           <h2 className="section-title">Scheduling</h2>
@@ -405,18 +321,6 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
               Pick your first-choice slots for the coming month and any backup times that would also work.
             </div>
             <button className="sched-cta">Request Slots →</button>
-          </div>
-        </section>
-
-        {/* ============ RESOURCES ============ */}
-        <section>
-          <h2 className="section-title">Resources</h2>
-          <div className="resources-link" onClick={() => onNavigate && onNavigate('resources')}>
-            <div>
-              <div className="rl-title">For Families</div>
-              <div className="rl-sub">Zones, training philosophy, meet-day checklist, glossary, FAQ</div>
-            </div>
-            <div className="chev">›</div>
           </div>
         </section>
       </main>
@@ -592,7 +496,7 @@ function NextCutCard({ cuts }) {
   )
 }
 
-function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
+export function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
   const bucket = ageBucket(age)
   return (
     <div className="times-table times-table-no-tags">
@@ -717,7 +621,7 @@ function TimesTable({ age, gender, course, bestTimes, goalTimes }) {
 // Toggle-gated by athlete.showChampionshipCuts so swimmers far from these
 // standards aren't shown a discouraging wall of red deltas.
 // Each cell shows cut time / gap / percentage using the unified color rule.
-function ChampionshipTable({ age, gender, course, bestTimes }) {
+export function ChampionshipTable({ age, gender, course, bestTimes }) {
   // Default state: all families collapsed. Click a family header to
   // expand. Saves enormous vertical space — most families don't need
   // to see 19 events at once; they open the stroke they care about.
@@ -848,7 +752,7 @@ function ChampionshipTable({ age, gender, course, bestTimes }) {
   )
 }
 
-function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, bestTimes }) {
+export function AgeUpPreview({ age, gender, course, setCourse, primaryEvents, bestTimes }) {
   // Unified grid — every event gets the same treatment. No accordion,
   // no "primary events get a different layout" split. Dense 6-per-row
   // so the family can scan every event at once without scrolling.
@@ -1010,7 +914,7 @@ function TexasTagsBadge() {
   )
 }
 
-function PowerRankingsList({ rankings, age, gender, course, bestTimes }) {
+export function PowerRankingsList({ rankings, age, gender, course, bestTimes }) {
   const [showAll, setShowAll] = useState(false)
 
   if (!rankings.length) {
@@ -1101,7 +1005,7 @@ function PowerRankRow({ rank, r, isTop, gender, course, bucket, bestTimes }) {
 // Event selector: dropdown shows all events with data. Only one event
 // line drawn at a time — keeps visual load manageable.
 // ============================================================
-function ProgressionChart({ data, athleteName }) {
+export function ProgressionChart({ data, athleteName }) {
   const [selectedEvent, setSelectedEvent] = useState(null)
 
   // Group by event
@@ -1735,7 +1639,7 @@ const BLOOM_STROKE_ORDER = [
   { label: 'IM',     stroke: 'IM',     distances: { SCY: [100,200,400],              LCM: [200,400]                 } },
 ]
 
-function SpecialtyBloom({ athlete, age, gender, bestTimes }) {
+export function SpecialtyBloom({ athlete, age, gender, bestTimes }) {
   const ref = useRef(null)
   const [visible, setVisible] = useState(false)
 
@@ -2208,7 +2112,7 @@ function UpcomingMeetsList({ meets }) {
 // Tiny inline key explaining the green/yellow/red delta color rule.
 // Rendered under the lede on any table that uses pctColor().
 // Each label is colored to match its dot so the legend self-teaches.
-function ColorLegend() {
+export function ColorLegend() {
   return (
     <div className="color-legend">
       <span className="legend-item legend-green">

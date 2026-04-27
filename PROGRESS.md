@@ -39,6 +39,31 @@ Long-running session. Started with auth diagnostic (Clerk dev-instance metadata 
 
 **CLAUDE.md update protocol added** to address recurring drift problem. New section "Update protocol — READ CAREFULLY (this rule was broken in Sessions 12 and 14)" explicitly: defines code-commit-without-STATE/PROGRESS as incomplete work, gives a concrete trigger pattern (after every `git push`, run `git log --oneline -10` and verify matching PROGRESS entries), and lists acceptable vs unacceptable commit patterns. Goal is to give future Claude sessions a hard-stop rule rather than a passive guideline.
 
+**Step 2 of tier matrix — Profile/Analysis page restructure (no gating yet).** Per `docs/reference/tier-access-matrix.md` page architecture. Two files touched:
+
+`src/components/FamilyProfile.jsx`:
+- Added `export` to 7 sub-components so FamilyAnalysis can import them: `TimesTable`, `ChampionshipTable`, `AgeUpPreview`, `ProgressionChart`, `PowerRankingsList`, `SpecialtyBloom`, `ColorLegend`. Cleanest extraction approach — sub-component definitions stay in their original module, just become importable. No new shared file required.
+- Removed sections from main render: Championship Standards, Age-Up Preview, Progression chart, Event Power Rankings, Range/SpecialtyBloom, Resources block. (Resources lives in the dedicated Resources tab; the duplicate Profile-bottom link was redundant.)
+- Removed corresponding now-unused state vars (`courseChampionship`, `courseAgeUp`, `courseRankings`) and the `rankings` useMemo. All cleanup happens BEFORE the early return so React hook count stays consistent across renders (avoids React #310 — same bug fixed earlier this session in `bbb7cc1`).
+- Replaced the bare-bones "Training" empty-state block with a styled "Training Metrics" Coming Soon card per Session 14 decision. Currently universal; will be Gold-only once tier gating ships in step 6.
+- Final Profile section order: Hero → Chasing Next → Times & Goals → Last Race → Upcoming Meets → Training Metrics (Coming Soon) → Scheduling.
+- 2,225 → 2,129 lines.
+
+`src/components/FamilyAnalysis.jsx`:
+- Added imports from `FamilyProfile.jsx` (the 7 shared sub-components) and from `calculations.js` (`parseTime`, `eventPowerRankings`).
+- Added 4 course-toggle state vars (TimesGoals/Championship/AgeUp/Rankings) and 3 memoized data hooks (`bestTimes`, `goalTimes`, `rankings`) — same logic as FamilyProfile, all positioned BEFORE the early return per the React-#310 lesson.
+- Added new sections in the render between existing pieces: Times & Goals (mirrored — same component, same data, different page), Progression chart, Event Power Rankings, Championship Standards (toggle-gated by `athlete.showChampionshipCuts` same as before), Age-Up Preview, Range/Specialty bloom.
+- Final Analysis section order: Hero insight → Times & Goals → Tool cards (Race Pace + Meet Analyzer) → Progression → Event Power Rankings → Championship Standards → Age-Up Preview → Range → Aerobic Development → Recent Analyses.
+- 614 → 791 lines.
+
+**Decision: Times & Goals on Analysis is a true mirror.** Same `<TimesTable>` component, same data props. Per Chase: "no it stays on profile but also now shows on analysis also." That matches the matrix doc, which lists Times & Goals as universal across all tiers.
+
+**Decision: Range/SpecialtyBloom moves to Analysis.** Matrix doesn't list it explicitly but its "deep-dive data view" character fits Analysis better than Profile.
+
+**Verified clean compile** with `npx vite build` after each edit pass. Bundle size unchanged (210 kB JS) — restructure is pure relocation, no functional changes.
+
+**No tier gating wired yet.** All current users still see everything (they're all Gold). Steps 3–7 of the matrix implementation plan add the actual access logic.
+
 ### Decisions made
 - The Squarespace "topic checklist per tier" copy is misleading — every tier can request any topic; the difference is who decides. Squarespace copy needs rewriting alongside tier launch.
 - Times & Goals stays universal (mostly public swimming-data, presented well — gating it would be theater).
@@ -50,7 +75,7 @@ Long-running session. Started with auth diagnostic (Clerk dev-instance metadata 
 - Locked sections render in their slot with "Available with Gold Development Program" + "Learn more" link to Squarespace appointments page. Visual restraint — premium previews, not paywall banners.
 
 ### Open loops (carrying forward)
-- Profile/Analysis component restructure (Step 2 of matrix doc) — next concrete code task
+- Profile/Analysis component restructure (Step 2 of matrix doc) — DONE this session. Step 3 (add `tier` field + `features` object to athlete data model in Neon) is now the next concrete code task.
 - Skills Package profile experience — currently scoped thin (just hero + sessions + scheduling). Worth confirming once a real Skills family is in the system.
 - Single Lesson handling — confirmed no app access. Need to define what happens if a Single Lesson customer hits app.confluencesport.com (error? redirect to Squarespace? marketing splash?)
 - Coach's note / current focus paragraph on Profile — proposed but not committed. Adds humanization. Maintenance question about whether Chase will update one short paragraph per Gold athlete every 4-6 weeks.
