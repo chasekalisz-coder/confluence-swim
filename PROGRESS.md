@@ -1,5 +1,68 @@
 # PROGRESS.md — Session Log
 
+## Session 14 — 2026-04-27 (Auth diagnostic + family flow + custom domain + tier matrix)
+
+### Approach
+Long-running session. Started with auth diagnostic (Clerk dev-instance metadata "blocker" turned out to be working — verified via Pomper test family login). Fixed React #310 bug, iterated on AthleteSwitcher UX for less-tech-savvy parent users, themed the Clerk sign-in page, set up `app.confluencesport.com` as the primary custom domain, added Squarespace "Athlete Portal" nav link to confluencesport.com, rewrote the Race Pace Calculator description in family-friendly terms, and worked through an extended design conversation about tier structure. Ended with a tier access matrix doc committed as the source of truth for the tier system (which is not yet built).
+
+### Done
+
+**Pomper test family verified end-to-end** — Used Gmail alias `chasekalisz+pompertest@gmail.com` / `Pomper2026!` with metadata `{"role":"family","linkedAthletes":["ath_jon","ath_lana","ath_ben"]}`. Confirmed in incognito on confluence-swim.vercel.app: login worked, role resolved, family scope routing fired correctly. Initial test showed black page = React #310 bug (next entry).
+
+**React #310 bug in FamilyProfile.jsx fixed** (commit `bbb7cc1`). Root cause: line 80 had `if (!athlete) return ...` BEFORE 8 useMemo hooks. App.jsx routing tree mounts FamilyProfile briefly with athlete=undefined, then re-renders with athlete defined. First render = 5 hooks, second render = 13 → "Rendered more hooks than during the previous render." Fix: moved early return AFTER all hooks, null-guarded each hook callback with `athlete?.` — matching the pattern already used in FamilyAnalysis/FamilyMeets/FamilyNotes. Lana Pomper profile now renders cleanly.
+
+**AthleteSwitcher UI iterations** (commits `d9d8161`, `c65edc7`, `34b46c7`, `3a1f8fb`). Four passes total: initial size bump for legibility (avatar 24→30px, font 13→14px, full pill border-radius), bigger again (avatar 30→36px, font 14→16px, weight 500→600) per Chase's feedback that less-tech-savvy parents need obvious-at-a-glance affordance, mobile-specific bump (avatar 28→34→40px on mobile), then mobile tap-to-switch bug fix (mousedown was firing before React onClick on iOS Safari → switched to pointerdown) plus added "Switch athlete" hint label below pill on mobile only. Switcher only renders for multi-athlete families (`linkedAthletes.length > 1`).
+
+**Clerk sign-in page themed** (commit `8064d6e`). Was bare drop-in with light-mode text against dark card; "Continue to Confluence Swim" + "Email address" labels nearly invisible. Themed via Clerk `appearance` API: variables (gold #D4A853 primary, dark bg, white text), header title white 22px weight 600, dark transparent inputs, gold primary button with dark text, gold link colors. Note: "Development mode" Clerk banner is automatic on dev tier — only goes away on production tier upgrade.
+
+**"Coach" removed from family-facing copy** (commit `6be4b9a`). Two locations: FamilyMeets.jsx:134 and FamilyProfile.jsx:394. Replaced "No meets scheduled yet. Coach will add meets here as they're confirmed." with "No meets scheduled yet. New meets will appear here as they're confirmed." Reinforced CLAUDE.md naming rule: athlete-facing side is "Athlete Performance Profiles" — never "family-facing" or anything implying user is a coach.
+
+**Race Pace Calculator description rewritten** (commits `0024d45`, `6da63d1`). Iterative process where Chase taught the actual methodology: pulled top swims (A-finals only) across courses/genders, broke each into split-by-split percentage differences, averaged across all elite swims per event to find the optimal pacing pattern. Applied to athlete's goal time → splits scaled to their speed using the proven percentage shape. Final copy: title "Optimize your race using the pacing of the world's best swimmers." subtitle "Enter your goal time and the tool returns the optimal way to pace your race. The pacing pattern is modeled from the fastest swims in history for your event, broken down split-by-split, averaged together, and scaled to the time you're chasing." Dropped the "A-finals" technical detail per Chase — didn't want parents needing to parse it for the tool to feel accurate.
+
+**Custom domain `app.confluencesport.com` live** (commit `a209b7c` for STATE update). Vercel: Add Existing → connect to Production env. Vercel issued CNAME `app` → `cea4dd04dbccfefc.vercel-dns-017.com.`. Squarespace: Settings → Domains → confluencesport.com → DNS → Custom Records → Add CNAME. Propagated in minutes. Vercel showed "Valid Configuration" within minutes. SSL cert auto-issued. Both domains coexist (legacy `confluence-swim.vercel.app` unchanged). Clerk accepted new origin without config change. Sign-in tested on new domain — worked first try.
+
+**Squarespace "Athlete Portal" nav link added** to confluencesport.com main navigation (Settings → Pages → Main Navigation → + → LINK → "Athlete Portal" → https://app.confluencesport.com → opens new tab). Now visible as first nav item, before Services. Existing "Login" stays for Squarespace member portal — separate purpose.
+
+**Family login credentials reference doc** (commit `ddece47`) — `docs/reference/family-login-credentials.md`. Family password convention `{LastName}2026!` for all families. Includes `linkedAthletes` JSON for each. INDEX.md updated to register.
+
+**Tier access matrix committed as source of truth** (commit `a08ebdb`) — `docs/reference/tier-access-matrix.md`. Captures the full Session 14 conversation about tier structure:
+- Five tiers with confirmed pricing (Gold $5K / Silver $3.75K / Bronze $2.35K / Skills $1.425K / Single $500)
+- Master matrix split between program deliverables (★) and app features (🖥)
+- Page-by-page architecture: Profile is universal across tiers, Analysis is tier-gated (Skills hidden, Bronze gets Race Pace only, Silver gets most, Gold gets all)
+- Topic selection model: family-driven (Skills/Bronze) vs coach-driven (Gold)
+- No in-app upgrade prompts via locked-everywhere pattern; instead, "Available with Gold Development Program" cards in their proper slot on Profile, with "Learn more →" linking to confluencesport.com/appointments
+- Three-layer toggle architecture (tier defaults + global feature flags + per-athlete overrides) for implementation
+- Sprint Lab is per-athlete access, not tier-gated
+- Multi-athlete switcher is universal infrastructure, not tier-gated
+- Workout Builder is coach-side only — not on the matrix
+- 9-step implementation sequencing (matrix doc → restructure → tier field → access logic → nav gating → section gating → testing → Squarespace copy → send-out)
+
+### Decisions made
+- The Squarespace "topic checklist per tier" copy is misleading — every tier can request any topic; the difference is who decides. Squarespace copy needs rewriting alongside tier launch.
+- Times & Goals stays universal (mostly public swimming-data, presented well — gating it would be theater).
+- Profile becomes a dashboard of previews; full views live on dedicated pages (Sessions, Meets, Analysis).
+- "Last Race" snapshot is the same product as Meet Analyzer at a smaller size — so it's Gold-only on Profile.
+- "Training Metrics" is a future Gold-only section; ship as Coming Soon placeholder, will be a feed connected to session notes.
+- Upcoming Meets is Bronze and up.
+- Resources tab stays as a separate nav item (universal access) — currently houses Scheduling Request, mostly Coming Soon for now.
+- Locked sections render in their slot with "Available with Gold Development Program" + "Learn more" link to Squarespace appointments page. Visual restraint — premium previews, not paywall banners.
+
+### Open loops (carrying forward)
+- Profile/Analysis component restructure (Step 2 of matrix doc) — next concrete code task
+- Skills Package profile experience — currently scoped thin (just hero + sessions + scheduling). Worth confirming once a real Skills family is in the system.
+- Single Lesson handling — confirmed no app access. Need to define what happens if a Single Lesson customer hits app.confluencesport.com (error? redirect to Squarespace? marketing splash?)
+- Coach's note / current focus paragraph on Profile — proposed but not committed. Adds humanization. Maintenance question about whether Chase will update one short paragraph per Gold athlete every 4-6 weeks.
+- Resources tab fate — keep as separate tab (decided this session) but its actual contents are mostly Coming Soon placeholders. Real build still pending.
+- Send-out document drafting — now blocked on the Profile/Analysis restructure being visible so the doc can reference real screens.
+- Pomper family Pomper test cleanup: Session 13 cont'd hardcoded admin email allowlists in src/App.jsx and public/auth-guard.js, plus diagnostic console.log statements, plus the deprecated `afterSignInUrl` warning. Cleanup pending.
+- Vercel env vars need to be added to Preview/Development environments before branch deploys can work.
+- Montgomery family test (2-athlete family flow validation) was discussed but never run.
+
+### Friction worth naming
+Chase had to call out (again) that PROGRESS.md and STATE.md were not being kept current during the session. CLAUDE.md is explicit on line 88: "Never let STATE.md or PROGRESS.md fall behind during a session." This was already noted as a Session 12 failure — it recurred in Session 14. Pattern is: Claude makes a commit, pushes the relevant code/feature, but skips the STATE/PROGRESS update until end-of-session or until Chase asks. Need a stronger trigger pattern in CLAUDE.md or in the session-start protocol so this doesn't keep happening.
+
+---
+
 ## Session 13 cont'd — 2026-04-26 evening (Auth scaffold, end-to-end)
 
 ### Approach

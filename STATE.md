@@ -1,34 +1,48 @@
 # STATE.md — Current Branch State
 
-Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + custom domain)
+Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + custom domain + tier matrix doc)
 
 ## Active branch: v2-redesign
 ## Production branch: main
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`2094c19 Auth-guard: fix malformed Clerk script URL on tool pages` — closes the auth work for tonight. Clerk login is live across the entire site (React app + 6 standalone tool HTMLs). Chase's email is hardcoded as admin in two places (App.jsx ADMIN_EMAILS and public/auth-guard.js ADMIN_EMAILS) because Clerk's dev-instance metadata editor was failing to persist values. Family scope/switcher code is wired but no family users have been invited yet.
+`a08ebdb Tier access matrix: source of truth for Skills/Bronze/Silver/Gold` — committed at the conclusion of an extended Session 14 conversation about tier structure. Captures decisions for what each program tier (Skills/Bronze/Silver/Gold) gets at both the program level (★) and the app level (🖥). Drives Squarespace copy, app gating logic, and send-out documents. See `docs/reference/tier-access-matrix.md` for full content.
+
+Earlier Session 14 commits worth knowing about:
+- `a209b7c` — custom domain `app.confluencesport.com` is now live as primary; legacy `confluence-swim.vercel.app` still works as backup
+- `bbb7cc1` — fixed React #310 hooks-order bug in FamilyProfile.jsx (early return was before useMemo hooks); Lana Pomper profile now renders cleanly
+- `8064d6e` — Clerk sign-in page fully themed to v2 dark design (gold primary, dark inputs, white text)
+- `0024d45` / `6da63d1` — Race Pace Calculator description rewritten to explain the methodology in family-friendly terms ("Optimize your race using the pacing of the world's best swimmers")
+- `6be4b9a` — removed all "Coach" references from family-facing copy (FamilyMeets, FamilyProfile)
+- `34b46c7` / `3a1f8fb` — AthleteSwitcher mobile size + pointerdown fix + "Switch athlete" hint label
+- `ddece47` — committed `docs/reference/family-login-credentials.md` with family password convention and Clerk metadata JSON
 
 ## Workflow
 All fixes go to v2-redesign first, then immediately pushed to main.
 Do NOT leave fixes only on v2-redesign — always merge to main after every commit.
 Push command: git push [PAT] HEAD:main
 
-## Auth state (Session 13 cont'd)
-- Provider: Clerk (`@clerk/clerk-react` v5.61.6)
+## Auth state (current as of Session 14)
+- Provider: Clerk (`@clerk/clerk-react` v5.61.6) — dev-tier instance, "Development mode" banner shows on sign-in (auto-removes on production tier upgrade)
 - Publishable key: `pk_test_c2hhcnAtaG9uZXliZWUtNTcuY2xlcmsuYWNjb3VudHMuZGV2JA` (Vercel env var `VITE_CLERK_PUBLISHABLE_KEY`, Production only)
 - Secret key: Vercel env var `CLERK_SECRET_KEY`, Production only
-- Frontend API host derived from key: `sharp-honeybee-57.clerk.accounts.dev`
+- Frontend API host: `sharp-honeybee-57.clerk.accounts.dev`
 - Admin user: chasekalisz@yahoo.com (Clerk user_id `user_3CvEkA6og3HK6rBy1WtW5ygVnIS`)
-- Admin metadata is stored in Clerk publicMetadata as `{ "role": "admin" }` — was broken at first save attempts but eventually persisted on the third edit. Email allowlist in code is the belt-and-suspenders fallback.
-- Auth gate locations:
-  1. `src/main.jsx` — wraps App in `<ClerkProvider>` with afterSignInUrl='/'
-  2. `src/App.jsx` — outer `<SignedOut>/<SignedIn>` split. Branded sign-in card on dark bg.
-  3. `src/App.jsx AppContent()` — role check, family scope routing, "Account pending" screen for unconfigured family users.
-  4. `public/auth-guard.js` — loads Clerk vanilla JS from CDN, hides body until auth resolves, role-gates each tool. Same email allowlist as App.jsx.
-  5. Each tool HTML has `<script src="/auth-guard.js"></script>` injected as the first script in head.
-  6. `pace.html` has `<html data-allow-family="true">` opt-in so families using the Analysis tab's Race Pace link aren't bounced.
-- Vercel env vars are Production only — Preview/Development not set yet. Will need to be added before any branch deploys.
+- Admin metadata: `{ "role": "admin" }` in publicMetadata, confirmed persisted as of Session 14
+- Test family: chasekalisz+pompertest@gmail.com / Pomper2026! with `{"role":"family","linkedAthletes":["ath_jon","ath_lana","ath_ben"]}` — verified working end-to-end
+- Sign-in page is themed (commit 8064d6e) — gold primary, dark inputs, white text, branded headline
+- Auth gate locations: same as Session 13 cont'd (main.jsx ClerkProvider, App.jsx SignedOut/SignedIn, AppContent role check, public/auth-guard.js for tool pages)
+- pace.html has `<html data-allow-family="true">` opt-in for family Analysis-tab access
+- Email allowlists in App.jsx and public/auth-guard.js are still present as belt-and-suspenders fallback (no longer strictly needed since Clerk metadata works, but cheap to leave)
+- Vercel env vars: Production only — Preview/Development not set (would need to be added before any branch deploys)
+
+## Tier system (Session 14 — designed, not yet implemented)
+The five program tiers (Gold Development, Silver High Performance, Bronze Competition, Skills Package, Single Lesson) and what each gets in the app are documented in `docs/reference/tier-access-matrix.md`. That doc is the source of truth.
+
+Implementation status: **0% built.** No `tier` field on athletes yet. No feature-access logic. No tier-aware nav. All current users (Chase as admin, Pomper test family) are effectively Gold and see everything.
+
+Profile/Analysis page restructure (Step 2 of the matrix doc's implementation plan) is the next concrete code task. Components to move from FamilyProfile.jsx → FamilyAnalysis.jsx: Progression chart, Event Power Rankings, Range/Specialty radar, Championship Standards detail. FamilyProfile.jsx is currently 2,225 lines; this will significantly slim it.
 
 ## Current state of key systems
 - Athlete data: DB only, single source of truth, fixture is seed-only
@@ -73,11 +87,25 @@ Likely candidates: admin home grid spacing on wide screens, family profile tab l
 ### Phase 3 — Polish + finish remaining tasks (NOT STARTED)
 TODO.md is the source of truth for what's left. P1 candidates: Scheduling request flow (Resources page block — May 2026 slots), Meet Analyzer direction decision, SwimCloud rankings integration, Upcoming meets admin entry, Session count fix (workout outputs filter), Program type field (Gold Development tier dropdown).
 
-### Phase 4 — Auth + invites + Squarespace integration (NOT STARTED)
-- Clerk auth with three tiers (Chase admin, provider sub-admins, families)
-- Family invite flow
-- Feature gating by program type (lower tiers see basic profile; GD tier sees full features)
-- Possible Squarespace integration: add confluence-swim.vercel.app as tab/subdomain on main Confluence Sport site
+### Phase 4 — Auth + invites + Squarespace integration (IN PROGRESS — Session 14)
+- Clerk auth: live across React app + 6 tool pages ✓
+- Custom domain: app.confluencesport.com is primary ✓
+- Squarespace nav link: "Athlete Portal" added to confluencesport.com main nav ✓
+- Family invite flow: NOT BUILT (still happens via Clerk dashboard — eventual REST API admin form is a TODO)
+- Tier matrix designed and committed to `docs/reference/tier-access-matrix.md` ✓
+- Tier feature gating: NOT BUILT (Phase 5)
+
+### Phase 5 — Tier system implementation (NOT STARTED)
+Per `docs/reference/tier-access-matrix.md`:
+1. Restructure Profile + Analysis page contents (no gating yet — Profile slims down, Analysis fills out)
+2. Add `tier` field + `features` object to athlete data model
+3. Build feature-access infrastructure (`src/lib/featureAccess.js`, `src/config/featureFlags.js`)
+4. Wire up tier-aware nav (Analysis hides for Skills)
+5. Wire up per-section visibility within Analysis (Bronze sees Race Pace only; Silver sees most; Gold sees all)
+6. Locked-section "Available with Gold Development Program" cards on Profile (Approach 1 — restraint matters)
+7. Test with non-Gold athlete (temporarily flip Jon to Bronze, walk through, flip back)
+8. Update Squarespace appointments page copy
+9. Send-out doc announcing new system to families
 
 ## What NOT to do
 - Never merge fixture data with DB data (two-path system is dead)
