@@ -15,6 +15,24 @@ None currently.
 
 ## P1 — NEXT UP
 
+- [ ] **Auth — add SMS as a sign-in option alongside email**
+  Right now sign-in is email + password only. Some parents (especially
+  grandparents managing accounts) would prefer SMS code login. Clerk
+  supports both at once: parent types either email or phone number,
+  Clerk auto-detects which one and routes accordingly.
+
+  Setup: Clerk dashboard → User & Authentication → Email, Phone,
+  Username → enable Phone number alongside Email. Then enable SMS
+  verification code under Authentication strategies.
+
+  Decision when revisiting: keep email as the required identifier
+  during invite (universal), make phone optional in onboarding so
+  parents who want SMS can add it themselves. Hybrid setup gives
+  flexibility without adding friction to the invite flow.
+
+  Note: SMS costs money via Clerk's Twilio passthrough (pennies per
+  message). At ~11 families it's negligible but worth knowing.
+
 - [ ] **Race Pace Calculator companion — tempo, underwater kick, avg velocity, stroke count tool**
   Same A-finals dataset, different cuts of the data. Where Race Pace
   Calculator answers "what splits should I swim?", this tool answers
