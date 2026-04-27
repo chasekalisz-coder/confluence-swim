@@ -7,7 +7,7 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`<pending>` — Step 5a of tier matrix: hide Performance Analysis tab for Skills tier. Wired `canSeeFeature(athlete, 'performance_analysis_tab')` into `FamilyNav.jsx` and `FamilyTabBar.jsx`. Both components now take a `currentAthlete` prop (full record) and filter their links/tabs against the athlete's tier. Updated all 5 family pages (Profile, Notes, Meets, Analysis, Resources) to pass `currentAthlete={athlete}` to both Nav and TabBar. Added route-level guard in `App.jsx` for `view === 'family-analysis'` — non-admin users whose athlete doesn't have Performance Analysis access get redirected to Profile if they hit the route directly. Currently only Skills tier is hidden — Bronze/Silver/Gold all see the tab.
+`776f57d Step 5a: hide Performance Analysis tab for Skills tier` — Wired `canSeeFeature(athlete, 'performance_analysis_tab')` into `FamilyNav.jsx` and `FamilyTabBar.jsx`. Both components now take a `currentAthlete` prop (full record) and filter their links/tabs against the athlete's tier. Updated all 5 family pages (Profile, Notes, Meets, Analysis, Resources) to pass `currentAthlete={athlete}` to both Nav and TabBar. Added route-level guard in `App.jsx` for `view === 'family-analysis'` — non-admin users whose athlete doesn't have Performance Analysis access get redirected to Profile if they hit the route directly. Currently only Skills tier is hidden — Bronze/Silver/Gold all see the tab.
 
 Earlier commits worth knowing about:
 - `94ef7b8` — STATE backfill for Chase progression import
