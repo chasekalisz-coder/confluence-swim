@@ -165,27 +165,27 @@ body.v2-active #root {
   appearance: none;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 10px 4px 4px;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
   background: rgba(255,255,255,0.04);
-  border: 0.5px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
+  border: 0.5px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
   color: var(--v2-text);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
 }
 .v2 .as-trigger:hover {
   background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.22);
 }
 .v2 .as-avatar {
-  width: 24px; height: 24px;
+  width: 30px; height: 30px;
   border-radius: 50%;
   background: rgba(212, 168, 83, 0.18);
   color: var(--v2-gold);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -195,6 +195,7 @@ body.v2-active #root {
 .v2 .as-name {
   font-weight: 500;
   color: var(--v2-text);
+  letter-spacing: -0.01em;
 }
 .v2 .as-caret {
   color: var(--v2-text-3);
@@ -276,11 +277,12 @@ body.v2-active #root {
   flex: 0 0 auto;
 }
 
-/* Mobile breakpoint — switcher trigger becomes more compact */
+/* Mobile breakpoint — switcher trigger becomes more compact (avatar-only) */
 @media (max-width: 720px) {
   .v2 .athlete-switcher { margin-right: 4px; }
-  .v2 .as-trigger { padding: 3px 8px 3px 3px; gap: 6px; font-size: 12px; }
+  .v2 .as-trigger { padding: 4px; gap: 0; font-size: 12px; }
   .v2 .as-name { display: none; }
+  .v2 .as-avatar { width: 28px; height: 28px; }
   .v2 .as-menu { min-width: 220px; right: -4px; }
 }
 

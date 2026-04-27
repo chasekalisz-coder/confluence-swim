@@ -106,7 +106,7 @@ function AthleteSwitcher({ currentAthleteId, athletes, onSwitch }) {
         aria-haspopup="listbox"
       >
         <span className="as-avatar">{initials(current)}</span>
-        <span className="as-name">{current.first}</span>
+        <span className="as-name">{current.first} {current.last}</span>
         <svg className="as-caret" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M2 4l3 3 3-3" />
         </svg>
