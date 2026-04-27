@@ -399,27 +399,60 @@ function SchedulingBlock({ athlete, slotData }) {
   }
 
   const handleReset = async () => {
-    // Log the call so we can verify in devtools that handleReset actually fires
-    // when the user taps the link. If the row sticks around in the DB after a
-    // reset, the first thing to check is whether this log even shows up.
+    // Tell the user we're working so the link/button can't be tapped twice
+    // and so they don't refresh mid-call (which is what makes the bug feel
+    // sticky — UI clears, user refreshes, useEffect re-fetches the still-
+    // existing row, and the picks come back).
+    if (saving) return
     console.log('[SchedulingBlock] handleReset fired', { athleteId, month: slotData.month })
-    setPicks({})
-    setNote('')
-    setSubmitted(false)
-    setLastSubmittedAt(null)
-    setSelectedDayIdx(null)
-    if (athleteId) {
-      try {
-        const result = await deleteSlotRequest(athleteId, slotData.month)
-        console.log('[SchedulingBlock] delete result:', result)
-      } catch (err) {
-        console.error('[SchedulingBlock] delete failed:', err)
-        // Surface the error visibly so we know if something went wrong rather
-        // than silently leaving the DB row in place.
-        alert('Could not clear request from server: ' + err.message + '\n\nYour picks may still be saved on the server. Please try again or contact Chase.')
+
+    // If there's no saved request to delete, just clear local state. No DB call.
+    if (!athleteId || !lastSubmittedAt) {
+      setPicks({})
+      setNote('')
+      setSubmitted(false)
+      setLastSubmittedAt(null)
+      setSelectedDayIdx(null)
+      return
+    }
+
+    setSaving(true)
+    try {
+      // Try once. If it fails (network blip, cold start, etc.) wait briefly and
+      // retry once more before giving up. Two attempts covers nearly all
+      // transient failures without making the user wait too long.
+      let lastErr = null
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const result = await deleteSlotRequest(athleteId, slotData.month)
+          console.log(`[SchedulingBlock] delete result (attempt ${attempt}):`, result)
+          lastErr = null
+          break
+        } catch (err) {
+          lastErr = err
+          console.warn(`[SchedulingBlock] delete attempt ${attempt} failed:`, err)
+          if (attempt === 1) await new Promise(r => setTimeout(r, 600))
+        }
       }
-    } else {
-      console.warn('[SchedulingBlock] reset skipped DB delete — no athleteId')
+      if (lastErr) throw lastErr
+
+      // ONLY clear local state after the DB delete actually succeeded. If we
+      // cleared first and the call failed, the user sees an empty calendar
+      // but their picks are still saved — which is exactly the bug we hit.
+      setPicks({})
+      setNote('')
+      setSubmitted(false)
+      setLastSubmittedAt(null)
+      setSelectedDayIdx(null)
+    } catch (err) {
+      console.error('[SchedulingBlock] delete failed (final):', err)
+      alert(
+        'Could not clear your request from the server.\n\n' +
+        'Error: ' + err.message + '\n\n' +
+        'Your picks are still saved on the server. Please check your internet connection and try again.'
+      )
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -737,7 +770,9 @@ function SchedulingBlock({ athlete, slotData }) {
       <div className="sb-actions">
         <div className="sb-summary">
           {primaryCount + secondaryCount === 0
-            ? 'No slots picked yet.'
+            ? (lastSubmittedAt
+                ? 'You\'ve removed all your picks. Tap below to clear your saved request.'
+                : 'No slots picked yet.')
             : `${primaryCount + secondaryCount} slot${primaryCount + secondaryCount === 1 ? '' : 's'} picked`}
         </div>
         <div className="sb-btns">
@@ -746,10 +781,26 @@ function SchedulingBlock({ athlete, slotData }) {
           )}
           <button
             className="sb-btn-submit"
-            onClick={handleSubmit}
-            disabled={primaryCount + secondaryCount === 0 || saving}
+            onClick={
+              // If they've zeroed out a previously-submitted request, "submit"
+              // means "clear my request" — handleReset deletes the DB row and
+              // resets local state. Otherwise we're saving picks normally.
+              (primaryCount + secondaryCount === 0 && lastSubmittedAt)
+                ? handleReset
+                : handleSubmit
+            }
+            // Disabled only if there's nothing to do at all — no picks AND no saved
+            // request to clear. The "submit zero with saved request" case is enabled.
+            disabled={
+              saving ||
+              (primaryCount + secondaryCount === 0 && !lastSubmittedAt)
+            }
           >
-            {saving ? 'Submitting...' : (lastSubmittedAt ? 'Update Request' : 'Submit Request')}
+            {saving
+              ? 'Submitting...'
+              : (primaryCount + secondaryCount === 0 && lastSubmittedAt)
+                ? 'Clear my request'
+                : (lastSubmittedAt ? 'Update Request' : 'Submit Request')}
           </button>
         </div>
       </div>
