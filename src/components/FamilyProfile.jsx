@@ -262,7 +262,10 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
         {/* Universal across all tiers (per tier matrix). Entry point to the
             Meet Analyzer; the analyzer itself lives on the Analysis page. */}
         <section>
-          <h2 className="section-title">Last Race</h2>
+          <h2 className="section-title">
+            Last Race
+            <span className="section-tier-badge">Gold Development</span>
+          </h2>
           <div className="analyzer-card">
             <div>
               <div className="az-label">Meet Analyzer</div>
@@ -299,6 +302,7 @@ export default function FamilyProfile({ athlete, onBack, onNavigate, onLogoClick
             <h2 className="section-title">
               Training Metrics
               <span className="section-soon-badge" style={{ marginLeft: 10 }}>Soon</span>
+              <span className="section-tier-badge">Gold Development</span>
             </h2>
           </div>
           <div className="coming-soon-card">
