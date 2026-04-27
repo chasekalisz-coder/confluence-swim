@@ -41,12 +41,15 @@
   document.documentElement.appendChild(hideStyle)
 
   // Safety: if Clerk fails to load or hangs for any reason, fall back
-  // to bouncing to sign-in after 5 seconds rather than leaving the user
+  // to bouncing to sign-in after 8 seconds rather than leaving the user
   // staring at a blank page. Cleared once auth resolves.
+  // Bumped from 5s to 8s — on slower connections / cold-start CDN, the
+  // Clerk vanilla JS bundle takes 4-5s to actually initialize.
+  console.log('[auth-guard] script start, path:', window.location.pathname)
   var failsafeBounce = setTimeout(function () {
-    console.warn('[auth-guard] Clerk did not initialize within 5s, bouncing to sign-in.')
+    console.warn('[auth-guard] Clerk did not initialize within 8s, bouncing to sign-in.')
     redirectToSignIn()
-  }, 5000)
+  }, 8000)
 
   function redirectToSignIn() {
     var current = window.location.pathname + window.location.search
@@ -75,14 +78,12 @@
     // Frontend API host is encoded in the publishable key — we derive it.
     var frontendApi = parseFrontendApi(PUBLISHABLE_KEY)
     script.src = 'https://' + frontendApi + '/npm/@clerk/clerk-js@5/dist/clerk.browser.js'
+    console.log('[auth-guard] Loading Clerk from:', script.src)
     script.setAttribute('data-clerk-publishable-key', PUBLISHABLE_KEY)
     script.crossOrigin = 'anonymous'
     script.onload = onClerkScriptLoaded
     script.onerror = function () {
       console.error('[auth-guard] Failed to load Clerk script from', script.src)
-      // Don't bounce immediately on script load fail — the failsafe
-      // timer will catch it, and the user might be on a flaky network
-      // where a refresh will work.
     }
     document.head.appendChild(script)
   }
@@ -105,15 +106,17 @@
   }
 
   function onClerkScriptLoaded() {
+    console.log('[auth-guard] Clerk script loaded, window.Clerk =', !!window.Clerk)
     if (!window.Clerk) {
       console.error('[auth-guard] Clerk script loaded but window.Clerk is missing')
       return
     }
     window.Clerk.load({})
       .then(function () {
+        console.log('[auth-guard] Clerk.load() resolved, user =', !!window.Clerk.user)
         clearTimeout(failsafeBounce)
         if (!window.Clerk.user) {
-          // Not authenticated — bounce to sign-in.
+          console.warn('[auth-guard] No user session — bouncing to sign-in')
           redirectToSignIn()
           return
         }
@@ -139,9 +142,16 @@
           window.Clerk.user.publicMetadata.role) || ''
         var isAdmin = isAllowlistAdmin || metaRole === 'admin'
 
+        console.log('[auth-guard] email:', userEmail,
+          '| isAllowlistAdmin:', isAllowlistAdmin,
+          '| metaRole:', metaRole,
+          '| isAdmin:', isAdmin,
+          '| allowFamily:', allowFamily)
+
         if (!isAdmin && !allowFamily) {
           // Family user trying to access an admin-only tool — bounce them
           // back to the app root, which routes them to their athlete profile.
+          console.warn('[auth-guard] Not admin, no family override — bouncing to /')
           window.location.href = '/'
           return
         }
