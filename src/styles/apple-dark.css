@@ -204,6 +204,13 @@ body.v2-active #root {
   height: 12px;
 }
 
+/* "Switch athlete" hint — hidden on desktop (the full-name pill is already
+   self-explanatory), visible on mobile where the pill is avatar-only and
+   parents who don't realize it's tappable need the cue. */
+.v2 .as-hint {
+  display: none;
+}
+
 .v2 .as-menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -279,13 +286,31 @@ body.v2-active #root {
   flex: 0 0 auto;
 }
 
-/* Mobile breakpoint — switcher trigger becomes more compact (avatar-only) */
+/* Mobile breakpoint — switcher trigger becomes more compact (avatar-only)
+   and the "Switch athlete" hint shows below the pill so first-time mobile
+   users (esp. older parents/grandparents) immediately see it's tappable. */
 @media (max-width: 720px) {
-  .v2 .athlete-switcher { margin-right: 4px; }
+  .v2 .athlete-switcher {
+    margin-right: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
   .v2 .as-trigger { padding: 6px 12px 6px 6px; gap: 6px; font-size: 13px; }
   .v2 .as-name { display: none; }
   .v2 .as-avatar { width: 40px; height: 40px; font-size: 14px; }
   .v2 .as-caret { width: 14px; height: 14px; }
+  .v2 .as-hint {
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--v2-gold);
+    line-height: 1;
+    margin-top: 2px;
+  }
   .v2 .as-menu { min-width: 220px; right: -4px; }
 }
 

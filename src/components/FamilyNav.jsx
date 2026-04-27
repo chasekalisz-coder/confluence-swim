@@ -81,14 +81,17 @@ function AthleteSwitcher({ currentAthleteId, athletes, onSwitch }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
-  // Close on outside click so the dropdown behaves like every other dropdown.
+  // Close on outside click. Use pointerdown instead of mousedown so this
+  // works on iOS Safari (which doesn't reliably fire mousedown for touch
+  // and ordering of synthesized mouse events with React's onClick can swallow
+  // the menu-item tap before its handler runs).
   useEffect(() => {
     if (!open) return
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false)
     }
-    window.addEventListener('mousedown', handler)
-    return () => window.removeEventListener('mousedown', handler)
+    window.addEventListener('pointerdown', handler)
+    return () => window.removeEventListener('pointerdown', handler)
   }, [open])
 
   const current = athletes.find(a => a.id === currentAthleteId) || athletes[0]
@@ -104,6 +107,7 @@ function AthleteSwitcher({ currentAthleteId, athletes, onSwitch }) {
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
         aria-haspopup="listbox"
+        aria-label="Switch athlete"
       >
         <span className="as-avatar">{initials(current)}</span>
         <span className="as-name">{current.first} {current.last}</span>
@@ -111,6 +115,7 @@ function AthleteSwitcher({ currentAthleteId, athletes, onSwitch }) {
           <path d="M2 4l3 3 3-3" />
         </svg>
       </button>
+      <span className="as-hint" aria-hidden="true">Switch athlete</span>
       {open && (
         <div className="as-menu" role="listbox">
           {familyLast && (
