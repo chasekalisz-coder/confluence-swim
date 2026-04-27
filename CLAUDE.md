@@ -157,6 +157,32 @@ If Chase pastes the 4-line trigger, do the above. If he doesn't, do it anyway �
 5. Push
 6. Confirm the push landed (check commit hash)
 
+### Update protocol — READ CAREFULLY (this rule was broken in Sessions 12 and 14)
+
+**A code commit without a matching `STATE.md` + `PROGRESS.md` update is incomplete work.** Do not treat a feature as shipped until all three of these are true:
+
+1. The code is pushed to `v2-redesign` AND `main`
+2. `STATE.md` reflects any state change from the commit (last commit hash on main, system status, phase progression, any moved/changed/added file worth knowing about)
+3. `PROGRESS.md` has an entry under the current session's block describing what was done and why
+
+**If you make 5 commits and the PROGRESS.md session block has 0 entries, you are doing it wrong.** Stop and backfill before continuing.
+
+**Trigger pattern.** After every `git push`, before responding to Chase:
+- Run `git log --oneline -10` and verify each commit *since the last PROGRESS entry* has a matching PROGRESS line.
+- If any commits are missing from PROGRESS, write the entries and push them BEFORE responding.
+- This is non-negotiable and applies regardless of whether the commit feels small.
+
+**Why this keeps failing.** Code commits feel like the "real work"; STATE/PROGRESS updates feel like paperwork after the fact. That perception is wrong — the persistent context system is what lets the next Claude session pick up cleanly. Without it, Chase has to re-explain everything every chat. Treat STATE/PROGRESS updates as part of the commit, not a follow-up.
+
+**Acceptable patterns:**
+- One combined commit that modifies code + STATE + PROGRESS together (preferred for small changes)
+- Two paired commits — code first, then STATE/PROGRESS — pushed back-to-back before responding (preferred for larger changes where the code commit needs its own focused message)
+
+**Unacceptable patterns:**
+- Multiple code commits with a single "catch-up" STATE/PROGRESS commit at end of session
+- Telling Chase the work is done before the docs reflect it
+- Waiting for Chase to ask "did you update STATE/PROGRESS?" before doing it
+
 ---
 
 ## FILE STRUCTURE (persistent context system)

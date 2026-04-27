@@ -7,9 +7,11 @@ Last updated: 2026-04-27 (Session 14 — auth cleanup + family flow tested + cus
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`a08ebdb Tier access matrix: source of truth for Skills/Bronze/Silver/Gold` — committed at the conclusion of an extended Session 14 conversation about tier structure. Captures decisions for what each program tier (Skills/Bronze/Silver/Gold) gets at both the program level (★) and the app level (🖥). Drives Squarespace copy, app gating logic, and send-out documents. See `docs/reference/tier-access-matrix.md` for full content.
+`{TBD-after-push} CLAUDE.md: explicit update protocol to prevent STATE/PROGRESS drift` — adds a "READ CAREFULLY" section to CLAUDE.md citing the Session 12 and Session 14 failures by name. Defines acceptable vs unacceptable commit patterns and gives a concrete trigger ("after every git push, before responding to Chase, verify each commit has a matching PROGRESS entry"). Goal: stop the recurring "code shipped, docs stale" pattern.
 
 Earlier Session 14 commits worth knowing about:
+- `0a08cd7` — backfill of STATE.md + PROGRESS.md for Session 14 (caught up after Chase flagged the drift)
+- `a08ebdb` — tier access matrix doc committed (`docs/reference/tier-access-matrix.md`); source of truth for what each program tier (Skills/Bronze/Silver/Gold) gets at both program and app level
 - `a209b7c` — custom domain `app.confluencesport.com` is now live as primary; legacy `confluence-swim.vercel.app` still works as backup
 - `bbb7cc1` — fixed React #310 hooks-order bug in FamilyProfile.jsx (early return was before useMemo hooks); Lana Pomper profile now renders cleanly
 - `8064d6e` — Clerk sign-in page fully themed to v2 dark design (gold primary, dark inputs, white text)

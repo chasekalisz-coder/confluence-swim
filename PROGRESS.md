@@ -37,6 +37,8 @@ Long-running session. Started with auth diagnostic (Clerk dev-instance metadata 
 - Workout Builder is coach-side only — not on the matrix
 - 9-step implementation sequencing (matrix doc → restructure → tier field → access logic → nav gating → section gating → testing → Squarespace copy → send-out)
 
+**CLAUDE.md update protocol added** to address recurring drift problem. New section "Update protocol — READ CAREFULLY (this rule was broken in Sessions 12 and 14)" explicitly: defines code-commit-without-STATE/PROGRESS as incomplete work, gives a concrete trigger pattern (after every `git push`, run `git log --oneline -10` and verify matching PROGRESS entries), and lists acceptable vs unacceptable commit patterns. Goal is to give future Claude sessions a hard-stop rule rather than a passive guideline.
+
 ### Decisions made
 - The Squarespace "topic checklist per tier" copy is misleading — every tier can request any topic; the difference is who decides. Squarespace copy needs rewriting alongside tier launch.
 - Times & Goals stays universal (mostly public swimming-data, presented well — gating it would be theater).
