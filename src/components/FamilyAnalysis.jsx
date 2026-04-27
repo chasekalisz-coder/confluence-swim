@@ -128,7 +128,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
   if (!athlete) {
     return (
       <div className="v2">
-        <FamilyNav active="Analysis" onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
+        <FamilyNav active="Performance Analysis" onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
         <main className="v2-main">
           <div style={{ color:"var(--text-muted)", fontSize:13, padding:"20px 0", lineHeight:1.6 }}>No athlete selected.</div>
         </main>
@@ -139,7 +139,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
 
   return (
     <div className="v2">
-      <FamilyNav active="Analysis" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
+      <FamilyNav active="Performance Analysis" athleteInitials={initials} onNavigate={onNavigate} onLogoClick={onLogoClick} currentAthleteId={athlete?.id} linkedAthletes={linkedAthletes} onSwitchAthlete={onSwitchAthlete} />
       <main className="v2-main">
         {view === 'analyzer' && (
           <MeetAnalyzerTool athlete={athlete} onClose={() => setView('index')} />
@@ -151,7 +151,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
           <>
         {onBack && <button className="back" onClick={onBack}>← Back to Profile</button>}
 
-        <div className="page-title">Analysis</div>
+        <div className="page-title">Performance Analysis</div>
         <div className="page-sub">
           Tools to break down {athlete.first}'s races, plan target paces,
           and find the exact seconds between {pronounThem(athlete)} and the next cut.

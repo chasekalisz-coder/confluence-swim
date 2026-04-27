@@ -17,7 +17,7 @@ export default function FamilyNav({
   const links = [
     { label: 'Profile', view: 'profile' },
     { label: 'Session Notes', view: 'notes' },
-    { label: 'Analysis', view: 'analysis' },
+    { label: 'Performance Analysis', view: 'analysis' },
     { label: 'Meets', view: 'meets' },
     { label: 'Resources', view: 'resources' },
   ]

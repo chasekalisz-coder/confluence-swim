@@ -64,6 +64,12 @@ Long-running session. Started with auth diagnostic (Clerk dev-instance metadata 
 
 **No tier gating wired yet.** All current users still see everything (they're all Gold). Steps 3–7 of the matrix implementation plan add the actual access logic.
 
+**Renamed Analysis tab to "Performance Analysis"** (after a back-and-forth with Chase about whether the tab name was carrying its weight). Final landing: "Analysis" alone felt accurate but flat once the page filled out; "Performance" alone felt limiting (half the page is forward-looking — Race Pace planning, Age-Up projections, Aerobic Development training data — not strictly performance output). "Performance Analysis" captures both the lookback (Progression, Power Rankings, Championship Standards) and the lookforward (Race Pace, Age-Up, Aerobic Development).
+
+Mobile tab bar gets the label *stacked* on two lines — "Performance" over "Analysis" — because the full label was too wide for the ~20% viewport width per tab. Implementation: `\n` in the label string + `white-space: pre-line` + reserved 24px label height so single-line tabs (Profile, Sessions, Meets, Resources) and the stacked-line tab occupy identical vertical space. Bar height stays constant regardless of active tab.
+
+Internal route key (`analysis`), URL hash, view ID, file name (`FamilyAnalysis.jsx`), prop names, comments — all unchanged. Only user-visible labels updated. Touched: FamilyNav.jsx (desktop nav), FamilyAnalysis.jsx (page title + 2× active-prop matches), FamilyTabBar.jsx (mobile label), apple-dark.css (`.ftb-label` block extended for stacked-label support).
+
 ### Decisions made
 - The Squarespace "topic checklist per tier" copy is misleading — every tier can request any topic; the difference is who decides. Squarespace copy needs rewriting alongside tier launch.
 - Times & Goals stays universal (mostly public swimming-data, presented well — gating it would be theater).

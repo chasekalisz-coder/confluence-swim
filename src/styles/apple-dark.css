@@ -4193,6 +4193,21 @@ body.v2-active #root {
     font-size: 10px;
     font-weight: 500;
     letter-spacing: 0.01em;
+    /* Stacked-label support — Performance Analysis renders as two lines
+       on mobile (full label is too wide for ~20% viewport width).
+       white-space: pre-line honors the \n in the label string.
+       Reserved 2-line height (24px) means single-line and stacked-line
+       tabs occupy the same vertical space — the bar doesn't grow when
+       a 2-line label is present, and the bar height stays constant
+       regardless of which tab is active. Single-line labels sit at the
+       top of the reserved box (text-align center, lines start from top). */
+    white-space: pre-line;
+    line-height: 1.1;
+    text-align: center;
+    height: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
   }
   .ftb-tab-active {
     color: #D4A853;
