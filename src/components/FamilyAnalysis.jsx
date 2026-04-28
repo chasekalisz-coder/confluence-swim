@@ -284,7 +284,7 @@ export default function FamilyAnalysis({ athlete, onBack, onNavigate, onLogoClic
               <span className="status-dot" />
               <span>
                 {!isGold
-                  ? '2 demo runs available every 5 days'
+                  ? '5 demo runs available every 5 days'
                   : (() => {
                       const paces = (athlete.analyses || []).filter(a => a.tool === 'pace').length
                       if (paces === 0) return 'No race pace history yet'

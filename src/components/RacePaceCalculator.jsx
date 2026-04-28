@@ -17,13 +17,13 @@ import { updateAthlete } from '../lib/db.js'
 // scoped under .pace-tool (defined in apple-dark.css) so the
 // styles don't collide with the rest of the v2 design system.
 //
-// The lock logic (non-Gold throttle, 2 runs per 5 days) lives
+// The lock logic (non-Gold throttle, 5 runs per 5 days) lives
 // here too — see DEMO_LOCK_MS and DEMO_RUNS_ALLOWED below.
 // ============================================================
 
 const COURSE_FULL = { scy: 'Short Course Yards', lcm: 'Long Course Meters', scm: 'Short Course Meters' }
 const DEMO_LOCK_MS = 5 * 24 * 60 * 60 * 1000
-const DEMO_RUNS_ALLOWED = 2
+const DEMO_RUNS_ALLOWED = 5
 
 // Returns "N days" / "N hours" / "less than an hour" from a millisecond
 // count. Rounds up — see Session 14 conversation: rounding up reads as

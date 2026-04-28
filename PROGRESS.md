@@ -68,6 +68,17 @@ If the URL matches `/demo/<slug>`, return the `DemoView` immediately and never r
 
 The demo URL goes live as soon as Vercel finishes deploying the push: `https://app.confluencesport.com/demo/chase`.
 
+### Race Pace demo throttle bumped 2 → 5 runs per 5 days
+
+Chase requested the non-Gold Race Pace demo throttle go from 2 runs per 5 days to 5 runs per 5 days. Two-line product change:
+
+- `src/components/RacePaceCalculator.jsx`: `const DEMO_RUNS_ALLOWED = 2` → `5`. The constant comment block at the top of the file ("non-Gold throttle, 2 runs per 5 days") updated to match.
+- `src/components/FamilyAnalysis.jsx`: tool-card meta string under the Race Pace icon updated from "2 demo runs available every 5 days" → "5 demo runs available every 5 days".
+
+The "N demo generations left in this 5-day window" hint inside the calculator already interpolates the count via `runsLeftInWindow`, so it auto-adjusts to the new ceiling without any string edit. The lock window is unchanged — still 5 calendar days from the moment of generation, expiring on a per-run basis. Gold tier remains `Infinity` (unlimited). The runs-list throttle architecture (`racePaceDemoRuns` array of ISO timestamps, prune to active window on render, lock when `count >= DEMO_RUNS_ALLOWED`) carries over with zero structural change — Session 14 specifically refactored away from the 1-timestamp model to a runs-list model so this kind of bump would be a one-constant edit.
+
+Verified with `npx vite build`: 117 modules, 210 KB JS bundle (unchanged), zero warnings.
+
 ---
 
 ## Session 14 — 2026-04-27 (Auth diagnostic + family flow + custom domain + tier matrix)
