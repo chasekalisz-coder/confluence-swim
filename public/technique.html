@@ -581,6 +581,66 @@ textarea::placeholder, input::placeholder { color: #475569; }
   margin-bottom: 10px;
 }
 
+/* Focus Areas inner items — restored from pre-redesign CSS (commit dd2d3ab),
+   adapted to v2 dark theme. Without these the chips render as raw inline text
+   glued together, no separation, default browser font. */
+.tech-topic-item { margin-bottom: 14px; }
+.tech-topic-item:last-child { margin-bottom: 0; }
+.tech-topic-name {
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: white;
+  margin-bottom: 8px;
+}
+.tech-faults { display: flex; flex-wrap: wrap; gap: 6px; }
+.tech-fault-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  font-size: 11px;
+  color: #cbd5e1;
+  letter-spacing: 0.02em;
+}
+
+/* Section grid layout for rendered note body — restored from pre-redesign CSS.
+   Without these, 01/02/03 numerals render as plain text in default browser
+   font and stack on top of body text instead of sitting in a left column. */
+.section {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 28px;
+  margin-bottom: 32px;
+  align-items: start;
+}
+.section-num {
+  font-family: 'Fraunces', serif;
+  font-size: 48px;
+  font-weight: 400;
+  color: var(--gold);
+  line-height: 1;
+}
+.section-content .section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.section-content p {
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+  margin: 0 0 14px;
+  color: #cbd5e1;
+}
+.section-content p:last-child { margin-bottom: 0; }
+
+/* Legacy h3/p fallbacks — kept in case any older note-shape uses them */
 .note h3 {
   font-family: 'Fraunces', serif;
   font-size: 18px;
@@ -646,6 +706,11 @@ textarea::placeholder, input::placeholder { color: #475569; }
   .action-btn { width: 100%; text-align: center; }
   .cta-wrap { padding: 4px 20px 28px; }
   .generate { padding: 14px; font-size: 12px; }
+  /* Section grid tightens on mobile */
+  .section { grid-template-columns: 48px 1fr; gap: 14px; margin-bottom: 22px; }
+  .section-num { font-size: 32px; }
+  .section-content p { font-size: 14px; line-height: 1.55; margin-bottom: 12px; }
+  .tech-topic-name { font-size: 14px; }
 }
 
 @media print {
@@ -658,6 +723,13 @@ textarea::placeholder, input::placeholder { color: #475569; }
   .note p { color: #2c2c2a !important; }
   .athlete-rule { background: #84a98c !important; }
   .tech-box { background: #f5f5f0 !important; border: 0.5px solid #d4d4cc !important; }
+  /* Restored print overrides — match pre-redesign light-paper rendering */
+  .tech-topic-name { color: #121212 !important; font-size: 13px !important; }
+  .tech-fault-chip { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.12) !important; color: #2c2c2a !important; }
+  .section { grid-template-columns: 56px 1fr; gap: 18px; margin-bottom: 18px; page-break-inside: avoid; break-inside: avoid; }
+  .section-num { font-size: 32px !important; }
+  .section-content .section-title { color: #b8893a !important; font-size: 10px !important; margin-bottom: 8px !important; }
+  .section-content p { color: #2c2c2a !important; font-size: 12px !important; line-height: 1.5 !important; margin-bottom: 10px !important; }
 }
 /* ============================================================
    ADMIN BOTTOM NAV — appended to all standalone tool pages

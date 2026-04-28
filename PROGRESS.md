@@ -1,5 +1,34 @@
 # PROGRESS.md — Session Log
 
+## Session 15 — 2026-04-27 (Note-render CSS restoration on test-ai.html + technique.html)
+
+### Approach
+Chase flagged that the technique tool was producing notes that "look NOTHING LIKE" what he had before. He'd spent five hours building deep coaching context into the prompt and was furious thinking we'd lost it. Initial investigation focused on the prompt files — confirmed both `api/lib/training-prompt.js` and `api/lib/technique-prompt.js` still had their content (training prompt is byte-identical to pre-redesign; technique prompt is the same version that generated the April 22 Marley note that Chase was happy with — verified via md5sum). So the prompt wasn't the issue.
+
+Then he uploaded the Mason Liao technique note PDF and asked about the "jumbled" focus area chips and a font that "looks different." That was the breakthrough — the note prose itself was actually well-written, but the **rendering** was wrong. The focus-area chips on the Mason note had no visual separation (literally glued together as plain text: "Flip too late — jammed on wallArms not by sides during flipTurning on side..."), and the section numbers + body prose were rendering in browser-default Times New Roman instead of Fraunces.
+
+Investigation traced this to commits `13a4e0f` and `cdaee9a` (April 26 — both technique.html redesign passes) and `ec7c6c1` (April 26 — test-ai.html redesign). Each commit message claimed "script block byte-identical to prior" and listed all the IDs/handlers/classes preserved — and that part was true for the JavaScript. But the **CSS** was wholesale rewritten in each redesign and the rules that styled the rendered note were not carried over. The script bodies still emitted `<div class="section-num">` / `<div class="section-content">` / `<span class="tech-fault-chip">` etc., but no rules in the new CSS targeted those classes. Browser fell back to defaults.
+
+### Done
+
+**Restored note-render CSS on `public/technique.html`** (72 lines added). Six classes that had zero rules in the post-redesign file: `.tech-topic-item`, `.tech-topic-name`, `.tech-faults`, `.tech-fault-chip`, plus the section grid (`.section`, `.section-num`, `.section-content`, `.section-content .section-title`, `.section-content p`). Pulled the layout structure from `dd2d3ab` (the April 19 / pre-redesign version that generated the April 22 Marley note Chase was satisfied with). Adapted to v2 dark theme: chip backgrounds went from `rgba(255,255,255,0.1)` to `rgba(255,255,255,0.06)` to match the broader v2 chip-rest pattern, body prose color went to `#cbd5e1` (the same color v2 uses for body text everywhere else). Added matching mobile (≤640px) tightening of the section grid (48px / 1fr instead of 80px / 1fr) and full print-mode color overrides so the chips, numerals, and titles all flip correctly when the dark background flips to white paper.
+
+**Restored note-render CSS on `public/test-ai.html`** (294 lines added). This was worse than technique — **all 17** rendered-note classes had zero rules in the post-redesign file: `.section-num`, `.section-content`, `.athlete-name`, `.athlete-rule`, `.athlete-tags`, `.athlete-block`, `.athlete-label`, `.note-header`, `.note-logo`, `.note-meta`, `.note-footer`, `.set-overview-box`, `.set-overview-label`, `.set-overview-text`, `.main-set-box`, `.main-set-label`, `.main-set-name`, plus the `.main-set-table` grid and `.hilo-row` flex layout, plus `.charts-block` / `.charts-label` / `.chart-title` / `.chart-svg`, plus `.warnings-box`. Every single one was emitted by the script but unstyled by the CSS. Pulled originals from `230c81e` (the pre-redesign version) and adapted to v2 dark theme. Same mobile + print media queries as technique. Result: training notes will now render with the Fraunces section numerals in gold, the dark-card main-set box with Inter monospace rep table, the gold accent rule under the athlete name, the bordered set-overview block, and the structured 5-section grid layout that was always the design intent.
+
+**Verified non-destructive:** both files still parse as valid HTML, all CSS braces balance (220/220 in test-ai, 168/168 in technique), all JS braces balance (140/140 in test-ai, 142/142 in technique). Script blocks were never touched — only CSS was added. 366 line additions, 0 deletions, 0 markup changes.
+
+### Decisions made
+- **Restoration over rewrite.** Considered redesigning the note rendering from scratch in the v2 dark idiom, but the pre-redesign version was demonstrably working (Marley's April 22 PDF is well-styled) and Chase already approved it. Restoration is faster, less risk, and matches what he actually likes. Future v2 redesign of the note layout itself is a separate decision he can make later.
+- **Adapt color tokens, preserve typography and structure.** The original CSS used `var(--gold-soft)` and assumed light backgrounds (`white` paper, `var(--ink)` body text). Replaced those with v2 equivalents (`var(--gold)` and `#cbd5e1` against `rgba(0,0,0,0.3)` cards) without touching the Fraunces/Inter font stack or the section-grid `100px 1fr` layout. The character of the note (big serif numerals, Fraunces body, gold-accent metadata) is unchanged.
+- **Print mode flips fully.** Every dark-mode color in the note-render CSS has a corresponding `!important` override in the `@media print` block. Chips, section titles, body prose, footer rule line, athlete rule — all explicitly invert from dark-on-dark to dark-on-white when printing.
+- **Mobile tightening matches the same section-grid pattern as the rest of the v2 mobile sweep.** 48px / 1fr columns for section grid on phones (down from 80px / 1fr on desktop) is the same ratio used in the pre-redesign mobile rules, just with px values instead of rem.
+
+### Open loops (carrying forward)
+- **Technique prompt depth restoration.** Earlier in this session I documented (but did NOT execute) a separate finding: `api/lib/technique-prompt.js` was thinned by edits in mid-April (`e1b1231`, `dd2d3ab`) — lost the 4th note section (`NEXT SESSION` with concrete drill prescription), the `focusMap` JSON output, the `EACH SESSION IS A DIAGNOSTIC MOMENT` guardrail, the full `kick:` knowledge block, and a number of cause-effect chain tail-clauses. This is a separate fix from today's CSS restoration. Chase is aware. If he chooses to do it, the plan is to merge the 333-line original (commit `bed56af`) with the current `topicBlocks` input shape — best of both: chip UI for input, original depth for output.
+- **Verify Chase regenerates a test note after deploy** to confirm the CSS landed on production. Live URL: `app.confluencesport.com/technique.html` and `app.confluencesport.com/test-ai.html`.
+
+---
+
 ## Session 14 — 2026-04-27 (Auth diagnostic + family flow + custom domain + tier matrix)
 
 ### Approach

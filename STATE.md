@@ -1,23 +1,24 @@
 # STATE.md — Current Branch State
 
-Last updated: 2026-04-27 (Session 14 — Step 5b Race Pace tier gating shipped, badge system fanned out across the app)
+Last updated: 2026-04-27 (Session 15 — note-render CSS restored on test-ai.html + technique.html)
 
 ## Active branch: v2-redesign
 ## Production branch: main
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`<pending>` — Age-Up Preview demo for Skills/Bronze. Third gated section to land its data swap. Different pattern than Progression and Range — instead of swapping in Chase's data, this one shows the family's own kid's data but only for **one event** (50 Free), with all other event cards dimmed and locked. Frames the upgrade as "you're seeing 1 of 6 cards your kid has, the rest unlock with Silver."
+`<pending>` — Note-render CSS restoration for `public/test-ai.html` (training notes) and `public/technique.html` (technique notes). The April 26 v2 dark-theme redesigns of both tool pages dropped a chunk of the print-rendering CSS — script blocks still emit markup with classes like `.section-num`, `.section-content`, `.athlete-name`, `.tech-fault-chip`, `.main-set-box`, `.set-overview-box`, etc., but the rules that styled those classes weren't carried over from the pre-redesign files. Result: every training/technique note generated and printed/PDF'd after April 26 rendered in default browser typography (Times New Roman serif fallback), with the section grid collapsed (01/02/03 numerals stacked on top of body text instead of in a left column), focus-area chips on technique notes mashed together as glued inline text, no styling on the metadata header, athlete block, set overview, main set table, or footer.
 
-50 Free was chosen because every athlete tier has a 50 Free time recorded, so the demo card is guaranteed to populate with real data instead of "—". Course toggle (SCY/LCM) still works for everyone — the demo unlock follows whichever course is selected.
+Restore strategy: pulled the original CSS from commit `230c81e` (pre-redesign test-ai.html — the version running on April 25 when the last "good" notes were generated) and `dd2d3ab` (pre-redesign technique.html — the version that generated the April 22 Marley note). Adapted color tokens to the v2 dark theme — replaced light-paper backgrounds with the dark-mode equivalents (`rgba(0,0,0,0.3)` cards, `var(--gold)` accent, `#cbd5e1` body text) and kept the same Fraunces typography for headers/section numbers/body prose. Added matching mobile (≤640px) and print media queries so notes look right on screen, on phone, and in PDF.
 
-Implementation:
-- `AgeUpPreview` component (in `src/components/FamilyProfile.jsx`) gained an `isDemo` prop (defaults to `false`). When set, renders the grid with all cards EXCEPT 50 Free passed `isLocked={true}`. The 50 Free card gets `isDemoUnlocked={true}` which renders the small gold "DEMO" pill in the top-right corner.
-- `AgeUpCard` gained `isLocked` and `isDemoUnlocked` props. Locked cards skip the front/back flip markup entirely — chrome stays (event name, dash placeholders for time/standards), opacity drops to 0.45, hover flip is disabled, cursor reverts to default. Unlocked card behaves exactly as before, just with the corner DEMO pill above the flip surface.
-- New CSS: `.au-card-locked` (dim + flat), `.au-card-demo` (relative positioning context for the pill), `.au-demo-pill` (gold corner marker, same color tokens as `.section-tier-badge`).
-- FamilyAnalysis passes `isDemo={!hasProgressionAccess}` since Age-Up sits in the same access tier as Progression (Silver + Gold).
+Net change: 366 lines of CSS added across the two files, 0 deletions, 0 JS changes, 0 markup changes. The script bodies were already byte-identical to pre-redesign; only the CSS got hollowed out.
 
-Earlier this session, in chronological order (newest at top):
+The Marley/Mason rendering bug was the trigger to investigate. Marley's note (April 22) printed correctly because it was generated before the bad CSS landed. Mason's note (April 27) printed broken because the CSS was already gone. Same prompt, same script, just a missing stylesheet.
+
+Earlier this session: clean — only Session 15 work is the CSS restoration commit.
+
+## Session 14 commits (last commit on main going into Session 15: `591ae1a`):
+- `591ae1a` — Age-Up Preview demo for Skills/Bronze (50 Free unlocked, rest locked)
 - `cf8f1be` — Range/Specialty Bloom demo for Skills/Bronze/Silver (Gold-only feature)
 - `dd40848` — Progression demo for non-Silver/non-Gold tiers (Chase's LCM career)
 - `760570b` — Race Pace: restored practice pace clock animations
