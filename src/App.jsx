@@ -14,9 +14,24 @@ import FamilyMeets from './components/FamilyMeets.jsx'
 import FamilyAnalysis from './components/FamilyAnalysis.jsx'
 import FamilyResources from './components/FamilyResources.jsx'
 import SlotRequestsAdmin from './components/SlotRequestsAdmin.jsx'
+import DemoView from './components/DemoView.jsx'
 import './styles/apple-dark.css'
 
 export default function App() {
+  // Public demo routes: /demo/<slug> renders a read-only athlete profile
+  // for sharing as a marketing link. Bypasses Clerk entirely — these URLs
+  // are intentionally accessible without sign-in. Currently mapped:
+  //   /demo/chase  →  Chase Kalisz's Profile + Performance Analysis
+  // Slug map lives in DemoView.jsx. To add more demo athletes, edit that
+  // file. This branch returns BEFORE the SignedIn/SignedOut split so the
+  // demo never touches Clerk state and never causes a sign-in redirect.
+  const demoMatch = (typeof window !== 'undefined')
+    ? window.location.pathname.match(/^\/demo\/([^/]+)\/?$/)
+    : null
+  if (demoMatch) {
+    return <DemoView slug={demoMatch[1]} />
+  }
+
   // Auth gate: if not signed in, show only the sign-in card. Nothing else
   // renders, no data loads, no URLs leak. Once signed in the existing app
   // mounts via <AppContent /> below.

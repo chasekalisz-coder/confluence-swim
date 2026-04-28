@@ -1,21 +1,22 @@
 # STATE.md — Current Branch State
 
-Last updated: 2026-04-27 (Session 15 — note-render CSS restored on test-ai.html + technique.html)
+Last updated: 2026-04-27 (Session 15 — note-render CSS restored on test-ai.html + technique.html, public demo route added)
 
 ## Active branch: v2-redesign
 ## Production branch: main
 ## Live URL: app.confluencesport.com (primary), confluence-swim.vercel.app (legacy/backup, still active)
 
 ## Last commit on main
-`<pending>` — Note-render CSS restoration for `public/test-ai.html` (training notes) and `public/technique.html` (technique notes). The April 26 v2 dark-theme redesigns of both tool pages dropped a chunk of the print-rendering CSS — script blocks still emit markup with classes like `.section-num`, `.section-content`, `.athlete-name`, `.tech-fault-chip`, `.main-set-box`, `.set-overview-box`, etc., but the rules that styled those classes weren't carried over from the pre-redesign files. Result: every training/technique note generated and printed/PDF'd after April 26 rendered in default browser typography (Times New Roman serif fallback), with the section grid collapsed (01/02/03 numerals stacked on top of body text instead of in a left column), focus-area chips on technique notes mashed together as glued inline text, no styling on the metadata header, athlete block, set overview, main set table, or footer.
+`<pending>` — Public demo route at `/demo/chase`. Read-only, no auth, shareable as a marketing link. New `src/components/DemoView.jsx` component renders Chase Kalisz's profile (Profile + Performance Analysis only — no Sessions/Meets/Resources). Wired in via a single conditional at the top of `App()` in `src/App.jsx` that returns `<DemoView slug={...} />` when `window.location.pathname` matches `/demo/<slug>` — happens BEFORE the `<SignedOut>/<SignedIn>` Clerk gate, so the demo URL never triggers a sign-in redirect. Slug map (`{ chase: 'ath_chase' }`) lives at the top of `DemoView.jsx`; future demo athletes get added there. Existing app paths and existing user experience unchanged — adding the demo route is additive only, no edits to FamilyProfile/FamilyAnalysis components or any data layer.
 
-Restore strategy: pulled the original CSS from commit `230c81e` (pre-redesign test-ai.html — the version running on April 25 when the last "good" notes were generated) and `dd2d3ab` (pre-redesign technique.html — the version that generated the April 22 Marley note). Adapted color tokens to the v2 dark theme — replaced light-paper backgrounds with the dark-mode equivalents (`rgba(0,0,0,0.3)` cards, `var(--gold)` accent, `#cbd5e1` body text) and kept the same Fraunces typography for headers/section numbers/body prose. Added matching mobile (≤640px) and print media queries so notes look right on screen, on phone, and in PDF.
+Live demo URL after deploy: `https://app.confluencesport.com/demo/chase`. Hash routing supported: `/demo/chase#analysis` lands directly on the Performance Analysis tab. A demo banner pinned to the top of the page identifies it as a sample profile and links out to `confluencesport.com`. The standalone tool pages (test-ai, technique, sprint, workout, meetprep) are still auth-gated — clicking through to those from inside the demo is silently no-op'd. The exception is `pace.html` which already allows family-tier access; demo viewers can use Race Pace.
 
-Net change: 366 lines of CSS added across the two files, 0 deletions, 0 JS changes, 0 markup changes. The script bodies were already byte-identical to pre-redesign; only the CSS got hollowed out.
+## Note-render CSS restoration (earlier in this session)
+Restoration of print/render CSS for `public/test-ai.html` (training notes) and `public/technique.html` (technique notes). The April 26 v2 dark-theme redesigns dropped a chunk of the rendered-note CSS — script blocks still emitted markup with classes like `.section-num`, `.section-content`, `.athlete-name`, `.tech-fault-chip`, `.main-set-box`, `.set-overview-box`, etc., but the rules that styled those classes weren't carried over from the pre-redesign files. Result: every training/technique note generated and printed/PDF'd after April 26 rendered in default browser typography (Times New Roman serif fallback), with the section grid collapsed (01/02/03 numerals stacked on top of body text instead of in a left column), focus-area chips on technique notes mashed together as glued inline text, no styling on the metadata header, athlete block, set overview, main set table, or footer.
+
+Restore strategy: pulled the original CSS from commit `230c81e` (pre-redesign test-ai.html — the version running on April 25 when the last "good" notes were generated) and `dd2d3ab` (pre-redesign technique.html — the version that generated the April 22 Marley note). Adapted color tokens to the v2 dark theme — replaced light-paper backgrounds with the dark-mode equivalents (`rgba(0,0,0,0.3)` cards, `var(--gold)` accent, `#cbd5e1` body text) and kept the same Fraunces typography for headers/section numbers/body prose. Added matching mobile (≤640px) and print media queries so notes look right on screen, on phone, and in PDF. 366 lines of CSS added across the two files, 0 deletions, 0 JS changes, 0 markup changes.
 
 The Marley/Mason rendering bug was the trigger to investigate. Marley's note (April 22) printed correctly because it was generated before the bad CSS landed. Mason's note (April 27) printed broken because the CSS was already gone. Same prompt, same script, just a missing stylesheet.
-
-Earlier this session: clean — only Session 15 work is the CSS restoration commit.
 
 ## Session 14 commits (last commit on main going into Session 15: `591ae1a`):
 - `591ae1a` — Age-Up Preview demo for Skills/Bronze (50 Free unlocked, rest locked)

@@ -27,6 +27,47 @@ Investigation traced this to commits `13a4e0f` and `cdaee9a` (April 26 — both 
 - **Technique prompt depth restoration.** Earlier in this session I documented (but did NOT execute) a separate finding: `api/lib/technique-prompt.js` was thinned by edits in mid-April (`e1b1231`, `dd2d3ab`) — lost the 4th note section (`NEXT SESSION` with concrete drill prescription), the `focusMap` JSON output, the `EACH SESSION IS A DIAGNOSTIC MOMENT` guardrail, the full `kick:` knowledge block, and a number of cause-effect chain tail-clauses. This is a separate fix from today's CSS restoration. Chase is aware. If he chooses to do it, the plan is to merge the 333-line original (commit `bed56af`) with the current `topicBlocks` input shape — best of both: chip UI for input, original depth for output.
 - **Verify Chase regenerates a test note after deploy** to confirm the CSS landed on production. Live URL: `app.confluencesport.com/technique.html` and `app.confluencesport.com/test-ai.html`.
 
+### Public demo route at /demo/chase
+
+After the CSS restoration was pushed, Chase asked for a shareable demo link of his own profile — a no-auth public URL he could send to recruits, prospective families, marketing contacts. Initial scoping went through three checkbox decisions: scope (Profile + Performance Analysis), URL location (subpath on the existing app), and data freshness. He short-circuited the "build" framing — "isnt it just a copy?" — and yes, that's the right read. It's a copy with the auth gate removed.
+
+Done in one commit:
+
+**New file `src/components/DemoView.jsx`** (~190 lines). Self-contained component that:
+- Reads its slug from a prop (passed from App.jsx URL match)
+- Maintains a small `DEMO_SLUGS` map at the top (`{ chase: 'ath_chase' }`) — adding more demo athletes is one line
+- Calls `loadAthletes()` from `src/lib/db.js` directly — no auth, no Clerk hooks, no admin routes
+- Filters for the slug's athlete id, surfaces loading / error / not-found states with the same dark splash palette as the rest of the app
+- Renders `FamilyProfile` or `FamilyAnalysis` (existing components, untouched) with `linkedAthletes={[]}` to disable the multi-athlete switcher and `onBack={null}` to hide the back arrow
+- Honors hash routing — `/demo/chase` lands on Profile, `/demo/chase#analysis` lands directly on Performance Analysis
+- Handles in-app nav between Profile ↔ Analysis tabs; silently no-ops nav to Sessions/Meets/Resources (out of demo scope) and to auth-gated tool pages (would just bounce a public visitor to a sign-in wall). The exception is `/pace.html` which already allows family-tier access — demo viewers can click through to Race Pace if they want
+- Pins a sticky banner at the top: small gold "DEMO PROFILE" pill + sentence linking out to `confluencesport.com`. Pure inline styles, no library, keeps the demo route fully self-contained.
+
+**Single-line wiring in `src/App.jsx`** — added the `DemoView` import alongside the other component imports, and inserted a 6-line check at the very top of `App()` before the `<SignedOut>/<SignedIn>` gate:
+
+```js
+const demoMatch = (typeof window !== 'undefined')
+  ? window.location.pathname.match(/^\/demo\/([^/]+)\/?$/)
+  : null
+if (demoMatch) {
+  return <DemoView slug={demoMatch[1]} />
+}
+```
+
+If the URL matches `/demo/<slug>`, return the `DemoView` immediately and never reach the Clerk gate. Existing app behavior — sign-in flow, admin routes, family routes — completely unchanged for every other URL.
+
+**Vercel routing already worked.** `vercel.json` has a catch-all rewrite `/(.*) → /` that routes every unknown path back to `index.html` (where React boots and parses `window.location.pathname`). No config change needed.
+
+**Verified clean build** with `npx vite build` — 117 modules transformed, 210 KB JS bundle (unchanged from before), zero warnings or errors.
+
+**Decisions made:**
+- *Live data, not a snapshot.* Chase's 251 progression entries across 28 events are real and updated as he enters new meets. Static snapshot would go stale; live view stays current with zero maintenance.
+- *Profile + Performance Analysis only.* Sessions/Meets/Resources tabs aren't part of the demo — the showcase is what families pay for in Gold Development tier (Progression chart, Power Rankings, Championship Standards, Age-Up Preview, Range/Specialty Bloom, Race Pace). The demo IS the Gold tier preview.
+- *No back button, no athlete switcher.* The demo URL is a one-shot view — visitors land there from a marketing link, not from inside the app. Hiding the chrome makes it look like a polished standalone page rather than a leaked admin view.
+- *Slug-based mapping kept simple.* `DEMO_SLUGS = { chase: 'ath_chase' }` is a 1-line dict at the top of `DemoView.jsx`. Future expansion (other athletes Chase wants to demo) is `{ chase: 'ath_chase', jon: 'ath_jon' }` — no architectural change.
+
+The demo URL goes live as soon as Vercel finishes deploying the push: `https://app.confluencesport.com/demo/chase`.
+
 ---
 
 ## Session 14 — 2026-04-27 (Auth diagnostic + family flow + custom domain + tier matrix)
